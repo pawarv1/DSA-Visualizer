@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
-import CanvasRenderer from './tools/CanvasRenderer';
-import { generateArrayLayout } from './tools/d3Layout';
-import { bubbleSortAnimation } from './tools/animations';
+import { Animation1, Animation2, Animation3 } from './CanvasCode/ArrayAnimations';
 
 function ArrayView() {
-  const [array, setArray] = useState([5, 8, 3, 6, 2, 7, 1, 4, 9, 10]);
-
-  const canvasWidth = 500;
-  const canvasHeight = 300;
-  const cellSize = 60; // Adjust cell size for better spacing
-
-  const { layout } = generateArrayLayout(array, canvasWidth, canvasHeight, cellSize);
 
   return (
-    <div>
-      <h1>Array Visualization</h1>
-      <CanvasRenderer layout={layout} width={canvasWidth} height={canvasHeight} /><br></br>
-      <button onClick={() => bubbleSortAnimation(array, setArray)}>Bubble Sort</button>
-      <button onClick={() => setArray([5, 8, 3, 6, 2, 7, 1, 4, 9, 10])}>Reset</button>
-    </div>
+    <>
+      <div>
+        <h1>Introduction to Arrays</h1>
+        <Animation1></Animation1>
+      </div><br></br>
+      <div>
+        <h1>Second Array Animation</h1>
+        <Animation2></Animation2>
+      </div><br></br>
+      <div>
+        <h1>Third Array Animation</h1>
+        <Animation3></Animation3>
+      </div>
+    </>
   );
 }
 

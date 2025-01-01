@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-import Array from './pages/ArrayView';
+import ArrayView from './pages/ArrayView';
 
 function NavBar() {
   return (
@@ -16,7 +16,7 @@ function NavBar() {
       <main>
         <Routes>
           <Route path="/" element={<Home></Home>} />
-          <Route path="/array" element={<Array></Array>} />
+          <Route path="/array" element={<ArrayView></ArrayView>} />
         </Routes>
       </main>
     </Router>
