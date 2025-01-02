@@ -1,6 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import ArrayView from './pages/ArrayView';
+import LinkedListsView from './pages/LinkedListsView';
+import HashingView from './pages/HashingView';
+
+/*
+The navbar component handles page routing
+*/
 
 function NavBar() {
   return (
@@ -10,6 +16,8 @@ function NavBar() {
           <ul className="navbar">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/array">Arrays</Link></li>
+            <li><Link to="/linkedlist">Linked Lists</Link></li>
+            <li><Link to="/hashing">Hashing</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -17,6 +25,8 @@ function NavBar() {
         <Routes>
           <Route path="/" element={<Home></Home>} />
           <Route path="/array" element={<ArrayView></ArrayView>} />
+          <Route path="/linkedlist" element={<LinkedListsView></LinkedListsView>} />
+          <Route path="/hashing" element={<HashingView></HashingView>} />
         </Routes>
       </main>
     </Router>
