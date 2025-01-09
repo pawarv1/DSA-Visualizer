@@ -64,6 +64,7 @@ export function Animation1() {
         }
 
         const step2 = () => {
+          //context.rotate(45 * Math.PI / 180) 
           context.clearRect(0, 0, canvas.width, canvas.height);
           context.fillStyle = 'black';
           context.font = "14px Arial";
@@ -96,11 +97,15 @@ export function Animation1() {
           context.textAlign = "right"; 
           context.fillText("0x9234091", canvas.width/2-5, y)
 
-          let arrowStart = canvas.width/2-40
-          let arrowEnd = 50
-          let middleGround = (canvas.width/2-40 - 10) / 2
 
-          drawArrow(arrowStart, y-20, arrowEnd, y-30, middleGround ,y-70)
+          //Ok maybe I should comment this
+          
+          let arrowStart = canvas.width/2-40 
+          let arrowEnd = 50
+          let middleGround = (canvas.width/2-40 - 10) / 2 // This makes a central point that I can pull the curve to
+
+
+          drawArrow(arrowStart, y-20, arrowEnd, y-30,-75, middleGround,y-70)
 
           context.textAlign = "center";
 
@@ -124,21 +129,38 @@ export function Animation1() {
           context.fillStyle = 'black';
           context.font = "14px Arial";
           context.textAlign = "center";
-          context.fillText("Arrays are a fixed size sequential collections of elements of the same type.", canvas.width/2, 80);
-          let x = 10;
-          let y = 100;
-        
-          const elements = [
-            "apples", "bananas", "oranges", "grapes", "pineapples"
-          ]
-    
-          for (let i = 0; i < 5; i++) {
-            context.strokeRect(x,y,80,50);
-            context.font = "12px Arial";
-            context.textAlign = "center";
-            context.fillText(elements[i], x + 40, y + 25);
-            x += 80;
-          }
+
+          //I set my code up so you can change these variables pretty easily to align the entirety of the text.
+
+
+          let y = 160 //Position of all of the text boxes and the rect
+          let x = 20;//position of the visualization's x position
+          let xWidth = 80 //Width of the box in the visualization
+          let yWidth = 50 //Height of aforementioned thing
+          
+          context.fillText("This is the basic layout of a singly linked list node. It is a building block for the linked lists we will be demonstrating it is composed of 2 elements.", canvas.width/2, y - 80)
+          context.textAlign = "left";
+          
+          context.fillText("Data: which stores information such as values, strings, or even arrays/objects.", x, y - 40)
+          context.fillText("Pointers: which typically point to other nodes of the same type. This allows code to traverse the linked list.", x, y - 20)
+          context.textAlign = "center";
+
+
+          let boxY = y+10
+
+          context.strokeRect(x, boxY, xWidth, yWidth);
+
+          context.strokeRect(x + xWidth, boxY, xWidth*.75, yWidth);
+
+          context.fillText("Data", x + xWidth/2, boxY+30);
+          context.fillText("Next", x  + xWidth/2 * .75 + xWidth , boxY+30);
+
+          let arrowXStart = x  + xWidth * .75 + xWidth 
+
+
+          drawArrow(arrowXStart, boxY+25, arrowXStart + 100, boxY+25, 135);
+
+
         
         }
     // Switch statement which runs the associated step method for the given step
@@ -154,10 +176,15 @@ export function Animation1() {
         break;
     }
 
-
-
-    function drawArrow(startX, startY, endX,endY, pullX, pullY)
+    
+    //Parameters: line's starting x and y, line's ending x and y, angle to rotate the arrow in degrees, the x and y coord of the point the line curves to
+    //Guess what it does!
+    //Nah I'll just tell you, it draws an arrow!
+    //If you leave out the last two parameters it will draw a straight line 
+    
+    function drawArrow(startX, startY, endX, endY, angle, pullX, pullY)
     {
+
       context.beginPath();
       context.strokeStyle = "black";
       context.lineWidth = 2;
@@ -165,48 +192,40 @@ export function Animation1() {
 
       context.moveTo(startX,startY)
 
-      if(arguments.length == 6)
+      if(arguments.length == 7)
       {
       context.quadraticCurveTo(pullX,pullY,endX,endY)
       context.stroke()
       context.moveTo(endX,endY)
 
-      //offset changes arrow direction based on whether the pull is above or below
-      let offset = -15
-      if(pullY >  (startY+endY)/2)
-      {
-        offset *= -1
+
       }
-      
-      
-      
-      context.lineTo(endX,endY+offset)
-      context.moveTo(endX,endY)
-      context.lineTo(endX+Math.abs(offset),endY)
-      context.stroke()
-     }
 
 
-     else if(arguments.length == 4)
+     else if(arguments.length == 5)
      {
-
       context.lineTo(endX,endY)
       context.stroke()
-
-      //Trig should be done
-      let offset = 15
-
-      //Between here
-      context.moveTo(endX,endY)
-      context.lineTo(endX,endY+offset)
-      context.moveTo(endX,endY)
-      context.lineTo(endX+Math.abs(offset),endY)
-      context.stroke()
-
-
      }
 
+     context.save()
 
+
+     
+
+     context.translate(endX, endY);
+
+
+     context.rotate(angle * Math.PI / 180) 
+
+     context.moveTo(0,0)
+     context.lineTo(0,20)
+     context.moveTo(0,0)
+     context.lineTo(20,0)
+     context.stroke()
+    
+     
+     context.restore()
 
 
 
