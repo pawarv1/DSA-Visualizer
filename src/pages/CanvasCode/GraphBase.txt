@@ -1,0 +1,54 @@
+            context.fillStyle = 'black';
+            context.font = "14px Arial";
+            context.textAlign = "center";
+
+
+            let x = 120;
+            let y = 120;
+            let xWidth = 60;
+            let yWidth = 40;
+
+            let values = 
+            [["A", "B", "C", "D", "E", "F"],
+              [-yWidth,yWidth, xWidth, yWidth, -yWidth, -xWidth],
+              [-yWidth,-yWidth, 0, yWidth, yWidth, 0]
+            ]
+
+
+            context.beginPath();
+
+        
+            context.strokeStyle = 'black';
+            context.lineWidth = 1; 
+
+
+
+            context.moveTo(values[1][5] + x ,values[2][5] +y)
+            //For loop here draws the lines
+            for(let i = 0; i < 6; i++)
+            {   
+              context.lineTo(values[1][i] + x,values[2][i] + y)
+              context.stroke()
+            }
+
+            //Draws the last line
+            context.moveTo(values[1][5] + x,values[2][5] + y)
+            context.lineTo(values[1][2] + x,values[2][2] + y)
+            context.stroke()
+
+
+            
+            //For loop that makes the circles and puts the letters
+            for(let i = 0; i < 6; i++)
+              {   
+                //Draws a new circle
+                context.beginPath()
+                context.fillStyle = 'white';
+                context.arc(values[1][i] + x,values[2][i] + y, 15, 0, 2 * Math.PI);
+                context.fill(); 
+                context.stroke();
+
+                //Draw text
+                context.fillStyle = 'black';
+                context.fillText(values[0][i],values[1][i] + x,values[2][i] + y)
+              }
