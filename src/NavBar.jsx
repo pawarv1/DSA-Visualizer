@@ -4,7 +4,7 @@ import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
 import ArrayView from './pages/ArrayView';
 import LinkedListsView from './pages/LinkedListsView';
 import HashingView from './pages/HashingView';
-import StacksQueuesView from './pages/StacksQueuesView';
+import StacksAndQueuesView from './pages/StacksAndQueuesView';
 import GraphsView from './pages/GraphsView';
 
 /*
@@ -34,7 +34,7 @@ function NavBar() {
           <Route path="/array" element={<ArrayView></ArrayView>} />
           <Route path="/linkedlist" element={<LinkedListsView></LinkedListsView>} />
           <Route path="/hashing" element={<HashingView></HashingView>} />
-          <Route path="/stacksqueues" element={<StacksQueuesView></StacksQueuesView>} />
+          <Route path="/stacksqueues" element={<StacksAndQueuesView></StacksAndQueuesView>} />
           <Route path="/graphs" element={<GraphsView></GraphsView>} />
         </Routes>
       </main>
