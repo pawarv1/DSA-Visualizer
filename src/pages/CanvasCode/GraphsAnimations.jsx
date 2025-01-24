@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnimationTool from './AnimationTool';
+import OutdatedAnimationTool from './OutdatedAnimationTool';
 
 /*
 This component handles all the canvas logic needed for the various Graphs animations
 Team will work on the animations as specified in last meeting
 */
+
+export function Animation1() {
+
+}
 
 export function Animation2() {
     const [step, setStep] = useState(1); // Initial step
@@ -192,7 +196,7 @@ export function Animation2() {
     return (
       <>
         <h2>Step: {step}/{numSteps}</h2>
-        <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></AnimationTool><br></br>
+        <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
         <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>
           Canvas not supported.
         </canvas>
