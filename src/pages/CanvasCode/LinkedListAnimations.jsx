@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnimationTool from "./AnimationTool";
+import OutdatedAnimationTool from './OutdatedAnimationTool';
 
 /*
 This component handles all the canvas logic needed for the various linked lists animations
@@ -20,7 +20,7 @@ export function Animation1() {
     return (
       <>
         <h2>Step: {step}/{numSteps}</h2>
-        <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></AnimationTool><br></br>
+        <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
         <canvas ref={canvasRef1} width={500} height={500} style={{ border: '1px solid black' }}>
           Canvas not supported.
         </canvas>
@@ -41,7 +41,7 @@ export function Animation2() {
     return (
       <>
         <h2>Step: {step}/{numSteps}</h2>
-        <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></AnimationTool><br></br>
+        <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
         <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>
           Canvas not supported.
         </canvas>
@@ -62,7 +62,7 @@ export function Animation3() {
     return (
       <>
         <h2>Step: {step}/{numSteps}</h2>
-        <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></AnimationTool><br></br>
+        <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
         <canvas ref={canvasRef3} width={500} height={500} style={{ border: '1px solid black' }}>
           Canvas not supported.
         </canvas>
