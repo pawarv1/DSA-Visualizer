@@ -1,10 +1,12 @@
+import gsap from 'gsap';
+import { Timeline } from 'gsap/gsap-core';
+
 /*
 This component includes all the classes for the various graphic objects the animations will use
 GSAP can be used to modify the object fields
 The most basic graphic types are in these classes, and more complex ones can be built from them
 Each object has its own draw and clear methods
 */
-
 
 // Rectangle Class
 export class Rectangle {
@@ -21,12 +23,9 @@ export class Rectangle {
 
     draw(context) {
         context.save(); // Save current state of the canvas
-        this.clear(context);
-        
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
         context.strokeRect(this.x, this.y, this.width, this.height);
-        
         context.restore(); // Restore original state
     }
 
@@ -53,13 +52,13 @@ export class Text {
     static type = "text";
 
     draw(context) {
-        this.clear(context);
         context.globalAlpha = this.opacity;
         context.font = this.font;
         context.fillStyle = this.color;
         context.textAlign = this.textAlign;
         context.textBaseline = this.textBaseline;
         context.fillText(this.content, this.x, this.y);
+        context.font = '16px Arial'; // Reset font to default
     }
 
     clear(context) {
@@ -84,15 +83,12 @@ export class Circle {
     static type = "circle";
 
     draw(context) {
-        context.save(); // Save current state
-        this.clear(context);
-        
+        context.save(); // Save current state of the canvas
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
         context.beginPath();
         context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
         context.stroke();
-        
         context.restore(); // Restore to original state before this function
     }
 
@@ -119,15 +115,12 @@ export class Line {
 
     draw(context) {
         context.save(); // Save current state of the canvas
-        this.clear(context);
-        
         context.beginPath();
         context.moveTo(this.startX, this.startY);
         context.lineTo(this.endX, this.endY);
         context.strokeStyle = this.color;
         context.lineWidth = this.lineWidth;
         context.stroke();
-
         context.restore(); // Restore original state
     }
 
@@ -155,7 +148,6 @@ export class Arrow {
 
     draw(context) {
         context.save(); // Save current state of the canvas
-        this.clear(context);
 
         // Set styles for the arrow
         context.strokeStyle = this.color;
@@ -182,7 +174,6 @@ export class Arrow {
         context.lineTo(this.endX, this.endY)
         context.closePath();
         context.fill();
-
         context.restore(); // Restore original state
     }
 
@@ -198,7 +189,7 @@ export class Arrow {
 }
 
 
-// Image Class
+// Image Class, yet to be tested
 export class Image {
     constructor(src, x, y, width, height, opacity = 1) {
         this.image = new window.Image();

@@ -10,7 +10,7 @@ function drawNode(ctx, x, y, filled=false) {
   const context = ctx;
   const elements1 = [
     "Data", "Next"
-  ]
+  ];
   
   for (let i = 0; i < 2; i++) {
     if(filled) {
@@ -30,6 +30,52 @@ function drawNode(ctx, x, y, filled=false) {
   context.lineTo(x + 50, y + 25);
   context.stroke();
 }
+
+//Parameters: line's starting x and y, line's ending x and y, angle to rotate the arrow in degrees, the x and y coord of the point the line curves to
+//Guess what it does!
+//Nah I'll just tell you, it draws an arrow!
+//If you leave out the last two parameters it will draw a straight line 
+  
+function drawArrow(startX, startY, endX, endY, angle, pullX, pullY) {
+
+    context.beginPath();
+    context.strokeStyle = "black";
+    context.lineWidth = 2;
+
+
+    context.moveTo(startX,startY);
+
+    if (arguments.length == 7) {
+      context.quadraticCurveTo(pullX,pullY,endX,endY);
+      context.stroke();
+      context.moveTo(endX,endY);
+    }
+
+
+   else if(arguments.length == 5) {
+      context.lineTo(endX,endY);
+      context.stroke();
+   }
+
+   context.save();
+   
+
+   context.translate(endX, endY);
+
+
+   context.rotate(angle * Math.PI / 180);
+
+   context.moveTo(0,0);
+   context.lineTo(0,20);
+   context.moveTo(0,0);
+   context.lineTo(20,0);
+   context.stroke();
+  
+   context.restore();
+
+}
+
+//FixMe Animation 1 is broken
 
 export function Animation1() {
   const [step, setStep] = useState(1); // Initial step
@@ -90,7 +136,7 @@ export function Animation1() {
         //You're sorely mistaken
         //Read step 1 to see what these do
         
-        let y = 160 ;
+        let y = 160;
         let x = canvas.width/2+5;
         let xWidth = 80;
         let yWidth = 50;
@@ -108,7 +154,7 @@ export function Animation1() {
         
         let arrowStart = canvas.width/2-40;
         let arrowEnd = 50;
-        let middleGround = (canvas.width/2-40 - 10) / 2 // This makes a central point that I can pull the curve to;
+        let middleGround = (canvas.width/2-40 - 10) / 2; // This makes a central point that I can pull the curve to
 
         drawArrow(arrowStart, y-20, arrowEnd, y-30,-75, middleGround,y-70);
 
@@ -173,52 +219,6 @@ export function Animation1() {
       break;
   }
 }, [step]);
-
-  
-  //Parameters: line's starting x and y, line's ending x and y, angle to rotate the arrow in degrees, the x and y coord of the point the line curves to
-  //Guess what it does!
-  //Nah I'll just tell you, it draws an arrow!
-  //If you leave out the last two parameters it will draw a straight line 
-  
-  function drawArrow(startX, startY, endX, endY, angle, pullX, pullY)
-  {
-
-    context.beginPath();
-    context.strokeStyle = "black";
-    context.lineWidth = 2;
-
-
-    context.moveTo(startX,startY);
-
-    if (arguments.length == 7) {
-      context.quadraticCurveTo(pullX,pullY,endX,endY);
-      context.stroke();
-      context.moveTo(endX,endY);
-    }
-
-
-   else if(arguments.length == 5) {
-      context.lineTo(endX,endY);
-      context.stroke();
-   }
-
-   context.save();
-   
-
-   context.translate(endX, endY);
-
-
-   context.rotate(angle * Math.PI / 180);
-
-   context.moveTo(0,0);
-   context.lineTo(0,20);
-   context.moveTo(0,0);
-   context.lineTo(20,0);
-   context.stroke();
-  
-   context.restore();
-
-  }
 
   return (
     <>

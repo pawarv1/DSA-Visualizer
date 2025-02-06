@@ -4,12 +4,13 @@ import { Animation1, Animation2, Animation3 } from "./CanvasCode/LinkedListAnima
 Page for linked lists
 */
 
+//FixMe Animation 1 is broken
+
 function LinkedListsView() {
     return (
       <>
         <div>
           <h1>Introduction to Pointers and Nodes</h1>
-          <Animation1></Animation1>
         </div><br></br>
         <div>
           <h1>Linked Lists Animation 2</h1>

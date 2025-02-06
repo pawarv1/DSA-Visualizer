@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AnimationTool from './AnimationTool';
-import { Text } from './AnimationGraphics';
+import { Text } from './AnimationGraphics/GeneralAnimationGraphics';
 import gsap from 'gsap';
 
 /*
     This component provides all the animations for time and space complexity
     It implements classes from AnimationGraphics and uses GSAP for smooth animations
 */
+
+// Need to update the code to factor in the clearing
 
 // This animation, which serves as an introduction to time and space complexity
 export function IntroductionAnimation() {

@@ -1,4 +1,4 @@
-import { Animation1, Animation2, Animation3 } from './CanvasCode/ArrayAnimations';
+import { Animation1 } from './CanvasCode/ArrayAnimations';
 
 /*
 The array view component seres aws the page for the arrays section
