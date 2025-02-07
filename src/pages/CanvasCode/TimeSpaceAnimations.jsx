@@ -135,9 +135,7 @@ export function IntroductionAnimation() {
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={1} isAnimating={isAnimating}></AnimationTool>
             <br></br>
-            <canvas ref={canvasRef1} width={800} height={600} style={{ border: '1px solid black' }}>
-                Canvas not supported.
-            </canvas>
+            <canvas ref={canvasRef1} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
         </div>
     );
 }
@@ -262,9 +260,7 @@ export function BigOAnimation() {
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={2} isAnimating={isAnimating}></AnimationTool>
             <br></br>
-            <canvas ref={canvasRef2} width={800} height={600} style={{ border: '1px solid black' }}>
-                Canvas not supported.
-            </canvas>
+            <canvas ref={canvasRef2} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
         </div>
     );
 }
@@ -440,9 +436,7 @@ export function BestWorstAverageAnimation() {
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={3} isAnimating={isAnimating}></AnimationTool>
             <br></br>
-            <canvas ref={canvasRef3} width={800} height={600} style={{ border: '1px solid black' }}>
-                Canvas not supported.
-            </canvas>
+            <canvas ref={canvasRef3} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
         </div>
     );
 }
@@ -537,9 +531,7 @@ export function CommonMistakesAnimation() {
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={4} isAnimating={isAnimating}></AnimationTool>
             <br></br>
-            <canvas ref={canvasRef4} width={800} height={600} style={{ border: '1px solid black' }}>
-                Canvas not supported.
-            </canvas>
+            <canvas ref={canvasRef4} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
         </div>
     );
 }
@@ -762,9 +754,7 @@ export function BigORules() {
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={5} isAnimating={isAnimating}></AnimationTool>
             <br></br>
-            <canvas ref={canvasRef5} width={800} height={600} style={{ border: '1px solid black' }}>
-                Canvas not supported.
-            </canvas>
+            <canvas ref={canvasRef5} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
         </div>
     );
 }

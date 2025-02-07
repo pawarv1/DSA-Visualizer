@@ -224,10 +224,8 @@ export function Animation1() {
     <>
       <h2>Step: {step}/{numSteps}</h2>
       <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></AnimationTool><br></br>
-      <canvas ref={canvasRef1} width={500} height={500} style={{ border: '1px solid black' }}>
-        Canvas not supported.
-      </canvas>
-      </>
+      <canvas ref={canvasRef1} width={500} height={500} style={{ border: '1px solid black' }}>Canvas</canvas>
+    </>
   );
 }
 
@@ -333,10 +331,8 @@ export function Animation2() {
       <>
         <h2>Step: {step}/{numSteps}</h2>
         <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
-        <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>
-          Canvas not supported.
-        </canvas>
-        </>
+        <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>Canvas</canvas>
+      </>
     );
 }
 
@@ -764,9 +760,7 @@ export function Animation3() {
       <>
         <h2>Step: {step}/{numSteps}</h2>
         <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
-        <canvas ref={canvasRef3} width={500} height={500} style={{ border: '1px solid black' }}>
-          Canvas not supported.
-        </canvas>
-        </>
+        <canvas ref={canvasRef3} width={500} height={500} style={{ border: '1px solid black' }}>Canvas</canvas>
+      </>
     );
 }

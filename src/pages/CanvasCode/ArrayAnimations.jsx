@@ -251,9 +251,7 @@ export function Animation1() {
   return (
     <>
       <AnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange} animationNum={1} isAnimating={isAnimating}></AnimationTool><br></br>
-      <canvas ref={canvasRef1} width={800} height={600} style={{ border: '1px solid black' }}>
-        Canvas not supported.
-      </canvas>
+      <canvas ref={canvasRef1} width={800} height={600} style={{ border: '1px solid black' }}>Canvas</canvas>
     </>
   );
 }

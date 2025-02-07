@@ -6,6 +6,7 @@ import LinkedListsView from './pages/LinkedListsView';
 import HashingView from './pages/HashingView';
 import StacksAndQueuesView from './pages/StacksAndQueuesView';
 import GraphsView from './pages/GraphsView';
+import ExeperimentsView from './pages/ExperimentView';
 
 /*
 The navbar component handles page routing
@@ -24,6 +25,7 @@ function NavBar() {
             <li><Link to="/hashing">Hashing</Link></li>
             <li><Link to="/stacksqueues">Stacks & Queues</Link></li>
             <li><Link to="/graphs">Graphs</Link></li>
+            <li><Link to="/experimental">Experimental</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -36,6 +38,7 @@ function NavBar() {
           <Route path="/hashing" element={<HashingView></HashingView>} />
           <Route path="/stacksqueues" element={<StacksAndQueuesView></StacksAndQueuesView>} />
           <Route path="/graphs" element={<GraphsView></GraphsView>} />
+          <Route path="/experimental" element={<ExeperimentsView></ExeperimentsView>}></Route>
         </Routes>
       </main>
     </Router>

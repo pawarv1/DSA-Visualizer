@@ -197,9 +197,7 @@ export function Animation2() {
       <>
         <h2>Step: {step}/{numSteps}</h2>
         <OutdatedAnimationTool currStep={step} numSteps = {numSteps} updateStep={handleStepChange}></OutdatedAnimationTool><br></br>
-        <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>
-          Canvas not supported.
-        </canvas>
-        </>
+        <canvas ref={canvasRef2} width={500} height={500} style={{ border: '1px solid black' }}>Canvas</canvas>
+      </>
     );
 }
