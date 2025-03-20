@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Text, Arrow, Line, } from './AnimationGraphics/GeneralAnimationGraphics';
+import { Text, Arrow, Line } from './AnimationGraphics/GeneralAnimationGraphics';
 import { Array, prefixSum, suffixSum, TwoPointers, linearSearch, binarySearch } from './AnimationGraphics/ArrayAnimationGraphics';
 import AnimationTool from './AnimationTool';
 import gsap from 'gsap';

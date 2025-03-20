@@ -207,7 +207,7 @@ class ArrayCell {
         this.outlineColor = outlineColor;        
     }
 
-    static type = "arrayCell";
+    static type = "ArrayCell";
 
     setElement(context, newElement) {
         this.content = newElement;
@@ -284,7 +284,7 @@ export class Array {
         }
     }
 
-    static type = "array";
+    static type = "Array";
 
     draw(context) {
         this.cells.forEach(cell => {
