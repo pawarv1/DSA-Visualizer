@@ -1,8 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Text, Arrow, Line } from './AnimationGraphics/GeneralAnimationGraphics';
 import AnimationTool from './AnimationTool';
-import gsap from 'gsap';
-import { LinkedListNode } from './AnimationGraphics/LinkedListAnimationGraphics';
 
 
 export function Animation1() {
@@ -11,7 +8,7 @@ export function Animation1() {
     const [isAnimating, setIsAnimating] = useState(false);  // Track if an animation is running
 
     // Callback function to update the step modifications in AnimationTool
-    const handleStepChange = (newStep) => {
+    const handleStepChange = (newStep: number) => {
         // Prevent the user from changing steps while an animation is running
         if (!isAnimating) {
             setStep(newStep);
@@ -21,13 +18,17 @@ export function Animation1() {
     // Number of steps for this animation
     const numSteps = 3;
    
-    const canvasRef1 = useRef(null);    // Reference to the canvas element
+    const canvasRef1 = useRef<HTMLCanvasElement>(null);    // Reference to the canvas element    // Reference to the canvas element
 
     // This hook updates the canvas based on the step dependency
     useEffect(() => {
         const canvas1 = canvasRef1.current;
-        const context1 = canvas1.getContext('2d');
-        context1.clearRect(0, 0, canvas1.width, canvas1.height);
+        if (canvas1) {
+            const context1 = canvas1.getContext('2d');
+            if (context1) {
+                context1.clearRect(0, 0, canvas1.width, canvas1.height);
+            }
+        }
 
         // Step 1
         const step1 = () => {

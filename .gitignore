@@ -24,7 +24,5 @@ dist-ssr
 *.sw?
 
 .env
-chat.js
-ChatAPI.jsx
-SceneRenderer.jsx
-TempHashingAnimations.jsx
+RequiresFixing
+```

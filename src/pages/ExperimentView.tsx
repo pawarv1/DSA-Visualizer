@@ -1,3 +1,4 @@
+import React from "react";
 import { Animation1 } from "./CanvasCode/ExperimentalAnimations";
 
 function ExperimentsView() {
