@@ -1,6 +1,3 @@
-import gsap from 'gsap';
-import { Timeline } from 'gsap/gsap-core';
-
 /*
 This component includes all the classes for the various graphic objects the animations will use
 GSAP can be used to modify the object fields
@@ -10,7 +7,14 @@ Each object has its own draw and clear methods
 
 // Rectangle Class
 export class Rectangle {
-    constructor(x, y, width, height, opacity = 1, outlineColor = 'black') {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    opacity: number;
+    outlineColor: string;
+
+    constructor(x: number, y: number, width: number, height: number, opacity: number = 1, outlineColor: string= 'black') {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -21,7 +25,7 @@ export class Rectangle {
 
     static type = "rectangle";
 
-    draw(context) {
+    draw(context: CanvasRenderingContext2D) {
         context.save(); // Save current state of the canvas
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
@@ -29,7 +33,7 @@ export class Rectangle {
         context.restore(); // Restore original state
     }
 
-    clear(context) {
+    clear(context: CanvasRenderingContext2D) {
         // Expanding the clearing area slightly to cover anti-aliasing edges
         context.clearRect(this.x - 1, this.y - 1, this.width + 2, this.height + 2);
     }
@@ -38,7 +42,16 @@ export class Rectangle {
 
 // Text Class
 export class Text {
-    constructor(x, y, content, opacity = 1, font = '16px Arial', color = 'black', textAlign = 'start') {
+    x: number;
+    y: number;
+    content: string;
+    opacity: number;
+    font: string;
+    color: string;
+    textAlign: string;
+    textBaseline: string;
+
+    constructor(x: number, y: number, content: string, opacity: number = 1, font: string = '16px Arial', color: string = 'black', textAlign: string = 'start') {
         this.x = x;
         this.y = y;
         this.content = content;
@@ -51,17 +64,17 @@ export class Text {
 
     static type = "text";
 
-    draw(context) {
+    draw(context: CanvasRenderingContext2D) {
         context.globalAlpha = this.opacity;
         context.font = this.font;
         context.fillStyle = this.color;
-        context.textAlign = this.textAlign;
-        context.textBaseline = this.textBaseline;
+        // context.textAlign = this.textAlign;
+        // context.textBaseline = this.textBaseline;
         context.fillText(this.content, this.x, this.y);
         context.font = '16px Arial'; // Reset font to default
     }
 
-    clear(context) {
+    clear(context: CanvasRenderingContext2D) {
         const metrics = context.measureText(this.content);
         const textWidth = metrics.width;
         const textHeight = parseInt(this.font, 10); // Rough estimate of height based on font size
@@ -72,7 +85,13 @@ export class Text {
 
 // Circle Class
 export class Circle {
-    constructor(x, y, radius, opacity = 1, outlineColor = 'black') {
+    x: number;
+    y: number;
+    radius: number;
+    opacity: number;
+    outlineColor: string;
+
+    constructor(x: number, y: number, radius: number, opacity: number = 1, outlineColor: string = 'black') {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -82,7 +101,7 @@ export class Circle {
 
     static type = "circle";
 
-    draw(context) {
+    draw(context: CanvasRenderingContext2D) {
         context.save(); // Save current state of the canvas
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
@@ -92,7 +111,7 @@ export class Circle {
         context.restore(); // Restore to original state before this function
     }
 
-    clear(context) {
+    clear(context: CanvasRenderingContext2D) {
         // Clear a larger area to ensure no artifacts remain
         context.clearRect(this.x - this.radius - 5, this.y - this.radius - 5, this.radius * 2 + 10, this.radius * 2 + 10);
     }
@@ -101,7 +120,15 @@ export class Circle {
 
 // Line Class
 export class Line {
-    constructor(startX, startY, endX, endY, opacity = 1, color = 'black', lineWidth = 1) {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    opacity: number;
+    color: string;
+    lineWidth: number;
+
+    constructor(startX: number, startY: number, endX: number, endY: number, opacity: number = 1, color: string = 'black', lineWidth: number = 1) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
@@ -113,7 +140,7 @@ export class Line {
 
     static type = "line";
 
-    draw(context) {
+    draw(context: CanvasRenderingContext2D) {
         context.save(); // Save current state of the canvas
         context.beginPath();
         context.moveTo(this.startX, this.startY);
@@ -124,7 +151,8 @@ export class Line {
         context.restore(); // Restore original state
     }
 
-    clear(context) {
+    clear(context: CanvasRenderingContext2D) {
+        // Clear an area slightly larger than the line to ensure all is erased
         let extra = this.lineWidth;
         context.clearRect(Math.min(this.startX, this.endX) - extra, Math.min(this.startY, this.endY) - extra, Math.abs(this.startX - this.endX) + 2 * extra, Math.abs(this.startY - this.endY) + 2 * extra);
     }
@@ -133,7 +161,16 @@ export class Line {
 
 // Arrow Class
 export class Arrow {
-    constructor(startX, startY, endX, endY, opacity = 1, color = 'black', lineWidth = 1, headLength = 10) {
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    opacity: number;
+    color: string;
+    lineWidth: number;
+    headLength: number;
+
+    constructor(startX: number, startY: number, endX: number, endY: number, opacity: number = 1, color: string = 'black', lineWidth: number = 1, headLength: number = 10) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
@@ -146,7 +183,7 @@ export class Arrow {
 
     static type = "arrow";
 
-    draw(context) {
+    draw(context: CanvasRenderingContext2D) {
         context.save(); // Save current state of the canvas
 
         // Set styles for the arrow
@@ -177,7 +214,7 @@ export class Arrow {
         context.restore(); // Restore original state
     }
 
-    clear(context) {
+    clear(context: CanvasRenderingContext2D) {
         // Clear an area slightly larger than the arrow to ensure all is erased
         let extra = this.lineWidth + this.headLength;
         let minX = Math.min(this.startX, this.endX) - extra;
@@ -185,30 +222,5 @@ export class Arrow {
         let maxX = Math.max(this.startX, this.endX) + extra;
         let maxY = Math.max(this.startY, this.endY) + extra;
         context.clearRect(minX, minY, maxX - minX, maxY - minY);
-    }
-}
-
-
-// Image Class, yet to be tested
-export class Image {
-    constructor(src, x, y, width, height, opacity = 1) {
-        this.image = new window.Image();
-        this.image.src = src;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.opacity = opacity; // Defaults to 1
-    }
-
-    draw(context) {
-        this.image.onload = () => {
-            context.globalAlpha = this.opacity;
-            context.drawImage(this.image, this.x, this.y, this.width, this.height);
-        };
-    }
-
-    clear(context) {
-        context.clearRect(this.x, this.y, this.width, this.height);
     }
 }
