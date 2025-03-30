@@ -6,8 +6,8 @@ import Home from './pages/Home';
 // import HashingView from './pages/HashingView';
 // import StacksAndQueuesView from './pages/StacksAndQueuesView';
 // import GraphsView from './pages/GraphsView';
-import ExperimentsView from './pages/ExperimentView';
-import TestingView from './pages/TestingView';
+import GeneralView from './pages/GeneralAnimating/GeneralView';
+import ExperimentsView from './pages/Experimentation/ExperimentView';
 import React from 'react';
 
 /*
@@ -21,16 +21,16 @@ function NavBar() {
         <nav>
           <ul className="navbar">
             <li><Link to="/">Home</Link></li>
+            <li><Link to="/general">General</Link></li>
             <li><Link to="/experimental">Experimental</Link></li>
-            <li><Link to="/testing">Testing</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
       <main>
         <Routes>
           <Route path="/" element={<Home></Home>} />
+          <Route path="/general" element={<GeneralView></GeneralView>}></Route>
           <Route path="/experimental" element={<ExperimentsView></ExperimentsView>}></Route>
-          <Route path="/testing" element={<TestingView></TestingView>}></Route>
         </Routes>
       </main>
     </Router>

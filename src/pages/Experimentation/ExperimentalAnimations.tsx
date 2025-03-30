@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import AnimationTool from './AnimationTool';
+import AnimationTool from '../GeneralAnimating/AnimationTool';
+
 
 export function Animation1() {
     
@@ -17,7 +18,7 @@ export function Animation1() {
     // Number of steps for this animation
     const numSteps = 3;
    
-    const canvasRef1 = useRef<HTMLCanvasElement>(null);    // Reference to the canvas element
+    const canvasRef1 = useRef<HTMLCanvasElement>(null);    // Reference to the canvas element    // Reference to the canvas element
 
     // This hook updates the canvas based on the step dependency
     useEffect(() => {
@@ -28,23 +29,25 @@ export function Animation1() {
                 context1.clearRect(0, 0, canvas1.width, canvas1.height);
             }
         }
-        
 
         // Step 1
         const step1 = () => {
-          
+            // const LINK = new LinkedListNode(50, 50, 80, 50, "Thomas");
+            // LINK.drawNode(context1);
             setIsAnimating(false);
         }
 
         // Step 2
         const step2 = () => {
-          
+            // const LINK = new LinkedListNode(50, 50, 80, 50, "Thomas");
+            // LINK.drawNode(context1, true);
             setIsAnimating(false);
         }
 
         // Step 3
         const step3 = () => {
-         
+            // const LINK = new LinkedListNode(50, 50, 80, 50, "Thomas");
+            // LINK.drawNode(context1, false, true);
             setIsAnimating(false)
         }
 
