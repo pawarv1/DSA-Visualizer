@@ -13,6 +13,8 @@ interface AnimationToolsProps {
     isAnimating: boolean;
 }
 
+// /!\ Each set of animations must have a unique animation number, otherwise only the first animation will render properly!
+
 const AnimationTool: React.FC<AnimationToolsProps> = ( { currStep, numSteps, updateStep, animationNum, isAnimating }) => {
     const [started, setStarted] = useState(false); // Track if the animation has started
 

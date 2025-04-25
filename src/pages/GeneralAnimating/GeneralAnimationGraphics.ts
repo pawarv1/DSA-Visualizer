@@ -14,7 +14,7 @@ export class Rectangle {
     opacity: number;
     outlineColor: string;
 
-    constructor(x: number, y: number, width: number, height: number, opacity: number = 1, outlineColor: string= 'black') {
+    constructor(x: number, y: number, width: number, height: number, opacity: number = 1, outlineColor: string = 'black') {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -68,8 +68,6 @@ export class Text {
         context.globalAlpha = this.opacity;
         context.font = this.font;
         context.fillStyle = this.color;
-        // context.textAlign = this.textAlign;
-        // context.textBaseline = this.textBaseline;
         context.fillText(this.content, this.x, this.y);
         context.font = '16px Arial'; // Reset font to default
     }

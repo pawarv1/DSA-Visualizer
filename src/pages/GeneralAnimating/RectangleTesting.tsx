@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Rectangle, Text, Circle, Line, Arrow } from './GeneralAnimationGraphics';
+import { Rectangle, Text } from './GeneralAnimationGraphics';
 import AnimationTool from './AnimationTool';
 import gsap from 'gsap';
 
-// This component tests the rectangle class to make sure rectangle animations are displayed smoothly and accurately
+// This component tests the Rectangle class to make sure rectangle animations are displayed smoothly and accurately
 
-export function RectangleTestCases() {
+function RectangleTestCases() {
     
     const [step, setStep] = useState(0);    // Track the steps in the animation
     const [isAnimating, setIsAnimating] = useState(false);  // Track if an animation is running
@@ -18,7 +18,7 @@ export function RectangleTestCases() {
         }
     };
 
-    // 7 test cases to display
+    // 18 test cases to display
     const numSteps = 18;
    
     const canvasRef1 = useRef<HTMLCanvasElement>(null);    // Reference to the canvas element
@@ -741,6 +741,7 @@ export function RectangleTestCases() {
         }
     }, [step]);
 
+    // This animation will have an animation number one, and it will be unique to prevent conflicts with other animations
     return (
         <div>
             <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={1} isAnimating={isAnimating}></AnimationTool>
@@ -749,3 +750,5 @@ export function RectangleTestCases() {
         </div>
     );
 }
+
+export default RectangleTestCases;
