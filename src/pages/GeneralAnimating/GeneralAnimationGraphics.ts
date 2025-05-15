@@ -26,11 +26,9 @@ export class Rectangle {
     static type = "rectangle";
 
     draw(context: CanvasRenderingContext2D) {
-        context.save(); // Save current state of the canvas
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
         context.strokeRect(this.x, this.y, this.width, this.height);
-        context.restore(); // Restore original state
     }
 
     clear(context: CanvasRenderingContext2D) {
@@ -48,18 +46,14 @@ export class Text {
     opacity: number;
     font: string;
     color: string;
-    textAlign: string;
-    textBaseline: string;
 
-    constructor(x: number, y: number, content: string, opacity: number = 1, font: string = '16px Arial', color: string = 'black', textAlign: string = 'start') {
+    constructor(x: number, y: number, content: string, opacity: number = 1, font: string = '16px Arial', color: string = 'black') {
         this.x = x;
         this.y = y;
         this.content = content;
         this.opacity = opacity;     // Defaults to 1
         this.font = font;           // Defaults to 16px Arial
         this.color = color;         // Defaults to black
-        this.textAlign = textAlign; // Defaults to start 
-        this.textBaseline = 'top';  // Ensures the y-coordinate is the top of the text
     }
 
     static type = "text";
@@ -69,14 +63,6 @@ export class Text {
         context.font = this.font;
         context.fillStyle = this.color;
         context.fillText(this.content, this.x, this.y);
-        context.font = '16px Arial'; // Reset font to default
-    }
-
-    clear(context: CanvasRenderingContext2D) {
-        const metrics = context.measureText(this.content);
-        const textWidth = metrics.width;
-        const textHeight = parseInt(this.font, 10); // Rough estimate of height based on font size
-        context.clearRect(this.x, this.y, textWidth, textHeight);
     }
 }
 

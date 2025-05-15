@@ -56,7 +56,7 @@ function RectangleTestCases() {
 
                 // Clearing Test Case
                 const step3 = () => {
-                    const testCaseHeader = new Text (70, 40, "Clearing ");
+                    const testCaseHeader = new Text (70, 40, "Clearing a rectangle");
                     testCaseHeader.draw(context1);
                     const thirdRectangle = new Rectangle(100, 100, 100, 100);
                     thirdRectangle.draw(context1);
@@ -110,39 +110,49 @@ function RectangleTestCases() {
                 const step6 = () => {
                     const testCaseHeader1 = new Text (70, 40, "Overlapped Rectangles");
                     testCaseHeader1.draw(context1);
-                    
-                    const rectangles1 = [
-                        new Rectangle(100, 100, 100, 100, 1, "green"),
-                        new Rectangle(120, 100, 100, 100, 1, "red"),
-                        new Rectangle(140, 100, 100, 100, 1, "yellow"),
-                        new Rectangle(160, 100, 100, 100, 1, "orange"),
-                        new Rectangle(180, 100, 100, 100, 1, "blue")
+
+                    const rectangles = [
+                        new Rectangle(100, 100, 100, 100),
+                        new Rectangle(120, 100, 100, 100),
+                        new Rectangle(140, 100, 100, 100),
+                        new Rectangle(160, 100, 100, 100),
+                        new Rectangle(180, 100, 100, 100)
                     ];
 
-                    for (let i = 0; i < rectangles1.length; i++) {
-                        rectangles1[i].draw(context1);
-                    }
-
-                    const testCaseHeader2 = new Text (70, 300, "If overlapping, try not to mix colors");
-                    testCaseHeader2.draw(context1);
-
-                    const rectangles2 = [
-                        new Rectangle(100, 400, 100, 100),
-                        new Rectangle(120, 400, 100, 100),
-                        new Rectangle(140, 400, 100, 100),
-                        new Rectangle(160, 400, 100, 100),
-                        new Rectangle(180, 400, 100, 100)
-                    ];
-
-                    for (let i = 0; i < rectangles2.length; i++) {
-                        rectangles2[i].draw(context1);
+                    for (let i = 0; i < rectangles.length; i++) {
+                        rectangles[i].draw(context1);
                     }
                     
                     setIsAnimating(false);
                 }
 
-                // Test Case Drawing Nested Rectangles
+                // Test Case Clearing Overlapped Rectangles
                 const step7 = () => {
+                    const testCaseHeader1 = new Text (70, 40, "Clearing overlapped Rectangles");
+                    testCaseHeader1.draw(context1);
+
+                    const rectangles = [
+                        new Rectangle(100, 100, 100, 100),
+                        new Rectangle(120, 100, 100, 100),
+                        new Rectangle(140, 100, 100, 100),
+                        new Rectangle(160, 100, 100, 100),
+                        new Rectangle(180, 100, 100, 100)
+                    ];
+
+                    for (let i = 0; i < rectangles.length; i++) {
+                        rectangles[i].draw(context1);
+                    }
+
+                    setTimeout(() => {
+                        for (let i = 0; i < rectangles.length; i++) {
+                            rectangles[i].clear(context1);
+                            setIsAnimating(false);
+                        }
+                    }, 1000)
+                }
+
+                // Test Case Drawing Nested Rectangles
+                const step8 = () => {
                     const testCaseHeader = new Text (70, 40, "Drawing nested rectangles");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -157,7 +167,7 @@ function RectangleTestCases() {
                 }
 
                 // Test Case Clearing Nested Rectangles
-                const step8 = () => {
+                const step9 = () => {
                     const testCaseHeader = new Text (70, 40, "Clearing nested rectangles");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -177,7 +187,7 @@ function RectangleTestCases() {
                 }
 
                 // Fading in rectangle test case
-                const step9 = () => {
+                const step10 = () => {
                     const testCaseHeader = new Text (70, 40, "Fading in rectangles using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -201,7 +211,7 @@ function RectangleTestCases() {
                 }
 
                 // Fading out rectangle test case
-                const step10 = () => {
+                const step11 = () => {
                     const testCaseHeader = new Text (70, 40, "Fading out rectangles using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -225,9 +235,8 @@ function RectangleTestCases() {
                 }
 
                 // Expansion Test Case
-                // This was originally supposed to test movement, but the test case
-                //  gave a different result than expected, and can be used for other purposes
-                const step11 = () => {
+                // This was originally supposed to test movement, but the test case gave a different result than expected, and can be used for other purposes
+                const step12 = () => {
                     const testCaseHeader = new Text (70, 40, "Expansion using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangle = new Rectangle(100, 100, 200, 100);
@@ -272,99 +281,9 @@ function RectangleTestCases() {
                     })
                 }
 
-                //  Shading With Clearing Test Case
-                //  This was originally supposed to test movement, but the test case
-                //  gave a different result than expected, and can be used for other purposes
-                const step12 = () => {
-                    const testCaseHeader = new Text (70, 40, "Rectangle shading with clearing using GSAP");
-                    testCaseHeader.draw(context1);
-                    const rectangle = new Rectangle(100, 100, 100, 100);
-                    
-                    let timeline = gsap.timeline();
-                    
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        x: 300,
-                        onUpdate: () => {
-                            rectangle.clear(context1);
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        y: 300,
-                        onUpdate: () => {
-                            rectangle.clear(context1);
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        x: 100,
-                        onUpdate: () => {
-                            rectangle.clear(context1);
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        y: 100,
-                        onUpdate: () => {
-                            rectangle.clear(context1);
-                            rectangle.draw(context1);
-                        },
-                        onComplete: () => setIsAnimating(false)
-                    })
-                }
-
-                //  Shading Without Clearing Test Case
-                const step13 = () => {
-                    const testCaseHeader = new Text (70, 40, "Rectangle shading without clearing using GSAP");
-                    testCaseHeader.draw(context1);
-                    const rectangle = new Rectangle(100, 100, 100, 100);
-                    
-                    let timeline = gsap.timeline();
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        x: 300,
-                        onUpdate: () => {
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        y: 300,
-                        onUpdate: () => {
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        x: 100,
-                        onUpdate: () => {
-                            rectangle.draw(context1);
-                        },
-                    })
-
-                    timeline.to(rectangle, {
-                        duration: 1,
-                        y: 100,
-                        onUpdate: () => {
-                            rectangle.draw(context1);
-                        },
-                        onComplete: () => setIsAnimating(false)
-                    })
-                }
-
                 // Test Case Moving Rectangle Around
                 // In order to get the best movement animation, the entire canvas, not just the old rectangles has to be cleared in each frame
-                const step14 = () => {
+                const step13 = () => {
                     const testCaseHeader = new Text (70, 40, "Moving a rectangle around using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangle = new Rectangle(100, 100, 100, 100);
@@ -436,17 +355,13 @@ function RectangleTestCases() {
                             testCaseHeader.draw(context1); // Redraw static header
                             rectangle.draw(context1);      // Draw the updated rectangle
                         },
-                        onComplete: () => {
-                            setTimeout(() => {
-                                setIsAnimating(false);
-                            },2);
-                        }
+                        onComplete: () => setIsAnimating(false)
                     })
                 }
 
                 // Test Case moving overlappeds rectangle around
                 // Will be useful for linked lists
-                const step15 = () => {
+                const step14 = () => {
                     const testCaseHeader = new Text (70, 40, "Moving overlapped rectangles around using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -527,16 +442,12 @@ function RectangleTestCases() {
                             rectangles[0].draw(context1);      // Draw the updated rectangle
                             rectangles[1].draw(context1);      // Draw the updated rectangle
                         },
-                        onComplete: () => {
-                            setTimeout(() => {
-                                setIsAnimating(false);
-                            },2);
-                        }
+                        onComplete: () => setIsAnimating(false)
                     })
                 }
 
                 // Test Case moving nested rectangles around
-                const step16 = () => {
+                const step15 = () => {
                     const testCaseHeader = new Text (70, 40, "Moving nested rectangles around using GSAP");
                     testCaseHeader.draw(context1);
                     const rectangles = [
@@ -629,15 +540,12 @@ function RectangleTestCases() {
                             rectangles[0].draw(context1);      // Draw the updated rectangle
                             rectangles[1].draw(context1);      // Draw the updated rectangle
                         },
-                        onComplete: () => {
-                            setTimeout(() => {
-                                setIsAnimating(false);
-                            },2);
-                        }
+                        onComplete: () => setIsAnimating(false)
                     })
                 }
-
-                const step17 = () => {
+                
+                // Test Case highlighting a rectangle
+                const step16 = () => {
                     const testCaseHeader = new Text (70, 40, "Highlighting a rectangle");
                     testCaseHeader.draw(context1);
                     const rectangle = new Rectangle(100, 100, 200, 100);
@@ -648,7 +556,7 @@ function RectangleTestCases() {
                 }
 
                 // Test Case checking opacity
-                const step18 = () => {
+                const step17 = () => {
                     const testCaseHeader = new Text (70, 40, "Testing different levels of opacity");
                     testCaseHeader.draw(context1);
                     const rectangle1 = new Rectangle(100, 75, 200, 100);
@@ -659,6 +567,118 @@ function RectangleTestCases() {
                     rectangle3.draw(context1);
                     setIsAnimating(false);
                 }
+
+                // Test Case clearing with different levels of opacity
+                const step18 = () => {
+                    const testCaseHeader = new Text (70, 40, "Clearing with different levels of opacity");
+                    testCaseHeader.draw(context1);
+                    const rectangle1 = new Rectangle(100, 75, 200, 100);
+                    const rectangle2 = new Rectangle(100, 275, 200, 100, 0.5);
+                    const rectangle3 = new Rectangle(100, 475, 200, 100, 0.25);
+                    rectangle1.draw(context1);
+                    rectangle2.draw(context1);
+                    rectangle3.draw(context1);
+
+                    setTimeout(() => {
+                        rectangle1.clear(context1);
+                        rectangle2.clear(context1);
+                        rectangle3.clear(context1);
+                        setIsAnimating(false);
+                    }, 1000)
+                }
+
+
+                /*
+                //  Shading With Clearing Test Case
+                //  This was originally supposed to test movement, but the test case
+                //  gave a different result than expected, and can be used for other purposes
+                const step19 = () => {
+                    const testCaseHeader = new Text (70, 40, "Rectangle shading with clearing using GSAP");
+                    testCaseHeader.draw(context1);
+                    const rectangle = new Rectangle(100, 100, 100, 100);
+                    
+                    let timeline = gsap.timeline();
+                    
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        x: 300,
+                        onUpdate: () => {
+                            rectangle.clear(context1);
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        y: 300,
+                        onUpdate: () => {
+                            rectangle.clear(context1);
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        x: 100,
+                        onUpdate: () => {
+                            rectangle.clear(context1);
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        y: 100,
+                        onUpdate: () => {
+                            rectangle.clear(context1);
+                            rectangle.draw(context1);
+                        },
+                        onComplete: () => setIsAnimating(false)
+                    })
+                }
+
+                //  Shading Without Clearing Test Case
+                const step20 = () => {
+                    const testCaseHeader = new Text (70, 40, "Rectangle shading without clearing using GSAP");
+                    testCaseHeader.draw(context1);
+                    const rectangle = new Rectangle(100, 100, 100, 100);
+                    
+                    let timeline = gsap.timeline();
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        x: 300,
+                        onUpdate: () => {
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        y: 300,
+                        onUpdate: () => {
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        x: 100,
+                        onUpdate: () => {
+                            rectangle.draw(context1);
+                        },
+                    })
+
+                    timeline.to(rectangle, {
+                        duration: 1,
+                        y: 100,
+                        onUpdate: () => {
+                            rectangle.draw(context1);
+                        },
+                        onComplete: () => setIsAnimating(false)
+                    })
+                }
+                */
 
                 // Run the associated step method for the given step
                 switch (step) {
