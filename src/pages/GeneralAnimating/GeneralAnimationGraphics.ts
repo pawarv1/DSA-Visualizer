@@ -2,8 +2,55 @@
 This component includes all the classes for the various graphic objects the animations will use
 GSAP can be used to modify the object fields
 The most basic graphic types are in these classes, and more complex ones can be built from them
-Each object has its own draw and clear methods
+Each object has its own draw
+There are also move, fadeIn, and fadeOut methods which use GSAP and can be called by any object
 */
+
+import gsap from 'gsap';
+
+// Function to move any of the following graphic objects on the canvas, using GSAP
+const moveObject = (object: any, x: number, y: number, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
+    gsap.to(object, {
+        x: x,
+        y: y,
+        duration: duration,
+        onUpdate: () => {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
+            object.draw(context);
+        },
+        onComplete: () => {
+            animatingCallback(false); // Call the callback function when the animation is complete
+        }
+    });
+}
+
+const fadeOutObject = (object: any, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
+    gsap.to(object, {
+        opacity: 0,
+        duration: duration,
+        onUpdate: () => {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
+            object.draw(context);
+        },
+        onComplete: () => {
+            animatingCallback(false); // Call the callback function when the animation is complete
+        }
+    });
+}
+
+const fadeInObject = (object: any, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
+    gsap.to(object, {
+        opacity: 1,
+        duration: duration,
+        onUpdate: () => {
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
+            object.draw(context);
+        },
+        onComplete: () => {
+            animatingCallback(false); // Call the callback function when the animation is complete
+        },
+    });
+}
 
 // Rectangle Class
 export class Rectangle {
@@ -31,12 +78,25 @@ export class Rectangle {
         context.strokeRect(this.x, this.y, this.width, this.height);
     }
 
-    clear(context: CanvasRenderingContext2D) {
-        // Expanding the clearing area slightly to cover anti-aliasing edges
-        context.clearRect(this.x - 1, this.y - 1, this.width + 2, this.height + 2);
+    highlight(context: CanvasRenderingContext2D, highlightColor: string) {
+        this.draw(context); // Draw the rectangle first
+        context.globalAlpha = this.opacity;
+        context.fillStyle = highlightColor;
+        context.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    move(x: number, y: number, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
+        moveObject(this, x, y, context, duration, animatingCallback);
+    }
+
+    fadeOut(context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
+        fadeOutObject(this, context, duration, animatingCallback);
+    }
+
+    fadeIn(context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
+        fadeInObject(this, context, duration, animatingCallback);
     }
 }
-
 
 // Text Class
 export class Text {
@@ -86,18 +146,11 @@ export class Circle {
     static type = "circle";
 
     draw(context: CanvasRenderingContext2D) {
-        context.save(); // Save current state of the canvas
         context.globalAlpha = this.opacity;
         context.strokeStyle = this.outlineColor;
         context.beginPath();
         context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
         context.stroke();
-        context.restore(); // Restore to original state before this function
-    }
-
-    clear(context: CanvasRenderingContext2D) {
-        // Clear a larger area to ensure no artifacts remain
-        context.clearRect(this.x - this.radius - 5, this.y - this.radius - 5, this.radius * 2 + 10, this.radius * 2 + 10);
     }
 }
 
@@ -133,12 +186,6 @@ export class Line {
         context.lineWidth = this.lineWidth;
         context.stroke();
         context.restore(); // Restore original state
-    }
-
-    clear(context: CanvasRenderingContext2D) {
-        // Clear an area slightly larger than the line to ensure all is erased
-        let extra = this.lineWidth;
-        context.clearRect(Math.min(this.startX, this.endX) - extra, Math.min(this.startY, this.endY) - extra, Math.abs(this.startX - this.endX) + 2 * extra, Math.abs(this.startY - this.endY) + 2 * extra);
     }
 }
 
@@ -196,15 +243,5 @@ export class Arrow {
         context.closePath();
         context.fill();
         context.restore(); // Restore original state
-    }
-
-    clear(context: CanvasRenderingContext2D) {
-        // Clear an area slightly larger than the arrow to ensure all is erased
-        let extra = this.lineWidth + this.headLength;
-        let minX = Math.min(this.startX, this.endX) - extra;
-        let minY = Math.min(this.startY, this.endY) - extra;
-        let maxX = Math.max(this.startX, this.endX) + extra;
-        let maxY = Math.max(this.startY, this.endY) + extra;
-        context.clearRect(minX, minY, maxX - minX, maxY - minY);
     }
 }

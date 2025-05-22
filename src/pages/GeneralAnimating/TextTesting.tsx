@@ -19,7 +19,7 @@ function TextTestCases() {
     };
 
     // 8 test cases to display
-    const numSteps = 8;
+    const numSteps = 7;
    
     const canvasRef1 = useRef<HTMLCanvasElement>(null);    // Reference to the canvas element
 
@@ -194,20 +194,6 @@ function TextTestCases() {
                     })   
                 }
 
-                // Clearing text test case
-                // Should only be used when text is the only object on the canvas
-                const step8 = () => {
-                    const testCaseHeader = new Text (70, 40, "Clearing text");
-                    testCaseHeader.draw(context1);
-                    const text1 = new Text(100, 100, 'Hello World', 1);
-                    text1.draw(context1);
-                    setTimeout(() => {
-                        context1.clearRect(0, 0, canvas1.width, canvas1.height); // Clear entire canvas
-                        testCaseHeader.draw(context1);
-                        setIsAnimating(false);
-                    }, 1000);
-                }
-
                  // Run the associated step method for the given step
                  switch (step) {
                     case 1:
@@ -237,10 +223,6 @@ function TextTestCases() {
                     case 7:
                         setIsAnimating(true);   // Set animation state to true before starting the animation
                         step7();
-                        break;
-                    case 8:
-                        setIsAnimating(true);   // Set animation state to true before starting the animation
-                        step8();
                         break;
                     default:
                         break; 
