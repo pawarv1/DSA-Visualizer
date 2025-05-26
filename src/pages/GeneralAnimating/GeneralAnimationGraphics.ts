@@ -1,56 +1,11 @@
 /*
 This component includes all the classes for the various graphic objects the animations will use
-GSAP can be used to modify the object fields
 The most basic graphic types are in these classes, and more complex ones can be built from them
-Each object has its own draw
-There are also move, fadeIn, and fadeOut methods which use GSAP and can be called by any object
+Each object has its own draw method
 */
 
 import gsap from 'gsap';
 
-// Function to move any of the following graphic objects on the canvas, using GSAP
-const moveObject = (object: any, x: number, y: number, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
-    gsap.to(object, {
-        x: x,
-        y: y,
-        duration: duration,
-        onUpdate: () => {
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
-            object.draw(context);
-        },
-        onComplete: () => {
-            animatingCallback(false); // Call the callback function when the animation is complete
-        }
-    });
-}
-
-const fadeOutObject = (object: any, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
-    gsap.to(object, {
-        opacity: 0,
-        duration: duration,
-        onUpdate: () => {
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
-            object.draw(context);
-        },
-        onComplete: () => {
-            animatingCallback(false); // Call the callback function when the animation is complete
-        }
-    });
-}
-
-const fadeInObject = (object: any, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) => {
-    gsap.to(object, {
-        opacity: 1,
-        duration: duration,
-        onUpdate: () => {
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clear the canvas
-            object.draw(context);
-        },
-        onComplete: () => {
-            animatingCallback(false); // Call the callback function when the animation is complete
-        },
-    });
-}
 
 // Rectangle Class
 export class Rectangle {
@@ -60,43 +15,29 @@ export class Rectangle {
     height: number;
     opacity: number;
     outlineColor: string;
+    fillColor: string;
 
-    constructor(x: number, y: number, width: number, height: number, opacity: number = 1, outlineColor: string = 'black') {
+    constructor(x: number, y: number, width: number, height: number, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'transparent') {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.opacity = opacity;             //Defaults to 1
         this.outlineColor = outlineColor;   //Defaults to black
+        this.fillColor = fillColor;         //Defaults to transparent
     }
 
     static type = "rectangle";
 
     draw(context: CanvasRenderingContext2D) {
         context.globalAlpha = this.opacity;
+        context.fillStyle = this.fillColor;
         context.strokeStyle = this.outlineColor;
+        context.fillRect(this.x, this.y, this.width, this.height);
         context.strokeRect(this.x, this.y, this.width, this.height);
     }
-
-    highlight(context: CanvasRenderingContext2D, highlightColor: string) {
-        this.draw(context); // Draw the rectangle first
-        context.globalAlpha = this.opacity;
-        context.fillStyle = highlightColor;
-        context.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    move(x: number, y: number, context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
-        moveObject(this, x, y, context, duration, animatingCallback);
-    }
-
-    fadeOut(context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
-        fadeOutObject(this, context, duration, animatingCallback);
-    }
-
-    fadeIn(context: CanvasRenderingContext2D, duration: number = 1, animatingCallback: (params: boolean) => void) {
-        fadeInObject(this, context, duration, animatingCallback);
-    }
 }
+
 
 // Text Class
 export class Text {
@@ -134,23 +75,28 @@ export class Circle {
     radius: number;
     opacity: number;
     outlineColor: string;
+    fillColor: string;
 
-    constructor(x: number, y: number, radius: number, opacity: number = 1, outlineColor: string = 'black') {
+    constructor(x: number, y: number, radius: number, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'transparent') {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.opacity = opacity;             // Defaults to 1
         this.outlineColor = outlineColor;   // Defaults to black
+        this.fillColor = fillColor;         // Defaults to transparent
     }
 
     static type = "circle";
 
     draw(context: CanvasRenderingContext2D) {
         context.globalAlpha = this.opacity;
+        context.fillStyle = this.fillColor;
         context.strokeStyle = this.outlineColor;
         context.beginPath();
         context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+        context.fill();
         context.stroke();
+        context.closePath();
     }
 }
 
