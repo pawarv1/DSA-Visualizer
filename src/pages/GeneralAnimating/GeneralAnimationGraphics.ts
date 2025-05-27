@@ -4,8 +4,6 @@ The most basic graphic types are in these classes, and more complex ones can be 
 Each object has its own draw method
 */
 
-import gsap from 'gsap';
-
 
 // Rectangle Class
 export class Rectangle {

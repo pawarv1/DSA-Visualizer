@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
-// import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
+import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
 // import ArrayView from './pages/ArrayView';
 // import LinkedListsView from './pages/LinkedListsView';
 // import HashingView from './pages/HashingView';
@@ -10,9 +10,7 @@ import GeneralView from './pages/GeneralAnimating/GeneralView';
 import ExperimentsView from './pages/Experimentation/ExperimentView';
 import React from 'react';
 
-/*
-The navbar component handles page routing
-*/
+// The navbar component handles page routing
 
 function NavBar() {
   return (
@@ -23,6 +21,7 @@ function NavBar() {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/general">General</Link></li>
             <li><Link to="/experimental">Experimental</Link></li>
+            <li><Link to="/TimeSpace">Time/Space</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -31,6 +30,7 @@ function NavBar() {
           <Route path="/" element={<Home></Home>} />
           <Route path="/general" element={<GeneralView></GeneralView>}></Route>
           <Route path="/experimental" element={<ExperimentsView></ExperimentsView>}></Route>
+          <Route path="/TimeSpace" element={<AsymptoticAnalysisView></AsymptoticAnalysisView>}></Route>
         </Routes>
       </main>
     </Router>
