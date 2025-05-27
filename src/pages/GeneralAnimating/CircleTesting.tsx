@@ -3,7 +3,7 @@ import { Circle, Text } from './GeneralAnimationGraphics';
 import AnimationTool from './AnimationTool';
 import gsap, { set, timeline } from 'gsap';
 
-// This component tests the Circle class to make sure text animations are displayed smoothly and accurately
+// This component tests the Circle class to make sure circle animations are displayed smoothly and accurately
 
 function CircleTestCases() {
     

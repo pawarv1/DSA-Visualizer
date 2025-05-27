@@ -124,14 +124,13 @@ export class Line {
     static type = "line";
 
     draw(context: CanvasRenderingContext2D) {
-        context.save(); // Save current state of the canvas
+        context.globalAlpha = this.opacity;
         context.beginPath();
         context.moveTo(this.startX, this.startY);
         context.lineTo(this.endX, this.endY);
         context.strokeStyle = this.color;
         context.lineWidth = this.lineWidth;
         context.stroke();
-        context.restore(); // Restore original state
     }
 }
 
@@ -161,7 +160,6 @@ export class Arrow {
     static type = "arrow";
 
     draw(context: CanvasRenderingContext2D) {
-        context.save(); // Save current state of the canvas
 
         // Set styles for the arrow
         context.strokeStyle = this.color;
@@ -169,16 +167,20 @@ export class Arrow {
         context.lineWidth = this.lineWidth;
         context.globalAlpha = this.opacity;
 
-        // Start drawing the line
-        context.beginPath();
-        context.moveTo(this.startX, this.startY);
-        context.lineTo(this.endX, this.endY);
-        context.stroke();
-
         // Calculate the angle of the line
         const angle = Math.atan2(this.endY - this.startY, this.endX - this.startX);
 
-        // Start drawing the arrow head
+        // Compute the end position of the line just before the arrowhead
+        const lineEndX = this.endX - (0.7 * this.headLength) * Math.cos(angle);
+        const lineEndY = this.endY - (0.7 * this.headLength) * Math.sin(angle);
+
+        // Draw the shortened line
+        context.beginPath();
+        context.moveTo(this.startX, this.startY);
+        context.lineTo(lineEndX, lineEndY);
+        context.stroke();
+
+        // Draw the arrowhead
         context.beginPath();
         context.moveTo(this.endX, this.endY);
         context.lineTo(this.endX - this.headLength * Math.cos(angle - Math.PI / 6), 
@@ -188,6 +190,5 @@ export class Arrow {
         context.lineTo(this.endX, this.endY)
         context.closePath();
         context.fill();
-        context.restore(); // Restore original state
     }
 }

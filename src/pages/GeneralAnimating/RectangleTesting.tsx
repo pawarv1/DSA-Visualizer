@@ -76,8 +76,21 @@ function RectangleTestCases() {
                     setIsAnimating(false);
                 }
 
-                // Test Case Overlapped Rectangles
+                // Different opacity test case
                 const step4 = () => {
+                    const testCaseHeader = new Text (70, 40, "Testing different levels of opacity");
+                    testCaseHeader.draw(mainContext);
+                    const rectangle1 = new Rectangle(100, 75, 200, 100);
+                    const rectangle2 = new Rectangle(100, 275, 200, 100, 0.5);
+                    const rectangle3 = new Rectangle(100, 475, 200, 100, 0.25);
+                    rectangle1.draw(mainContext);
+                    rectangle2.draw(mainContext);
+                    rectangle3.draw(mainContext);
+                    setIsAnimating(false);
+                }
+
+                // Overlapped Rectangles test case
+                const step5 = () => {
                     const testCaseHeader1 = new Text (70, 40, "Overlapped Rectangles");
                     testCaseHeader1.draw(mainContext);
 
@@ -97,7 +110,7 @@ function RectangleTestCases() {
                 }
 
                 // Fading in rectangle test case
-                const step5 = () => {
+                const step6 = () => {
                     const staticContext = staticCanvas?.getContext('2d');
                     if (staticContext) {
                         const testCaseHeader = new Text (70, 40, "Fading in rectangle");
@@ -117,7 +130,7 @@ function RectangleTestCases() {
                 }
 
                 // Fading out rectangle test case
-                const step6 = () => {
+                const step7 = () => {
                     const staticContext = staticCanvas?.getContext('2d');
                     if (staticContext) {
                         const testCaseHeader = new Text (70, 40, "Fading out rectangle");
@@ -136,8 +149,8 @@ function RectangleTestCases() {
                     });
                 }
 
-                // Test Case moving a rectangle around
-                const step7 = () => {
+                // Moving a rectangle around test case
+                const step8 = () => {
                     const staticContext = staticCanvas?.getContext('2d');
                     if (staticContext) {
                         const testCaseHeader = new Text (70, 40, "Moving a rectangle around using GSAP timeline");
@@ -168,8 +181,8 @@ function RectangleTestCases() {
                     })
                 }
                 
-                // Test Case filling a rectangle with color
-                const step8 = () => {
+                // Filling a rectangle with color test case
+                const step9 = () => {
                     const testCaseHeader = new Text (70, 40, "Filling a rectangle with color");
                     testCaseHeader.draw(mainContext);
                     const rectangle = new Rectangle(100, 100, 200, 100);
@@ -184,20 +197,7 @@ function RectangleTestCases() {
                     });
                 }
 
-                // Test Case checking opacity
-                const step9 = () => {
-                    const testCaseHeader = new Text (70, 40, "Testing different levels of opacity");
-                    testCaseHeader.draw(mainContext);
-                    const rectangle1 = new Rectangle(100, 75, 200, 100);
-                    const rectangle2 = new Rectangle(100, 275, 200, 100, 0.5);
-                    const rectangle3 = new Rectangle(100, 475, 200, 100, 0.25);
-                    rectangle1.draw(mainContext);
-                    rectangle2.draw(mainContext);
-                    rectangle3.draw(mainContext);
-                    setIsAnimating(false);
-                }
-
-                // Example of expanding a rectangle
+                // Expanding a rectangle test case
                 const step10 = () => {
                     const staticContext = staticCanvas?.getContext('2d');
                     if (staticContext) {
@@ -239,7 +239,7 @@ function RectangleTestCases() {
                     });
                 }
 
-                // Changing outline color test case
+                // Changing outline color of a rectangle test case
                 const step12 = () => {
                     const staticContext = staticCanvas?.getContext('2d');
                     if (staticContext) {
