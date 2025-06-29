@@ -312,7 +312,7 @@ export class DynamicArray extends Array {
     }
 
     checkInsertIndex(index: number) {
-        if (index < 0 || index >= this.arraySize) {
+        if (index < 0 || index > this.arraySize) {
             console.error(`Insert index ${index} is out of bounds (valid range: 0 to ${this.arraySize})`);
             return false;
         }
