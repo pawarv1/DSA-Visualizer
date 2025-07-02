@@ -125,7 +125,7 @@ class ArrayCell {
 
     clear(context: CanvasRenderingContext2D) {
         const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
-        context.clearRect(this.x, this.y, this.cellWidth, this.cellHeight + extraHeight);
+        context.clearRect(this.x, this.y - 1, this.cellWidth + 1, this.cellHeight + extraHeight);
     }
 }
 
@@ -324,24 +324,53 @@ export class DynamicArray extends Array {
     }
 
     async resize(context: CanvasRenderingContext2D, newCapacity: number) {
-        return new Promise<void>((resolve) => {
-            if (newCapacity === this.capacity) {
-                resolve();
-                return;
-            }
-            if (this.capacity < newCapacity) {
-                for (let i = this.capacity; i < newCapacity; i++) {
-                    this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", this.opacity, this.outlineColor, this.fillColor, false));
-                }
-            } else {
-                this.clear(context);
-                this.cells.splice(newCapacity);
+        if (newCapacity === this.capacity) {
+            return;
+        }
+        if (this.capacity < newCapacity) {
+            for (let i = this.capacity; i < newCapacity; i++) {
+                this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, this.outlineColor, this.fillColor, false));
             }
 
-            this.capacity = newCapacity;
-            this.draw(context);
-            resolve();
-        });
+            const newCells = this.cells.slice(this.capacity);
+            await new Promise<void>((resolve) => {
+                gsap.to(newCells, {
+                    opacity: 1,
+                    duration: 1,
+                    onUpdate: () => {
+                        for (let i = 0; i < newCells.length; i++) {
+                            newCells[i].clear(context);
+                            newCells[i].drawCell(context);
+                        }
+                    },
+                    onComplete: () => {
+                        this.capacity = newCapacity;
+                        resolve();
+                    }
+                });
+            });
+        } else {
+            const cellsToRemove = this.cells.slice(newCapacity);
+
+            await new Promise<void>((resolve) => {
+                gsap.to(cellsToRemove, {
+                    opacity: 0,
+                    duration: 1,
+                    onUpdate: () => {
+                        for (let i = 0; i < cellsToRemove.length; i++) {
+                            cellsToRemove[i].clear(context);
+                            cellsToRemove[i].drawCell(context);
+                        }
+                    },
+                    onComplete: () => {
+                        this.cells.splice(newCapacity);
+                        this.capacity = newCapacity;
+                        this.draw(context);
+                        resolve();
+                    }
+                });
+            });
+        }
     }
 
     private ensureInitialCapacity(): void {
@@ -351,16 +380,17 @@ export class DynamicArray extends Array {
         }
     }
 
-    async append(context: CanvasRenderingContext2D, element: any, resizeDelay: number = 0) {
+    async append(context: CanvasRenderingContext2D, element: any) {
         this.ensureInitialCapacity();
 
         if (this.arraySize >= this.capacity) {
             await this.resize(context, this.capacity * 2);
         }
-
-        await new Promise<void>((resolve) => {
-            gsap.delayedCall(resizeDelay, resolve);
-        });
+        else {
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {resolve()}, 1000);
+            });
+        }
         
         this.cells[this.arraySize].content = element;
         this.cells[this.arraySize].inUse = true;
@@ -368,89 +398,104 @@ export class DynamicArray extends Array {
         this.arraySize++;
     }
 
-    async insertAt(context: CanvasRenderingContext2D, index: number, element: any, resizeDelay: number = 0) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, element: any) {
         if (this.checkInsertIndex(index)) {
             this.ensureInitialCapacity();
+            let shiftHappened = false;
 
             if (this.arraySize >= this.capacity) {
                 await this.resize(context, this.capacity * 2);
             }
 
-            await new Promise<void>((resolve) => {
-                gsap.delayedCall(resizeDelay, resolve);
-            });
-
             for (let i = this.arraySize; i > index; i--) {
                 this.cells[i].content = this.cells[i - 1].content;
                 this.cells[i].inUse = this.cells[i - 1].inUse;
+                this.cells[i - 1].inUse = false;
+                this.cells[i - 1].content = "";
+                this.cells[i - 1].drawCell(context);
+                this.cells[i].drawCell(context);
+                shiftHappened = true;
+                await new Promise<void>((resolve) => {
+                    setTimeout((resolve), 1000);
+                });
             }
 
-            this.cells[index].content = element;
-            this.cells[index].inUse = true;
             this.arraySize++;
 
-            for (let i = index; i < this.arraySize; i++) {
-                this.cells[i].index = i;
-                this.cells[i].drawCell(context);
-            }
+            await new Promise<void>((resolve) => {
+                let delay = (shiftHappened)? 0: 1000;
+                setTimeout(() => {
+                    this.cells[index].content = element;
+                    this.cells[index].inUse = true;
+                    this.cells[index].drawCell(context);
+                    resolve();
+                }, delay);
+            });
         }
     }
 
-    async removeAt(context: CanvasRenderingContext2D, index: number, resizeDelay: number = 0) {
+    async removeAt(context: CanvasRenderingContext2D, index: number) {
         if (this.checkIndexValidity(index)) {
+            let shiftHappened = false;
+
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {resolve()}, 1000);
+            });
+
+            this.cells[index].content = "";
+            this.cells[index].inUse = false;
+            this.cells[index].drawCell(context);
 
             for (let i = index; i < this.arraySize - 1; i++) {
+                await new Promise<void>((resolve) => {
+                    setTimeout(() => {resolve()}, 1000);
+                });
                 this.cells[i].content = this.cells[i + 1].content;
                 this.cells[i].inUse = this.cells[i + 1].inUse;
                 this.cells[i].index = i;
+                this.cells[i + 1].content = "";
+                this.cells[i + 1].inUse = false;
+                this.cells[i].drawCell(context)
+                this.cells[i + 1].drawCell(context);
+                shiftHappened = true;
             }
 
             this.arraySize--;
-            this.cells[this.arraySize].content = "";
-            this.cells[this.arraySize].inUse = false;
 
             if (this.arraySize > 0 && this.arraySize <= this.capacity / 4) {
-                await new Promise<void>((resolve) => {
-                    gsap.delayedCall(resizeDelay, resolve);
-                });
                 await this.resize(context, Math.floor(this.capacity / 2));
             }
-
-            this.draw(context);
         }
     }
 
     // Not strictly necessary but useful
-    async pop(context: CanvasRenderingContext2D, resizeDelay: number = 0) {
+    async pop(context: CanvasRenderingContext2D) {
         if (this.arraySize <= 0) {
             console.error("Cannot pop from empty array");
-            return;
+            return false;
         }
         else {
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {resolve()}, 1000);
+            });
+
             this.arraySize--;
             let lastElement = this.cells[this.arraySize].content;
             this.cells[this.arraySize].content = "";
             this.cells[this.arraySize].inUse = false;
+            this.cells[this.arraySize].drawCell(context);
 
             if (this.arraySize > 0 && this.arraySize <= this.capacity / 4) {
-                await new Promise<void>((resolve) => {
-                    gsap.delayedCall(resizeDelay, resolve);
-                });
                 await this.resize(context, Math.floor(this.capacity / 2));
             }
             
-            this.cells[this.arraySize].drawCell(context);
             return lastElement;
         }
     }
 
     // Not strictly necessary but useful
-    shrinkToFit(context: CanvasRenderingContext2D) {
-        while (this.capacity > this.arraySize) {
-            this.cells.pop();
-            this.capacity--;
-        }
-        this.draw(context);
+    async shrinkToFit(context: CanvasRenderingContext2D) {
+        await this.resize(context, this.arraySize);
     }
 
      // Not strictly necessary but useful

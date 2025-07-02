@@ -54,12 +54,12 @@ function ArrayTestCases() {
         const step2 = () => {
           const testCaseHeader = new Text (70, 40, "Checking index validity method");
           const array = new Array (100, 100, 80, 50, ['A']);
-          const text1 = new Text (100, 200, "Index -1 valid?", 1, "16px Arial");
+          const text1 = new Text (100, 200, "Index -1 valid? =", 1, "16px Arial");
           const text2 = new Text (100, 300, "Index 0 valid? =", 1, "16px Arial");
           const text3 = new Text (100, 400, "Index 1 valid? =", 1, "16px Arial");
-          const text4 =  new Text (250,200, "", 0);
-          const text5 =  new Text (250,300, "", 0);
-          const text6 =  new Text (250,400, "", 0);
+          const text4 =  new Text (230,200, "", 0);
+          const text5 =  new Text (230,300, "", 0);
+          const text6 =  new Text (230,400, "", 0);
           
           const staticContext = staticCanvas?.getContext('2d');
 
@@ -71,36 +71,15 @@ function ArrayTestCases() {
             text3.draw(staticContext);
           }
 
-          try {
-            text4.setContent(array.checkIndexValidity(-1).toString());
-          }
-          catch(error) {
-            if (error instanceof RangeError) {
-              text4.setColor("red");
-              text4.setContent(error.message);
-            }
-          }
+          // Should give a console error
+          text4.setContent(array.checkIndexValidity(-1).toString());
 
-          try {
-            text5.setContent(array.checkIndexValidity(0).toString());
-          }
-          catch(error) {
-            if (error instanceof RangeError) {
-              text5.setColor("red");
-              text5.setContent(error.message);
-            }
-          }
-
-          try {
-            text6.setContent(array.checkIndexValidity(1).toString());
-          }
-          catch(error) {
-            if (error instanceof RangeError) {
-              text6.setColor("red");
-              text6.setContent(error.message);
-            }
-          }
-
+          // Should not give a console error
+          text5.setContent(array.checkIndexValidity(0).toString());
+         
+          // Should give a console error
+          text6.setContent(array.checkIndexValidity(1).toString());
+          
           gsap.to([text4, text5, text6], {
             opacity: 1,
             duration: 1,
@@ -229,13 +208,13 @@ function ArrayTestCases() {
         }
 
         // Swapping two values in the array test case
-        const step12 = () => {
+        const step12 = async () => {
           const testCaseHeader = new Text (70, 40, "Swapping two elements of the array");
           const array = new Array (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
           testCaseHeader.draw(mainContext);
           array.draw(mainContext);
-          array.swapElements(mainContext, 0, 4);
-          setTimeout(() => {setIsAnimating(false)}, 5000);
+          await array.swapElements(mainContext, 0, 4);
+          setIsAnimating(false);
         }
 
         // Clearing an array test case
