@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Line, Text } from './GeneralAnimationGraphics';
-import AnimationTool from './AnimationTool';
+import AnimationController from './AnimationController';
 import gsap, { set, timeline } from 'gsap';
 
 // This component is used to test the Line class to make sure line animations are displayed smoothly and accurately
@@ -400,10 +400,9 @@ function LineTestCases() {
         }
     }, [step]);
 
-    /// This animation will have an animation number four, and it will be unique to prevent conflicts with other animations
     return (
         <div>
-            <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={4} isAnimating={isAnimating}></AnimationTool>
+            <AnimationController currStep={step} numSteps={numSteps} updateStep={handleStepChange} isAnimating={isAnimating}></AnimationController>
             <br></br>
             <canvas ref={staticCanvasRef} width={800} height={600} style={{ position: 'absolute', zIndex: 0,  border: '1px solid black' }}>Canvas</canvas>
             <canvas ref={mainCanvasRef} width={800} height={600} style={{ zIndex: 1, border: '1px solid black' }}>Canvas</canvas>

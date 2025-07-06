@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Rectangle, Text } from './GeneralAnimationGraphics';
-import AnimationTool from './AnimationTool';
+import AnimationTool from './AnimationController';
 import gsap, { set, timeline } from 'gsap';
+import AnimationController from './AnimationController';
 
 // This component tests the Rectangle class to make sure rectangle animations are displayed smoothly and accurately
 
@@ -316,10 +317,9 @@ function RectangleTestCases() {
         }
     }, [step]);
 
-    // This animation will have an animation number one, and it will be unique to prevent conflicts with other animations
     return (
         <div>
-            <AnimationTool currStep={step} numSteps={numSteps} updateStep={handleStepChange} animationNum={1} isAnimating={isAnimating}></AnimationTool>
+            <AnimationController currStep={step} numSteps={numSteps} updateStep={handleStepChange} isAnimating={isAnimating}></AnimationController>
             <br></br>
             <canvas ref={staticCanvasRef} width={800} height={600} style={{ position: 'absolute', zIndex: 0,  border: '1px solid black' }}>Canvas</canvas>
             <canvas ref={mainCanvasRef} width={800} height={600} style={{ zIndex: 1, border: '1px solid black' }}>Canvas</canvas>
