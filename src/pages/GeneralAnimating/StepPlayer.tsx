@@ -7,9 +7,11 @@ import AnimationController from './AnimationController';
 type Props = {
   totalSteps: number;
   runStep: (mainCtx: CanvasRenderingContext2D, staticCtx: CanvasRenderingContext2D, step: number, setIsAnimating: (value: boolean) => void) => void;
+  canvasWidth: number;
+  canvasHeight: number;
 };
 
-export default function StepPlayer({ totalSteps, runStep }: Props) {
+export default function StepPlayer({ totalSteps, runStep, canvasWidth, canvasHeight }: Props) {
   const [step, setStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -27,8 +29,8 @@ export default function StepPlayer({ totalSteps, runStep }: Props) {
     <div>
       <AnimationController currStep={step} numSteps={totalSteps} updateStep={handleStepChange} isAnimating={isAnimating}></AnimationController>
       <br></br>
-      <canvas ref={staticCanvasRef} width={800} height={600} style={{ position: 'absolute', zIndex: 0,  border: '1px solid black' }}>Canvas</canvas>
-      <canvas ref={mainCanvasRef} width={800} height={600} style={{ zIndex: 1, border: '1px solid black' }}>Canvas</canvas>
+      <canvas ref={staticCanvasRef} width={canvasWidth} height={canvasHeight} style={{ position: 'absolute', zIndex: 0,  border: '1px solid black' }}>Canvas</canvas>
+      <canvas ref={mainCanvasRef} width={canvasWidth} height={canvasHeight} style={{ zIndex: 1, border: '1px solid black' }}>Canvas</canvas>
     </div>
   );
 }
