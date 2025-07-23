@@ -2,12 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
 import ArrayView from './pages/ArrayComponents/ArrayView';
-// import LinkedListsView from './pages/LinkedListsView';
+import LinkedListView from './pages/LinkedListComponents/LinkedListView';
 // import HashingView from './pages/HashingView';
 // import StacksAndQueuesView from './pages/StacksAndQueuesView';
 // import GraphsView from './pages/GraphsView';
 import GeneralView from './pages/GeneralAnimating/GeneralView';
-import ExperimentsView from './pages/Experimentation/ExperimentView';
 import React from 'react';
 
 // The navbar component handles page routing
@@ -20,9 +19,9 @@ function NavBar() {
           <ul className="navbar">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/general">General</Link></li>
-            <li><Link to="/experimental">Experimental</Link></li>
             <li><Link to="/TimeSpace">Time/Space</Link></li>
             <li><Link to="/Arrays">Arrays</Link></li>
+            <li><Link to="/LinkedList">Linked Lists</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -30,9 +29,9 @@ function NavBar() {
         <Routes>
           <Route path="/" element={<Home></Home>} />
           <Route path="/general" element={<GeneralView></GeneralView>}></Route>
-          <Route path="/experimental" element={<ExperimentsView></ExperimentsView>}></Route>
           <Route path="/TimeSpace" element={<AsymptoticAnalysisView></AsymptoticAnalysisView>}></Route>
           <Route path="/Arrays" element={<ArrayView></ArrayView>}></Route>
+          <Route path = "/LinkedList" element={<LinkedListView></LinkedListView>}></Route>
         </Routes>
       </main>
     </Router>
