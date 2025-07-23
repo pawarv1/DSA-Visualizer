@@ -13,8 +13,8 @@ function LinkedListView() {
       <>
         <h1>Linked List Testing</h1>
         <h2>Update when finished</h2>
-        <LinkedListTestCases></LinkedListTestCases><br></br><br></br>
-        <DoublyLLTestCases></DoublyLLTestCases>
+        <DoublyLLTestCases></DoublyLLTestCases><br></br><br></br>
+        <LinkedListTestCases></LinkedListTestCases>
       </>
     );
   }

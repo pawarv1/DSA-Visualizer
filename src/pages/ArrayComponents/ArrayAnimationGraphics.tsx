@@ -88,8 +88,6 @@ class ArrayCell {
         this.inUse = inUse;
     }
 
-    static type = "ArrayCell";
-
     // Adjust font size to fit within the cell
     adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
@@ -164,8 +162,6 @@ export class Array {
             this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, this.outlineColor, this.fillColor));
         }
     }
-
-    static type = "Array";
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         this.cells.forEach(cell => {

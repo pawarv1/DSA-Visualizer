@@ -28,8 +28,6 @@ export class DummyNodeLL extends LinkedList {
         }
     }
 
-    static type = "DummyNodeLL";
-
     draw(context: CanvasRenderingContext2D) {
         let currPtr: LinkedListNode | null = this.headPtr;
 
@@ -90,7 +88,7 @@ export class DummyNodeLL extends LinkedList {
         return findOutput != -1;
     }
 
-    async print(context: CanvasRenderingContext2D) {
+    async traverse(context: CanvasRenderingContext2D) {
         let currPtr = this.headPtr.next;
         let index = 0;
 

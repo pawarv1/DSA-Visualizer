@@ -28,8 +28,6 @@ export class LinkedListNode {
         this.pointerArrow = null;
     }
 
-    static type = "LinkedListNode"
-
     // Adjust font size to fit within the node
     adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
@@ -134,8 +132,6 @@ export class LinkedList {
         }
     }
 
-    static type = "LinkedList";
-
     draw(context: CanvasRenderingContext2D) {
         let currPtr = this.headPtr;
 
@@ -219,7 +215,7 @@ export class LinkedList {
         return findOutput != -1;
     }
 
-    async print(context: CanvasRenderingContext2D) {
+    async traverse(context: CanvasRenderingContext2D) {
         let currPtr = this.headPtr;
         let index = 0;
 

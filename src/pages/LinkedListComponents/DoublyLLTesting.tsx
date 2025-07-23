@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import { DoublyLinkedListNode } from './DoublyLL';
+import { DoublyLinkedList } from './DoublyLL';
 
 function DoublyLLTestCases() {
     let canvasWidth = 1000;
@@ -13,10 +13,10 @@ function DoublyLLTestCases() {
         // Creating a single node, then clearing it
         const step1 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Creating a single node and clearing");
+            const testCaseHeader = new Text (70, 40, "Linked list loaded in");
             testCaseHeader.draw(mainContext);
-            const dll = new DoublyLinkedListNode(100, 100, 70, 40, 'a');
-            dll.drawNode(mainContext);
+            const ll = new DoublyLinkedList(100, 100, 50, 30);
+            ll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
         }
 
