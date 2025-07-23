@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
-import { Array, prefixSum, postfixSum } from './ArrayAnimationGraphics';
+import { Array, prefixSum } from './ArrayAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap from 'gsap';
 
@@ -207,29 +207,15 @@ function ArrayTestCases() {
       }, 2000);
     }
 
-    // Looping through array
-    const step14 = () => {
+    // Printing array
+    const step14 = async () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Looping through an array");
       const array = new Array (50, 100, 30, 30, ["A", "B", "C", "D", "E", "F", "G", "H"]);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
-
-      let timeline = gsap.timeline({onComplete: () => { setIsAnimating(false); }});
-
-      for (let i = 0; i < array.getArraySize(); i++) {
-        timeline.to(array, {
-          duration: 1,
-          onUpdate: () => {
-            if (i > 0) {
-              array.setOutlineColor(mainContext, i - 1, "black");
-              array.setFillColor(mainContext, i - 1, "white");
-            }
-            array.setOutlineColor(mainContext, i, "red");
-            array.setFillColor(mainContext, i, "yellow");
-          }
-        });
-      }
+      await array.print(mainContext);
+      setIsAnimating(false);
     }
 
     // Creating an empty array test case
@@ -241,26 +227,6 @@ function ArrayTestCases() {
       array.draw(mainContext);
       setIsAnimating(false);
     }
-    
-    /*
-    // Prefix and Postfix sum array test cases
-    // Should probably add more test cases just for these algorithm animations
-    const step16 = () => {
-      const testCaseHeader = new Text (70, 40, "Prefix and Postfix Sum arrays");
-      testCaseHeader.draw(mainContext);
-      const text1 = new Text (50, 225, "Prefix Sum Array:");
-      text1.draw(mainContext);
-      const text2 = new Text (50, 425, "Postfix Sum Array:");
-      text2.draw(mainContext);
-      const array1 = new Array(200, 100, 80, 50, [0, 1, 2, 3, 4, 5, 6]);
-      array1.draw(mainContext);
-      prefixSum(200, 200, 80, 50, array1, mainContext);
-      const array2 = new Array(200, 300, 80, 50, [0, 1, 2, 3, 4, 5, 6]);
-      array2.draw(mainContext);
-      postfixSum(200, 400, 80, 50, array2, mainContext);
-      setTimeout(() => { setIsAnimating(false); }, 7000);
-    }
-    */
     
 
     // Switch statement which runs the associated step method for the given step

@@ -25,26 +25,41 @@ export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: n
 }
 
 
-export function postfixSum(x: number, y: number, cellWidth: number, cellHeight: number, arr: Array, context: CanvasRenderingContext2D, opacity: number = 1, outlineColor: string = 'black') {
-    const elements = new window.Array(arr.getArraySize()).fill("");
-    const postfixSumArray = new Array(x, y, cellWidth, cellHeight, elements, opacity, outlineColor);
-    postfixSumArray.draw(context);
+// Can be used to show two pointers
+export function TwoSum(arr: Array, targetSum: number, context: CanvasRenderingContext2D) {
+    arr.draw(context);
+    let i = 0;
+    let j = arr.getArraySize() - 1;
 
-    let timeline = gsap.timeline();
-    let sum = 0;
+    arr.setFillColor(context, i, "yellow");
+    arr.setFillColor(context, j, "yellow");
 
-    for (let i = arr.getArraySize() - 1; i >= 0; i--) {  
-        sum += arr.getElementAt(i);
-        elements[i] = sum;
-        timeline.to(postfixSumArray, {
-            duration: 1,
-            onUpdate: () => {
-                arr.setFillColor(context, i, "yellow");
-                postfixSumArray.setElementAt(context, i, elements[i]);
+    function updatePointers() {
+        if (i != j) {
+            if (arr.getElementAt(i) + arr.getElementAt(j) < targetSum) {
+                arr.setOpacity(context, i, 0.25)
+                i++;
+                arr.setFillColor(context, i, "yellow"); // Highlight new index
+                setTimeout(updatePointers, 1000); // Wait and then update again
+            } else if (arr.getElementAt(i) + arr.getElementAt(j) > targetSum) {
+                arr.setOpacity(context, j, 0.25)
+                j--;
+                arr.setFillColor(context, j, "yellow"); // Highlight new index // Highlight new index
+                setTimeout(updatePointers, 1000); // Wait and then update again
+            } else {
+                arr.setFillColor(context, i, "lightgreen");
+                arr.setFillColor(context, j, "lightgreen");
             }
-        });
+        } else {
+            arr.setFillColor(context, i, "red");
+        }
     }
+
+    setTimeout(updatePointers, 1000); // Start the first update
 }
+
+
+
 
 // ArrayCell Class
 // Can contain any content, but will only use strings and integers for the purpose of the animations
@@ -239,6 +254,27 @@ export class Array {
         if (this.checkIndexValidity(index)) {
             return this.cells[index].content;
         }
+    }
+
+    async print(context: CanvasRenderingContext2D) {
+        await new Promise<void>((resolve) => {
+            let timeline = gsap.timeline({onComplete: () => { resolve() }});
+        
+            for (let i = 0; i < this.getArraySize(); i++) {
+                timeline.to(this, {
+                    duration: 1,
+                    onUpdate: () => {
+                        if (i > 0) {
+                            this.setOutlineColor(context, i - 1, "black");
+                            this.setFillColor(context, i - 1, "white");
+                        }
+                        this.setOutlineColor(context, i, "red");
+                        this.setFillColor(context, i, "yellow");
+                        console.log(this.getElementAt(i));
+                    }
+                });
+            }
+        });
     }
     
     async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number) {
