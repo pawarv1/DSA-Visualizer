@@ -114,13 +114,10 @@ export class DummyNodeLL extends LinkedList {
             currPtr = this.headPtr;
 
             while (currPtr.next != null) {
+                currPtr = currPtr.next;
                 if (iterationAnimation) {
                     await this.highlightNode(context, currPtr!);
                 }
-                currPtr = currPtr.next;
-            }
-            if (iterationAnimation) {
-                await this.highlightNode(context, currPtr!);
             }
         }
             
@@ -168,13 +165,29 @@ export class DummyNodeLL extends LinkedList {
         }
         
         await Promise.all(promises);
+        let newNode: LinkedListNode;
 
         if (!this.headPtr.next) {
-            await this.append(context, newData);
+            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, null);
+            this.headPtr.next = newNode;
+            this.tailPtr = newNode;
+            this.headPtr.drawNode(context);
+
+            await new Promise<void>((resolve) => {
+                gsap.to(newNode, {
+                    nodeOpacity: 1,
+                    pointerOpacity: 1,
+                    duration: fadeIntime,
+                    onUpdate: () => {
+                        newNode.drawNode(context);
+                    },
+                    onComplete: () => resolve()
+                });
+            });
         }
         else {
             let initialY = this.y + this.nodeHeight * 2;
-            let newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, this.headPtr.next);
+            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, this.headPtr.next);
 
             await new Promise<void>((resolve) => {
                 let timeline = gsap.timeline({onComplete: () => resolve()});
@@ -237,10 +250,6 @@ export class DummyNodeLL extends LinkedList {
             return false;
         }
         else {
-            if (iterationAnimation) {
-                await this.highlightNode(context, this.headPtr);
-            }
-
             let currPtr = this.headPtr.next;
 
             for (let i = 0; i < index - 1; i++){
@@ -401,13 +410,10 @@ export class DummyNodeLL extends LinkedList {
         let currPtr = this.headPtr;
 
         while (currPtr.next?.next) {
+            currPtr = currPtr.next;
             if (iterationAnimation) {
                 await this.highlightNode(context, currPtr);
             }
-            currPtr = currPtr.next;
-        }
-        if (iterationAnimation) {
-            await this.highlightNode(context, currPtr);
         }
 
         lastNode = currPtr.next;
@@ -441,7 +447,6 @@ export class DummyNodeLL extends LinkedList {
             return false;
         }
         else {
-            await this.highlightNode(context, this.headPtr);
             let currPtr = this.headPtr.next!;
 
             for (let i = 0; i < index - 1; i++) {
