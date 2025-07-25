@@ -23,6 +23,7 @@ export default function StepPlayer({ totalSteps, runStep, canvasWidth, canvasHei
       }
   };
 
+  //  get the canvas references and run the step passed from the animations runstep function
   const { mainCanvasRef, staticCanvasRef } = useCanvasAnimation(step, runStep, setIsAnimating);
 
   return (
