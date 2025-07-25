@@ -3,6 +3,7 @@ import gsap, { timeline } from 'gsap';
 // This component includes all the classes for the various array related graphics
 
 
+// Related animation for getting prefixSums of arrays, will be used later
 export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: number, arr: Array, context: CanvasRenderingContext2D, opacity: number = 1, outlineColor: string = 'black') {
     const elements = new window.Array(arr.getArraySize()).fill("");
     const prefixSumArray = new Array(x, y, cellWidth, cellHeight, elements, opacity, outlineColor);
@@ -10,7 +11,8 @@ export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: n
 
     let timeline = gsap.timeline();
     let sum = 0;
-
+    
+    // Iterate through the array, summing up the elements and highlighting the current position yellow
     for (let i = 0; i < arr.getArraySize(); i++) {  
         sum += arr.getElementAt(i);
         elements[i] = sum;
@@ -25,7 +27,7 @@ export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: n
 }
 
 
-// Can be used to show two pointers
+// Can be used to show two pointers, will be used later
 export function TwoSum(arr: Array, targetSum: number, context: CanvasRenderingContext2D) {
     arr.draw(context);
     let i = 0;
@@ -47,10 +49,12 @@ export function TwoSum(arr: Array, targetSum: number, context: CanvasRenderingCo
                 arr.setFillColor(context, j, "yellow"); // Highlight new index // Highlight new index
                 setTimeout(updatePointers, 1000); // Wait and then update again
             } else {
+                // Found the two elements that sum up to the target
                 arr.setFillColor(context, i, "lightgreen");
                 arr.setFillColor(context, j, "lightgreen");
             }
         } else {
+            // Did not find the two elements that sum up to the target
             arr.setFillColor(context, i, "red");
         }
     }
@@ -61,7 +65,7 @@ export function TwoSum(arr: Array, targetSum: number, context: CanvasRenderingCo
 
 
 
-// ArrayCell Class
+// ArrayCell Class, animates individual array cells
 // Can contain any content, but will only use strings and integers for the purpose of the animations
 class ArrayCell {
     x: number;
@@ -143,7 +147,7 @@ class ArrayCell {
 }
 
 
-//Array Class
+// Array Class
 export class Array {
     protected arraySize: number;
     protected cells: ArrayCell[];
@@ -188,6 +192,7 @@ export class Array {
         }
     }
 
+    // Can change opacity of an individual cell or all the cells
     setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
         if (typeof index === 'string' && index === "all") {
             this.opacity = opacity;
@@ -206,6 +211,7 @@ export class Array {
         }
     }
 
+    // Can change outline color of an individual cell or all the cells
     setOutlineColor(context: CanvasRenderingContext2D, index: string | number, outlineColor: string, redraw: boolean = true) {
         if (typeof index === 'string' && index === "all") {
             this.outlineColor = outlineColor;
@@ -224,6 +230,7 @@ export class Array {
         }
     }
 
+    // Can change fill color of an individual cell or all the cells
     setFillColor(context: CanvasRenderingContext2D, index: string | number, fillColor: string, redraw: boolean = true) {
         if (typeof index === 'string') {
             this.fillColor = fillColor;
@@ -252,8 +259,11 @@ export class Array {
         }
     }
 
+    // Traverse through the array and print each element
+    // Hightlight and change outline color of the current element
     async print(context: CanvasRenderingContext2D) {
         await new Promise<void>((resolve) => {
+            // Resolve after the timeline animation completes
             let timeline = gsap.timeline({onComplete: () => { resolve() }});
         
             for (let i = 0; i < this.getArraySize(); i++) {
@@ -273,6 +283,7 @@ export class Array {
         });
     }
     
+    // Animate the swap of two elements through fading
     async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number) {
         if (this.checkIndexValidity(index1) && this.checkIndexValidity(index2)) {
             const cell1 = this.cells[index1];
@@ -280,6 +291,7 @@ export class Array {
             cell1.fillColor = "yellow";
             cell2.fillColor = "yellow";
             
+            // Fade out both cells
             const fadeOut = () => new Promise<void>((resolve) => {
                 gsap.to([cell1, cell2], {
                     opacity: 0,
@@ -294,12 +306,14 @@ export class Array {
                 });
             });
 
+            // Swap the contents while the two cells are still faded out 
             const swapContent = () => {
                 const temp = cell1.content;
                 cell1.content = cell2.content;
                 cell2.content = temp;
             };
 
+            // Fade the swapped cells back in
             const fadeIn = () => new Promise<void>((resolve) => {
                 gsap.to([cell1, cell2], {
                     opacity: 1,
@@ -317,6 +331,7 @@ export class Array {
             await fadeOut();
             swapContent();
             await fadeIn();
+            // Reset the fill color back to what it was without redrawings
             cell1.fillColor = this.fillColor;
             cell2.fillColor = this.fillColor;
         }
@@ -329,7 +344,7 @@ export class Array {
 }
 
 
-// Dynamic Array Class
+// Dynamic Array Class, inherits from array class
 export class DynamicArray extends Array {
     private capacity: number;
 
@@ -343,6 +358,7 @@ export class DynamicArray extends Array {
         context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.capacity) + 2, this.cellHeight + extraHeight);
     }
 
+    // Ensure that it can insert at the given index, allowing for insertions at the end of the array
     checkInsertIndex(index: number) {
         if (index < 0 || index > this.arraySize) {
             console.error(`Insert index ${index} is out of bounds (valid range: 0 to ${this.arraySize})`);
@@ -355,10 +371,13 @@ export class DynamicArray extends Array {
         return this.capacity;
     }
 
+    // Resize animations when the dynamic array must expand or shrink
     async resize(context: CanvasRenderingContext2D, newCapacity: number) {
+        // Do nothing
         if (newCapacity === this.capacity) {
             return;
         }
+        // Expand
         if (this.capacity < newCapacity) {
             for (let i = this.capacity; i < newCapacity; i++) {
                 this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, this.outlineColor, this.fillColor, false));
@@ -381,7 +400,9 @@ export class DynamicArray extends Array {
                     }
                 });
             });
-        } else {
+        } 
+        // Shrink
+        else {
             const cellsToRemove = this.cells.slice(newCapacity);
 
             await new Promise<void>((resolve) => {
@@ -405,6 +426,7 @@ export class DynamicArray extends Array {
         }
     }
 
+    // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
         if (this.capacity === 0) {
             this.cells.push(new ArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, this.outlineColor, this.fillColor));
@@ -412,13 +434,16 @@ export class DynamicArray extends Array {
         }
     }
 
+    // Add element to the end of the array
     async append(context: CanvasRenderingContext2D, element: any) {
         this.ensureInitialCapacity();
 
+        // Check if an expansion is necessary
         if (this.arraySize >= this.capacity) {
             await this.resize(context, this.capacity * 2);
         }
         else {
+            // Add delay into the animation, may add in a variable for time
             await new Promise<void>((resolve) => {
                 setTimeout(() => {resolve()}, 1000);
             });
@@ -430,11 +455,13 @@ export class DynamicArray extends Array {
         this.arraySize++;
     }
 
+    // Insert an element at the given index
     async insertAt(context: CanvasRenderingContext2D, index: number, element: any) {
         if (this.checkInsertIndex(index)) {
             this.ensureInitialCapacity();
             let shiftHappened = false;
 
+            // Check if an expansion is necessary
             if (this.arraySize >= this.capacity) {
                 await this.resize(context, this.capacity * 2);
             }
@@ -447,6 +474,7 @@ export class DynamicArray extends Array {
                 this.cells[i - 1].drawCell(context);
                 this.cells[i].drawCell(context);
                 shiftHappened = true;
+                // Add delay into the animation, may add in a variable for time
                 await new Promise<void>((resolve) => {
                     setTimeout((resolve), 1000);
                 });
@@ -454,6 +482,8 @@ export class DynamicArray extends Array {
 
             this.arraySize++;
 
+            // Only add delay if there was not a shift, as that also has delay
+            // This keeps timings slightly more consistent
             await new Promise<void>((resolve) => {
                 let delay = (shiftHappened)? 0: 1000;
                 setTimeout(() => {
@@ -466,6 +496,7 @@ export class DynamicArray extends Array {
         }
     }
 
+    // Remove element at the given index
     async removeAt(context: CanvasRenderingContext2D, index: number) {
         if (this.checkIndexValidity(index)) {
             let shiftHappened = false;
@@ -479,6 +510,7 @@ export class DynamicArray extends Array {
             this.cells[index].drawCell(context);
 
             for (let i = index; i < this.arraySize - 1; i++) {
+                // Add delay into the animation, may add in a variable for time
                 await new Promise<void>((resolve) => {
                     setTimeout(() => {resolve()}, 1000);
                 });
@@ -494,13 +526,14 @@ export class DynamicArray extends Array {
 
             this.arraySize--;
 
+            // Check if a shrink is necessary
             if (this.arraySize > 0 && this.arraySize <= this.capacity / 4) {
                 await this.resize(context, Math.floor(this.capacity / 2));
             }
         }
     }
 
-    // Not strictly necessary but useful
+    // Remove and return the element at the end of the array
     async pop(context: CanvasRenderingContext2D) {
         if (this.arraySize <= 0) {
             console.error("Cannot pop from empty array");
@@ -525,12 +558,11 @@ export class DynamicArray extends Array {
         }
     }
 
-    // Not strictly necessary but useful
+    // Shrink capacity to array size
     async shrinkToFit(context: CanvasRenderingContext2D) {
         await this.resize(context, this.arraySize);
     }
 
-     // Not strictly necessary but useful
     clearAll(context: CanvasRenderingContext2D) {
         for (let i = 0; i < this.capacity; i++) {
             this.cells[i].inUse = false;
