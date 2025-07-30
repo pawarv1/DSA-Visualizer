@@ -1,35 +1,38 @@
 import gsap, { context, set, timeline } from "gsap";
-import { Arrow, Text } from "../GeneralAnimating/GeneralAnimationGraphics";
-import { LinkedListNode, LinkedList } from "./LinkedListAnimationGraphics";
+import { LinkedListNode } from "./LinkedListNode";
+import { LinkedList } from "./SLL";
 
-export class DummyNodeLL extends LinkedList {
+// Singly linked list, but with a dummy head node
+export class DummyNodeSLL extends LinkedList {
     protected headPtr: LinkedListNode
-    protected tailPtr: LinkedListNode
+    protected tailPtr: LinkedListNode   // While not all ll use tail pointer, this class will keep track of the tail to make some animations easier
     protected numElements: number;
 
-    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1, protected outlineColor: string = "black", protected fillColor: string = "white") {
-        super(x, y, nodeWidth, nodeHeight, opacity, outlineColor, fillColor);
-        this.headPtr = new LinkedListNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity, outlineColor, fillColor)
-        this.tailPtr = this.headPtr;
+    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
+        super(x, y, nodeWidth, nodeHeight, opacity);
+        this.headPtr = new LinkedListNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity); // Head is set to a dummy node
+        this.tailPtr = this.headPtr;    // Set tail to the head when initialized
         this.numElements = 0;
     }
 
+    // Preload the linked list without gsap animating
     loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
         let currPtr = this.headPtr
 
         for (let i = 0; i < nodeData.length; i++) {
-            let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.outlineColor, this.fillColor);
+            let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
             currPtr.next = newNode;
             currPtr.drawNode(context);
             newNode.drawNode(context);
             currPtr = currPtr.next;
-            this.tailPtr = currPtr;
+            this.tailPtr = currPtr; // Update tail pointer
             this.numElements++;
         }
     }
 
     draw(context: CanvasRenderingContext2D) {
-        let currPtr: LinkedListNode | null = this.headPtr;
+        this.headPtr.drawNode(context);
+        let currPtr = this.headPtr.next;
 
         while(currPtr) {
             currPtr.drawNode(context);
@@ -121,7 +124,7 @@ export class DummyNodeLL extends LinkedList {
             }
         }
             
-        let newNode = new LinkedListNode(currPtr!.x + this.nodeWidth * 2, currPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor);
+        let newNode = new LinkedListNode(currPtr!.x + this.nodeWidth * 2, currPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         currPtr!.next = newNode;
         currPtr?.drawNode(context);
         this.tailPtr = newNode;
@@ -168,7 +171,7 @@ export class DummyNodeLL extends LinkedList {
         let newNode: LinkedListNode;
 
         if (!this.headPtr.next) {
-            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, null);
+            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr.next = newNode;
             this.tailPtr = newNode;
             this.headPtr.drawNode(context);
@@ -187,7 +190,7 @@ export class DummyNodeLL extends LinkedList {
         }
         else {
             let initialY = this.y + this.nodeHeight * 2;
-            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, this.headPtr.next);
+            newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", this.headPtr.next);
 
             await new Promise<void>((resolve) => {
                 let timeline = gsap.timeline({onComplete: () => resolve()});
@@ -266,7 +269,7 @@ export class DummyNodeLL extends LinkedList {
 
                 let tempPtr: LinkedListNode | null = currPtr.next;
                 let initialY = this.y + this.nodeHeight * 2;
-                let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.outlineColor, this.fillColor, tempPtr);
+                let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", tempPtr);
 
                 const promises: Promise<void>[] = [];
 
