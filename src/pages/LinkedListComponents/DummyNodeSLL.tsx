@@ -30,6 +30,7 @@ export class DummyNodeSLL extends LinkedList {
         }
     }
 
+    // Draw the sll
     draw(context: CanvasRenderingContext2D) {
         this.headPtr.drawNode(context);
         let currPtr = this.headPtr.next;
@@ -228,6 +229,7 @@ export class DummyNodeSLL extends LinkedList {
         }
     }
 
+    // Insert at the given index
     async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
 
         // Insertions right after the dummy head node
@@ -443,6 +445,7 @@ export class DummyNodeSLL extends LinkedList {
         return lastNode?.data;
     }
 
+    // Remove at the given index
     async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
     
         // Deletions right after the dummy head node

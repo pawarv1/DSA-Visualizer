@@ -42,6 +42,7 @@ export class LinkedList {
         }
     }
 
+    // Draw the sll
     draw(context: CanvasRenderingContext2D) {
         let currPtr = this.headPtr;
 
@@ -51,10 +52,12 @@ export class LinkedList {
         }
     }
 
+    // Return true if the ll is empty
     isEmpty() {
         return this.numElements === 0;
     }
 
+    // Return the size of the ll
     getSize() {
         return this.numElements;
     }
@@ -249,6 +252,7 @@ export class LinkedList {
         this.numElements++;
     }
 
+    // Insert at the given index
     async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
 
         // Insertions at the head
@@ -484,6 +488,7 @@ export class LinkedList {
         }
     }
 
+    // Remove at the given index
     async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
 
         // Deletions at the head
