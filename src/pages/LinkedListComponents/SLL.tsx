@@ -227,10 +227,9 @@ export class LinkedList {
         
         await Promise.all(promises);
 
-        const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-        newNode.next = this.headPtr;
+        const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", this.headPtr);
 
-        // If the ll was empty, tail pointer will also point to the new node 
+        // If the ll was previously empty, tail pointer will also point to the new node 
         if (!this.headPtr) {
             this.tailPtr = newNode;
         }
@@ -259,7 +258,7 @@ export class LinkedList {
         if (index === 0) {
             await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
         }
-        else if(this.headPtr === null || index > this.numElements) {
+        else if(this.headPtr === null || index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
@@ -495,7 +494,7 @@ export class LinkedList {
         if (index === 0) {
             await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
         }
-        else if (this.headPtr === null || index >= this.numElements) {
+        else if (this.headPtr === null || index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }

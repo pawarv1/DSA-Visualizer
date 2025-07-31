@@ -43,7 +43,7 @@ export class DummyNodeSLL extends LinkedList {
 
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
-        if (index >= this.numElements) {
+        if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
@@ -236,7 +236,7 @@ export class DummyNodeSLL extends LinkedList {
         if (index === 0) {
             await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
         }
-        else if(index > this.numElements) {
+        else if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
@@ -452,7 +452,7 @@ export class DummyNodeSLL extends LinkedList {
         if (index === 0) {
             await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
         }
-        else if (index >= this.numElements) {
+        else if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
