@@ -1,20 +1,17 @@
 import gsap, { context, set, timeline } from "gsap";
-import { Arrow, Text } from "../GeneralAnimating/GeneralAnimationGraphics";
-import { DLLNode } from "./LinkedListNode";
+import { DLLNode } from "./DLLNode";
 
 export class DoublyLinkedList {
     protected headPtr: DLLNode | null;
     protected tailPtr: DLLNode | null;
     protected numElements: number;
 
-    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1, protected outlineColor: string = "black", protected fillColor: string = "white") {
+    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.opacity = opacity;
-        this.outlineColor = outlineColor;
-        this.fillColor = fillColor;
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -25,12 +22,12 @@ export class DoublyLinkedList {
 
         for (let i = 0; i < nodeData.length; i++) {
             if (currPtr === null) {
-                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity, this.outlineColor, this.fillColor);
+                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currPtr = this.headPtr;
             }
             else {
-                let newNode = new DLLNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity, this.outlineColor, this.fillColor);
+                let newNode = new DLLNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 currPtr.next = newNode;
                 newNode.prev = currPtr;
                 currPtr.drawNode(context);
@@ -59,8 +56,8 @@ export class DoublyLinkedList {
             node.drawNode(context);
 
             setTimeout(() => {
-                node.outlineColor = this.outlineColor;
-                node.fillColor = this.fillColor;
+                node.outlineColor = "black";
+                node.fillColor = "white";
                 node.drawNode(context);
                 resolve();
             }, duration);
@@ -150,7 +147,7 @@ export class DoublyLinkedList {
         let newNode: DLLNode;
 
         if (this.headPtr === null) {
-            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, this.outlineColor, this.fillColor);
+            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
@@ -177,7 +174,7 @@ export class DoublyLinkedList {
                 }
             }
 
-            newNode = new DLLNode(currPtr!.x + this.nodeWidth * 2, currPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, this.outlineColor, this.fillColor, null, currPtr);
+            newNode = new DLLNode(currPtr!.x + this.nodeWidth * 2, currPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", null, currPtr);
             currPtr!.next = newNode;
             currPtr?.drawNode(context);
             this.tailPtr = newNode;
@@ -225,7 +222,7 @@ export class DoublyLinkedList {
         
         await Promise.all(promises);
 
-        let newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, this.outlineColor, this.fillColor, this.headPtr);
+        let newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", this.headPtr);
 
         if (!this.headPtr) {
             this.tailPtr = newNode;
@@ -279,7 +276,7 @@ export class DoublyLinkedList {
                 let tempPtr: DLLNode | null = currPtr.next;
                 let nextPtr = tempPtr;
                 let initialY = this.y + this.nodeHeight * 2;
-                let newNode = new DLLNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, this.outlineColor, this.fillColor, tempPtr, currPtr);
+                let newNode = new DLLNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", tempPtr, currPtr);
 
                 const promises: Promise<void>[] = [];
 

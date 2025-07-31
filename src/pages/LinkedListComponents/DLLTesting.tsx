@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import { DLLNode, DoublyLinkedList } from './DLL';
+import { DoublyLinkedList } from './DLL';
 
 function DoublyLLTestCases() {
     let canvasWidth = 1000;

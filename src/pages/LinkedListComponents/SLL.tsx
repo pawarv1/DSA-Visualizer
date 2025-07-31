@@ -1,5 +1,5 @@
 import gsap, { context, set, timeline } from "gsap";
-import { LinkedListNode } from "./LinkedListNode";
+import { LinkedListNode } from "./SLLNode";
 
 
 // Singly linked list class
