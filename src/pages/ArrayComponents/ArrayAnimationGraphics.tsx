@@ -4,6 +4,7 @@ import gsap, { timeline } from 'gsap';
 
 
 // Related animation for getting prefixSums of arrays, will be used later
+/*
 export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: number, arr: Array, context: CanvasRenderingContext2D, opacity: number = 1, outlineColor: string = 'black') {
     const elements = new window.Array(arr.getArraySize()).fill("");
     const prefixSumArray = new Array(x, y, cellWidth, cellHeight, elements, opacity, outlineColor);
@@ -61,6 +62,7 @@ export function TwoSum(arr: Array, targetSum: number, context: CanvasRenderingCo
 
     setTimeout(updatePointers, 1000); // Start the first update
 }
+*/
 
 
 
@@ -107,6 +109,7 @@ class ArrayCell {
         return font;
     }
 
+    // Displays the index number of the cell
     drawIndex(context: CanvasRenderingContext2D) {
         let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
         context.save();
@@ -119,12 +122,12 @@ class ArrayCell {
         context.restore();
     }
 
-    // Draw the cell, optionally with highlight
+    // Draw the cell
     drawCell(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         this.clear(context);
-        context.save(); // Save the context state
+        context.save();
         context.globalAlpha = this.opacity;
-        context.fillStyle = this.inUse ? this.fillColor : "#f0f0f0"; // or dimmed
+        context.fillStyle = this.inUse ? this.fillColor : "#f0f0f0"; // Dim the cell if it is not in use, for dynamic arrays
         context.fillRect(this.x, this.y, this.cellWidth, this.cellHeight);
         context.strokeStyle = this.outlineColor;
         context.strokeRect(this.x, this.y, this.cellWidth, this.cellHeight);
@@ -133,7 +136,7 @@ class ArrayCell {
         context.textBaseline = 'middle';
         context.font = this.adjustFontSize(context);
         context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
-        context.restore(); // Reset alpha to default
+        context.restore();
 
         if (drawIndex) {
             this.drawIndex(context);
@@ -185,6 +188,7 @@ export class Array {
         return true;
     }
 
+    // Set the element at the given index
     setElementAt(context: CanvasRenderingContext2D, index: number, newElement: string) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
@@ -253,6 +257,7 @@ export class Array {
         return this.arraySize;
     }
 
+    // Return the element at the given index
     getElementAt(index: number) {
         if (this.checkIndexValidity(index)) {
             return this.cells[index].content;
@@ -337,6 +342,7 @@ export class Array {
         }
     }
 
+    // Clear the array
     clear(context: CanvasRenderingContext2D) {
         const extraHeight = 18; // Covers index number (3 offset + 12 font + buffer)
         context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.arraySize) + 2, this.cellHeight + extraHeight);
@@ -353,6 +359,7 @@ export class DynamicArray extends Array {
         this.capacity = Math.max(initialCapacity, contents.length);
     }
 
+    // Clear the dynamic array
     clear(context: CanvasRenderingContext2D) {
         const extraHeight = 18;
         context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.capacity) + 2, this.cellHeight + extraHeight);
@@ -367,6 +374,7 @@ export class DynamicArray extends Array {
         return true;
     }
 
+    // Return the capacity of the dynamic array, as opposed to the size
     getCapacity() {
         return this.capacity;
     }

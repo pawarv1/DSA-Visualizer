@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
-import { Array, prefixSum } from './ArrayAnimationGraphics';
+import { Array } from './ArrayAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap from 'gsap';
 
