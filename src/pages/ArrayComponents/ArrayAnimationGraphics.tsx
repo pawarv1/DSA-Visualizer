@@ -10,7 +10,7 @@ export function prefixSum(x: number, y: number, cellWidth: number, cellHeight: n
     const prefixSumArray = new Array(x, y, cellWidth, cellHeight, elements, opacity, outlineColor);
     prefixSumArray.draw(context);
 
-    let timeline = gsap.timeline();
+    const timeline = gsap.timeline();
     let sum = 0;
     
     // Iterate through the array, summing up the elements and highlighting the current position yellow
@@ -269,7 +269,7 @@ export class Array {
     async print(context: CanvasRenderingContext2D) {
         await new Promise<void>((resolve) => {
             // Resolve after the timeline animation completes
-            let timeline = gsap.timeline({onComplete: () => { resolve() }});
+            const timeline = gsap.timeline({onComplete: () => { resolve() }});
         
             for (let i = 0; i < this.getArraySize(); i++) {
                 timeline.to(this, {
@@ -493,7 +493,7 @@ export class DynamicArray extends Array {
             // Only add delay if there was not a shift, as that also has delay
             // This keeps timings slightly more consistent
             await new Promise<void>((resolve) => {
-                let delay = (shiftHappened)? 0: 1000;
+                const delay = (shiftHappened)? 0: 1000;
                 setTimeout(() => {
                     this.cells[index].content = element;
                     this.cells[index].inUse = true;
@@ -553,7 +553,7 @@ export class DynamicArray extends Array {
             });
 
             this.arraySize--;
-            let lastElement = this.cells[this.arraySize].content;
+            const lastElement = this.cells[this.arraySize].content;
             this.cells[this.arraySize].content = "";
             this.cells[this.arraySize].inUse = false;
             this.cells[this.arraySize].drawCell(context);
