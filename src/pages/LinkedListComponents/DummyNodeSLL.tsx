@@ -5,7 +5,7 @@ import { LinkedList } from "./SLL";
 // Singly linked list, but with a dummy head node, inherits from SLL.tsx
 export class DummyNodeSLL extends LinkedList {
     protected headPtr: LinkedListNode
-    protected tailPtr: LinkedListNode   // While not all ll use tail pointer, this class will keep track of the tail to make some animations easier
+    protected tailPtr: LinkedListNode   // While not all LL use tail pointer, this class will keep track of the tail to make some animations easier
     protected numElements: number;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
@@ -15,22 +15,22 @@ export class DummyNodeSLL extends LinkedList {
         this.numElements = 0;
     }
 
-    // Preload the linked list without gsap animating
+    // Preload the SLL without gsap animating
     loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
         let currNode = this.headPtr
 
         for (let i = 0; i < nodeData.length; i++) {
             const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
             currNode.next = newNode;
-            currNode.drawNode(context);
+            currNode.drawNode(context);  // Draw currNode after the pointer update
             newNode.drawNode(context);
             currNode = currNode.next;
-            this.tailPtr = currNode; // Update tail pointer
-            this.numElements++;
+            this.tailPtr = currNode; // Update tail pointer to currNode
+            this.numElements++; // Increment number of elements
         }
     }
 
-    // Draw the sll
+    // Draw the SLL
     draw(context: CanvasRenderingContext2D) {
         this.headPtr.drawNode(context);
         let currNode = this.headPtr.next;
@@ -43,6 +43,7 @@ export class DummyNodeSLL extends LinkedList {
 
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
+        // Error if the index is not valid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
@@ -51,12 +52,14 @@ export class DummyNodeSLL extends LinkedList {
             let currNode = this.headPtr.next;
 
             for (let i = 0; i < index; i++) {
+                // Highlight nodes to show traversal if iterationAnimation is true
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode!);
                 }
                 currNode = currNode!.next;
             }
 
+            // Highlight nodes to show traversal if iterationAnimation is true
             if (iterationAnimation) {
                 await this.highlightNode(context, currNode!);
             }
@@ -65,12 +68,13 @@ export class DummyNodeSLL extends LinkedList {
         }
     }
 
-    // Search through the ll for the given data argument, and return the index where it is found, or if not, -1
+    // Search through the LL for the given data argument, and return the index where it is found, or if not, -1
     async find(context: CanvasRenderingContext2D, data: any) {
         let currNode = this.headPtr.next;
         let index = 0;
 
         while (currNode) {
+            // Highlight nodes to show traversal
             await this.highlightNode(context, currNode);
             
             // Data was found
@@ -87,12 +91,13 @@ export class DummyNodeSLL extends LinkedList {
         return -1;
     }
 
-    // Traverse through ll and print the nodes index and data
+    // Traverse through the SLL and print the nodes index and data
     async traverse(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr.next;
         let index = 0;
 
         while (currNode) {
+            // Highlight nodes to show traversal
             await this.highlightNode(context, currNode);
             console.log(`[${index}]: ${currNode.data}`);
             currNode = currNode.next;
@@ -100,16 +105,17 @@ export class DummyNodeSLL extends LinkedList {
         }
     }
 
-    // Insert at the end of the ll
+    // Insert at the end of the SLL
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1, usingTailPointer: boolean = true, iterationAnimation: boolean = true) {
         let currNode = this.headPtr;
 
-        // Show append animations for linked lists whether or not they use a tail pointer
+        // Option to use more efficient tail pointer implementation
         if (usingTailPointer) {
             currNode = this.tailPtr;
         }
-        // Can choose to show appending with iterations start at the head, as linked lists may not include a tail pointer
+        // Or append as if the SLL has no tail pointer
         else {
+            // Highlight nodes to show traversal if iterationAnimation is true
             while (currNode.next) {
                 currNode = currNode.next;
                 if (iterationAnimation) {
@@ -120,8 +126,8 @@ export class DummyNodeSLL extends LinkedList {
             
         const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         currNode.next = newNode;
-        currNode.drawNode(context);
-        this.tailPtr = newNode; // update the tail pointer to the new node (regardless of which animation is being used)
+        currNode.drawNode(context);  // Redraw currNode after its pointer is updated
+        this.tailPtr = newNode; // Update the tail pointer to the new node (regardless of which animation is being used)
 
         // Fade in the new node
         await new Promise<void>((resolve) => {
@@ -136,7 +142,7 @@ export class DummyNodeSLL extends LinkedList {
             });
         });
     
-        this.numElements++;
+        this.numElements++; // Increment number of elements
     }
 
     // Insert right after dummy head node
@@ -144,7 +150,7 @@ export class DummyNodeSLL extends LinkedList {
         const promises: Promise<void>[] = [];
         let currNode = this.headPtr.next;
         
-        // Slide the whole ll forward to make room for the new head
+        // Slide the whole LL forward to make room for the new head
         while (currNode) {
             const targetX = currNode.x + this.nodeWidth * 2;
 
@@ -153,6 +159,8 @@ export class DummyNodeSLL extends LinkedList {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
+                        // Clear the whole canvas, then draw the whole LL
+                        // May be inefficient, but otherwise leaves ghost lines on the canvas
                         context.clearRect(0, 0, canvasWidth, canvasHeight);
                         this.draw(context);
                     },
@@ -173,6 +181,7 @@ export class DummyNodeSLL extends LinkedList {
         }
         else {
             const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
+            // newNode is initialized with its next pointer pointing to same location as head node next pointer
             const newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", this.headPtr.next);
 
             await new Promise<void>((resolve) => {
@@ -193,8 +202,9 @@ export class DummyNodeSLL extends LinkedList {
                     pointerOpacity: 0,
                     duration: fadeIntime,
                     onUpdate: () => {
+                        // Clear the area between the current node and the new node
                         context.clearRect(this.headPtr.x + this.nodeWidth, this.headPtr.y, this.headPtr.next!.x - (this.headPtr.x + this.nodeWidth) - 1, this.nodeHeight);
-                        newNode.drawNode(context);
+                        newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
                         this.headPtr.drawNode(context);
                     },
                     onComplete: () => {
@@ -207,6 +217,8 @@ export class DummyNodeSLL extends LinkedList {
                     pointerOpacity: 1,
                     duration: fadeIntime,
                     onStart: () => {
+                        // Redraw nextNode pointer to regain some of the arrow cleared in previous code.
+                        // The area in question may be insignificant enough to remove this part
                         newNode.drawNode(context);
                     },
                     onUpdate: () => {
@@ -225,24 +237,25 @@ export class DummyNodeSLL extends LinkedList {
                 });
             });
 
-            this.numElements++;
+            this.numElements++; // Increment the number or elements
         }
     }
 
     // Insert at the given index
     async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
-
-        // Insertions right after the dummy head node
-        if (index === 0) {
-            await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
-        }
-        else if(index < 0 || index > this.numElements) {
+        // Error if the insertion index is not valid
+        if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
+        }
+        // Insertions right after the dummy head node can be taken care of with prepend
+        else if (index === 0) {
+            await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
         }
         else {
             let currNode = this.headPtr.next;
 
+            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode!);
@@ -253,13 +266,13 @@ export class DummyNodeSLL extends LinkedList {
                 await this.highlightNode(context, currNode!);
             }
 
-            // Insertions in the middle of the ll
+            // Insertions in the middle of the SLL
             if (currNode?.next) {
+                const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
+                // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
+                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", currNode.next);
 
                 let tempPtr: LinkedListNode | null = currNode.next;  // This pointer will be used to help move nodes following the new node forward
-                const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
-                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", tempPtr);
-
                 const promises: Promise<void>[] = [];
 
                 // Slide the nodes after the insertion index forward to make space for the new node
@@ -271,6 +284,8 @@ export class DummyNodeSLL extends LinkedList {
                             x: targetX,
                             duration: 1,
                             onUpdate: () => {
+                                // Clear the whole canvas, then draw the whole LL
+                                // May be inefficient, but otherwise leaves ghost lines on the canvas
                                 context.clearRect(0, 0, canvasWidth, canvasHeight);
                                 this.draw(context);
                             },
@@ -302,8 +317,9 @@ export class DummyNodeSLL extends LinkedList {
                         pointerOpacity: 0,
                         duration: fadeIntime,
                         onUpdate: () => {
+                            // Clear the area between the current node and the new node
                             context.clearRect(currNode.x + this.nodeWidth, currNode.y, currNode.next!.x - (currNode.x + this.nodeWidth) - 1, this.nodeHeight);
-                            newNode.drawNode(context);
+                            newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
                             currNode.drawNode(context);
                         },
                         onComplete: () => {
@@ -316,6 +332,8 @@ export class DummyNodeSLL extends LinkedList {
                         pointerOpacity: 1,
                         duration: fadeIntime,
                         onStart: () => {
+                            // Redraw nextNode pointer to regain some of the arrow cleared in previous code.
+                            // The area in question may be insignificant enough to remove this part
                             newNode.drawNode(context);
                         },
                         onUpdate: () => {
@@ -334,7 +352,7 @@ export class DummyNodeSLL extends LinkedList {
                     });
                 });
 
-                this.numElements++;
+                this.numElements++; // Increment number of elements
             }
             else {
                 // Insertions at the end can use the appending animation, using the tail pointer to prevent another full iteration
@@ -347,21 +365,21 @@ export class DummyNodeSLL extends LinkedList {
 
     // Remove the first node after the dummy head node, and return its data
     async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
-        // No such node to remove
+        // No such node to remove, return early
         if (!this.headPtr.next) {
             return;
         }
 
         const firstRealNode = this.headPtr.next;
-        let currNode = firstRealNode.next;
-        firstRealNode.next = null;
+        let currNode = firstRealNode.next;  // Set currNode to the node after firstRealNode if it exists
+        firstRealNode.next = null;  // Ensure the deleted nodes pointers are set to null as well
 
         // If the removal of the node only leaves the dummy head, set the tail pointer to the head
         if (!currNode) {
             this.tailPtr = this.headPtr;
         }
 
-        this.headPtr.next = currNode;
+        this.headPtr.next = currNode;   // Update the head node next pointer to point to currNode
 
         // Fade out the removed node
         await new Promise<void>((resolve) => {
@@ -371,7 +389,8 @@ export class DummyNodeSLL extends LinkedList {
                 duration: fadeOutTime,
                 onUpdate: () => {
                     firstRealNode.drawNode(context);
-                    this.headPtr.drawNode(context)
+                    // Draw the head node so its next pointer does not get cleared by the fade out
+                    this.headPtr.drawNode(context);
                 },
                 onComplete: () => {
                     resolve();
@@ -390,6 +409,8 @@ export class DummyNodeSLL extends LinkedList {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
+                        // Clear the whole canvas, then draw the whole LL
+                        // May be inefficient, but otherwise leaves ghost lines on the canvas
                         context.clearRect(0, 0, canvasWidth, canvasHeight);
                         this.draw(context);
                     },
@@ -402,8 +423,7 @@ export class DummyNodeSLL extends LinkedList {
         }
 
         await Promise.all(promises);
-        
-        this.numElements--;
+        this.numElements--; // Decrement number of elements
 
         // Return the removed nodes data
         return firstRealNode.data;
@@ -414,6 +434,8 @@ export class DummyNodeSLL extends LinkedList {
 
         let currNode = this.headPtr;
 
+        // Highlight nodes to show traversal, if iterationAnimation is true
+        // Iteration stops right before the last node
         while (currNode.next?.next) {
             currNode = currNode.next;
             if (iterationAnimation) {
@@ -422,9 +444,9 @@ export class DummyNodeSLL extends LinkedList {
         }
 
         const lastNode = currNode.next;
-        currNode.next = null;
-        this.tailPtr = currNode; // Update the tail pointer
-        currNode.drawNode(context);
+        currNode.next = null;   // currNode next now points to null
+        this.tailPtr = currNode;    // Update the tail pointer
+        currNode.drawNode(context); // Redraw currNode after its pointer is updated
 
         // Fade out the removed last node
         await new Promise<void>((resolve) => {
@@ -439,7 +461,7 @@ export class DummyNodeSLL extends LinkedList {
             });
         });
 
-        this.numElements--;
+        this.numElements--; // Decrement the number of elements
 
         // Return the removed nodes data
         return lastNode?.data;
@@ -447,18 +469,20 @@ export class DummyNodeSLL extends LinkedList {
 
     // Remove at the given index
     async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
-        
+        // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
         // Deletions right after the dummy head node
         else if (index === 0) {
+            // Taken care of using shift
             await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
         }
         else {
             let currNode = this.headPtr.next!;
 
+            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
             for (let i = 0; i < index - 1; i++) {
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode);
@@ -471,7 +495,7 @@ export class DummyNodeSLL extends LinkedList {
 
             const deleteNode = currNode.next!;
 
-            // Deletions in the middle of the ll
+            // Deletions in the middle of the LL
             if (deleteNode.next) {
                 let tempPtr: LinkedListNode | null = deleteNode.next;  // This pointer will be used to move the nodes following the removed node back
 
@@ -487,7 +511,7 @@ export class DummyNodeSLL extends LinkedList {
                         }
                     });
 
-                    // Set the currNode to the node after deleteNode, and deleteNode next pointer to null, then redraw currNode after the pointer update
+                    // Set the currNode to the node after deleteNode, and deleteNode next pointer to null, then fade currNode pointer back in
                     timeline.to(currNode, {
                         pointerOpacity: 1,
                         duration: fadeOutTime,
@@ -507,7 +531,7 @@ export class DummyNodeSLL extends LinkedList {
                         duration: fadeOutTime,
                         onUpdate: () => {
                             deleteNode.drawNode(context);
-                            currNode.drawNode(context);
+                            currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
                         }
                     });
                 });
@@ -523,6 +547,8 @@ export class DummyNodeSLL extends LinkedList {
                             x: targetX,
                             duration: 1,
                             onUpdate: () => {
+                                // Clear the whole canvas, then draw the whole LL
+                                // May be inefficient, but otherwise leaves ghost lines on the canvas
                                 context.clearRect(0, 0, canvasWidth, canvasHeight);
                                 this.draw(context);
                             },
@@ -536,11 +562,11 @@ export class DummyNodeSLL extends LinkedList {
                 
                 await Promise.all(promises);
             }
-            // Deletions from the end of the ll
+            // Deletions from the end of the LL
             else {
-                currNode.next = null;
-                this.tailPtr = currNode; // Update the tail pointer
-                currNode.drawNode(context);
+                currNode.next = null;   // Set currNode next pointer to null
+                this.tailPtr = currNode;    // Update the tail pointer
+                currNode.drawNode(context); // Redraw currNode after the pointer update
 
                 // Fade out the deleted node
                 await new Promise<void>((resolve) => {
@@ -556,7 +582,7 @@ export class DummyNodeSLL extends LinkedList {
                 });
             }
 
-            this.numElements--;
+            this.numElements--; // Decrement the number of elements
         }
 
         return true;    // Deletion was successful
@@ -572,10 +598,11 @@ export class DummyNodeSLL extends LinkedList {
         this.headPtr.drawNode(context);
         this.numElements = 0;   // Set number of elements to 0
 
-        // Fade out the ll
+        // Fade out the SLL
         while (currNode) {
             const node = currNode;
             currNode = currNode.next;
+            node.next = null;   // Set each next pointer to null
 
             const promise = new Promise<void>((resolve) => {
                 gsap.to(node, {
