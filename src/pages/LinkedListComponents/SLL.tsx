@@ -30,7 +30,7 @@ export class LinkedList {
                 currPtr = this.headPtr;
             }
             else {
-                let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+                const newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 currPtr.next = newNode;
                 currPtr.drawNode(context);
                 newNode.drawNode(context);
@@ -123,6 +123,12 @@ export class LinkedList {
         return -1;
     }
 
+    // Return true if the ll has the provided data
+    async contains(context: CanvasRenderingContext2D, data: any) {
+        const findOutput = await this.find(context, data);
+        return findOutput != -1;
+    }
+
     // Traverse through ll and print the nodes index and data
     async traverse(context: CanvasRenderingContext2D) {
         let currPtr = this.headPtr;
@@ -151,9 +157,6 @@ export class LinkedList {
 
             // Show append animations for linked lists whether or not they use a tail pointer
             if (usingTailPointer) {
-                if (iterationAnimation) {
-                    await this.highlightNode(context, this.tailPtr!);
-                }
                 currPtr = this.tailPtr!;
             }
             // Can choose to show appending with iterations start at the head, as linked lists may not include a tail pointer
@@ -167,11 +170,11 @@ export class LinkedList {
                     currPtr = currPtr.next;
                 }
                 if (iterationAnimation) {
-                    await this.highlightNode(context, currPtr!);
+                    await this.highlightNode(context, currPtr);
                 }
             }
 
-            newNode = new LinkedListNode(currPtr!.x + this.nodeWidth * 2, currPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, currPtr.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             currPtr.next = newNode;
             currPtr.drawNode(context);
             this.tailPtr = newNode; // update the tail pointer to the new node (regardless of which animation is being used)
@@ -221,7 +224,7 @@ export class LinkedList {
         
         await Promise.all(promises);
 
-        let newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+        const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         newNode.next = this.headPtr;
 
         // If the ll was empty, tail pointer will also point to the new node 
@@ -274,8 +277,8 @@ export class LinkedList {
             if (currPtr.next) {
 
                 let tempPtr: LinkedListNode | null = currPtr.next;  // This pointer will be used to help move nodes following the new node forward
-                let initialY = this.y + this.nodeHeight * 2;        // New nodes will appear below the height of the rest of the linked list, before being moved up
-                let newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", tempPtr);
+                const initialY = this.y + this.nodeHeight * 2;        // New nodes will appear below the height of the rest of the linked list, before being moved up
+                const newNode = new LinkedListNode(currPtr.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", tempPtr);
 
                 const promises: Promise<void>[] = [];
 
@@ -302,7 +305,7 @@ export class LinkedList {
                 await Promise.all(promises);
 
                 await new Promise<void>((resolve) => {
-                    let timeline = gsap.timeline({onComplete: () => resolve()});
+                    const timeline = gsap.timeline({onComplete: () => resolve()});
 
                     // Fade in the new node
                     timeline.to(newNode, {
@@ -311,7 +314,6 @@ export class LinkedList {
                         duration: fadeIntime,
                         onUpdate: () => {
                             newNode.drawNode(context);
-                            currPtr.drawNode(context);
                         }
                     });
 
@@ -329,7 +331,7 @@ export class LinkedList {
                         }
                     });
 
-                    // Fade in the current node pointer, which now points to the new node
+                    // Fade in the current nodes next pointer, which now points to the new node
                     timeline.to(currPtr, {
                         pointerOpacity: 1,
                         duration: fadeIntime,
@@ -356,7 +358,7 @@ export class LinkedList {
             }
             else {
                 // Insertions at the end can use the appending animation, using the tail pointer to prevent another full iteration
-                await this.append(context, newData, fadeIntime, true, false);
+                await this.append(context, newData, fadeIntime);
             }
         }
 
@@ -434,7 +436,7 @@ export class LinkedList {
             return null;
         }
         else {
-            let lastNode: LinkedListNode | null;
+            let lastNode;
 
             // If the linked list becomes empty after this removal, both head and tail pointers should be null
             if (this.headPtr.next === null) {
@@ -506,14 +508,14 @@ export class LinkedList {
                 await this.highlightNode(context, currPtr);
             }
 
-            let deleteNode = currPtr.next!;
+            const deleteNode = currPtr.next!;
 
             // Deletions in the middle of the ll
-            if (deleteNode.next != null) {
+            if (deleteNode.next) {
                 let tempPtr: LinkedListNode | null = deleteNode.next;  // This pointer will be used to move the nodes following the removed node back
 
                 await new Promise<void>((resolve) => {
-                    let timeline = gsap.timeline({onComplete: () => resolve()});
+                    const timeline = gsap.timeline({onComplete: () => resolve()});
 
                     // Fade out the pointer which pointed from currPtr to deleteNode
                     timeline.to(currPtr, {
@@ -524,7 +526,7 @@ export class LinkedList {
                         }
                     });
 
-                    // Set the currPtr to the node after deleteNode, and deleteNode next pointer to null, then redraw currPtr
+                    // Set the currPtr to the node after deleteNode, and deleteNode next pointer to null, then redraw currPtr after the pointer update
                     timeline.to(currPtr, {
                         pointerOpacity: 1,
                         duration: fadeOutTime,
@@ -543,7 +545,7 @@ export class LinkedList {
                         pointerOpacity: 0,
                         duration: fadeOutTime,
                         onUpdate: () => {
-                            deleteNode?.drawNode(context);
+                            deleteNode.drawNode(context);
                             currPtr.drawNode(context);
                         }
                     });
@@ -613,7 +615,7 @@ export class LinkedList {
             let nextPtr: LinkedListNode | null = currPtr.next;
             await this.highlightNode(context, currPtr);
             await new Promise<void>((resolve) => {
-                let timeline = gsap.timeline({onComplete: () => resolve()});
+                const timeline = gsap.timeline({onComplete: () => resolve()});
 
                 timeline.to(currPtr, {
                     pointerOpacity: 0,
@@ -647,7 +649,7 @@ export class LinkedList {
         while (currPtr) {
             const targetX = newX;
             const promise = new Promise<void>((resolve) => {
-                let timeline = gsap.timeline({onComplete: () => resolve()});
+                const timeline = gsap.timeline({onComplete: () => resolve()});
 
                 timeline.to(currPtr, {
                     x: targetX,
