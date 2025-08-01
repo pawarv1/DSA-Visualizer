@@ -379,11 +379,30 @@ export class DummyNodeSLL extends LinkedList {
             this.tailPtr = this.headPtr;
         }
 
-        this.headPtr.next = currNode;   // Update the head node next pointer to point to currNode
-
         // Fade out the removed node
         await new Promise<void>((resolve) => {
-            gsap.to(firstRealNode, {
+            const timeline = gsap.timeline({onComplete: () => resolve()});
+
+            timeline.to(this.headPtr, {
+                pointerOpacity: 0,
+                duration: fadeOutTime,
+                onUpdate: () => {
+                    this.headPtr.drawNode(context);
+                }
+            });
+
+            timeline.to(this.headPtr, {
+                pointerOpacity: 1,
+                duration: fadeOutTime,
+                onStart: () => {
+                    this.headPtr.next = currNode;   // Update the head node next pointer to point to currNode
+                },
+                onUpdate: () => {
+                    this.headPtr.drawNode(context);
+                }
+            });
+
+            timeline.to(firstRealNode, {
                 nodeOpacity: 0,
                 pointerOpacity: 0,
                 duration: fadeOutTime,
