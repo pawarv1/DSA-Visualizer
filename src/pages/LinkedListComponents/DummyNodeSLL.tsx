@@ -30,17 +30,6 @@ export class DummyNodeSLL extends LinkedList {
         }
     }
 
-    // Draw the SLL
-    draw(context: CanvasRenderingContext2D) {
-        this.headPtr.drawNode(context);
-        let currNode = this.headPtr.next;
-
-        while(currNode) {
-            currNode.drawNode(context);
-            currNode = currNode.next;
-        }
-    }
-
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
         // Error if the index is not valid
@@ -49,6 +38,7 @@ export class DummyNodeSLL extends LinkedList {
             return false;
         }
         else {
+            // currNode starts at the node after head
             let currNode = this.headPtr.next;
 
             for (let i = 0; i < index; i++) {
@@ -70,6 +60,7 @@ export class DummyNodeSLL extends LinkedList {
 
     // Search through the LL for the given data argument, and return the index where it is found, or if not, -1
     async find(context: CanvasRenderingContext2D, data: any) {
+        // currNode starts at the node after head
         let currNode = this.headPtr.next;
         let index = 0;
 
@@ -93,6 +84,7 @@ export class DummyNodeSLL extends LinkedList {
 
     // Traverse through the SLL and print the nodes index and data
     async traverse(context: CanvasRenderingContext2D) {
+        // currNode starts at the node after head
         let currNode = this.headPtr.next;
         let index = 0;
 

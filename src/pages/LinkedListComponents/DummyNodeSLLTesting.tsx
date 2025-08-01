@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import { LinkedList } from './SLL';
 import { DummyNodeSLL } from './DummyNodeSLL';
 
 function DummyNodeSLLTestCases() {
