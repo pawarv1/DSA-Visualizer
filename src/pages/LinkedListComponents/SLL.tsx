@@ -337,8 +337,8 @@ export class LinkedList {
                         pointerOpacity: 0,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            // Clear the area between the current node and the new node
-                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, currNode.next!.x - (currNode.x + this.nodeWidth) - 1, this.nodeHeight);
+                            // Clear the area between the current node and the following node
+                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight);
                             newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
                             currNode.drawNode(context);
                         },
@@ -366,8 +366,10 @@ export class LinkedList {
                         y: this.y,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            context.clearRect(0, 0, canvasWidth, canvasHeight);
-                            this.draw(context);
+                            // Clear the area affected by the movement
+                            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
+                            newNode.drawNode(context);  // Redraw newNode to show its position at current frame
+                            currNode.drawNode(context); // Redraw currNode to show updated next pointer position
                         }
                     });
                 });
@@ -682,6 +684,8 @@ export class LinkedList {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
+                        // Clear the whole canvas, then draw the whole LL
+                        // May be inefficient, but otherwise leaves ghost lines on the canvas
                         context.clearRect(0, 0, canvasWidth, canvasHeight);
                         this.draw(context);
                     },
@@ -704,6 +708,7 @@ export class LinkedList {
     }
 
     // Clear the SLL and set head and tail to null
+    // Also set each next pointer to null
     async clear(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];

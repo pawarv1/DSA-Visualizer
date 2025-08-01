@@ -362,8 +362,8 @@ export class DoublyLinkedList {
                         pointerOpacityNext: 0,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            // Clear the area between the current node and the new node
-                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, nextNode.x - (currNode.x + this.nodeWidth) - 1, this.nodeHeight / 2); // Clear the area between the current node and the next node
+                            // Clear the area between the current node and nextNode (to fade out currNode next pointer)
+                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight / 2); // Clear the area between the current node and the next node
                             newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
                             currNode.drawNode(context);
                         },
@@ -377,7 +377,8 @@ export class DoublyLinkedList {
                         pointerOpacityPrev: 0,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y + this.nodeHeight / 2, nextNode.x - (currNode.x + this.nodeWidth), this.nodeHeight / 2);  // Clear the area between the current node and the next node
+                            // Clear the area between the current node and nextNode (to fade out nextNode prev pointer)
+                            context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y + this.nodeHeight / 2, this.nodeWidth * 3, this.nodeHeight / 2);
                             nextNode.drawNode(context); // Order is flipped here to prevent arrow clearing bugs
                             newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above clear statement
                         },
@@ -410,8 +411,11 @@ export class DoublyLinkedList {
                         y: this.y,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            context.clearRect(0, 0, canvasWidth, canvasHeight);
-                            this.draw(context);
+                            // Clear area between prevNode and nextNode, with enough height to clear new node
+                            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
+                            newNode.drawNode(context);  // draw new node after clearing
+                            currNode.drawNode(context); // draw prev node after clearing and pointer movement
+                            nextNode.drawNode(context); // draw tail node after clearing and pointer movement
                             newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
                         }
                     });
@@ -476,6 +480,8 @@ export class DoublyLinkedList {
                         x: targetX,
                         duration: 1,
                         onUpdate: () => {
+                            // Clear the whole canvas, then draw the whole LL
+                            // May be inefficient, but otherwise leaves ghost lines on the canvas
                             context.clearRect(0, 0, canvasWidth, canvasHeight);
                             this.draw(context);
                         },
@@ -676,6 +682,8 @@ export class DoublyLinkedList {
                         x: targetX,
                         duration: 1,
                         onUpdate: () => {
+                            // Clear the whole canvas, then draw the whole LL
+                            // May be inefficient, but otherwise leaves ghost lines on the canvas
                             context.clearRect(0, 0, canvasWidth, canvasHeight);
                             this.draw(context);
                         },
@@ -695,7 +703,7 @@ export class DoublyLinkedList {
     }
 
     // Clear the DLL and set head and tail to null
-    // Also set each next and prev to null
+    // Also set each next and prev pointer to null
     async clear(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];
