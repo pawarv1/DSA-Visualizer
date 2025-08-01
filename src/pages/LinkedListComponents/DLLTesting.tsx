@@ -45,14 +45,15 @@ function DoublyLLTestCases() {
             testCaseHeader.draw(mainContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
-            await dll.append(mainContext, 'e');
+            await dll.append(mainContext, 'e', 1, false);
+            await dll.append(mainContext, 'f');
             setIsAnimating(false);
         }
 
         const step5 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Prepending ");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['b', 'c', 'd']);
             await dll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
@@ -86,7 +87,8 @@ function DoublyLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Linked list pop");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
-            dll.loadDLL(mainContext, ['a', 'b', 'c']);
+            dll.loadDLL(mainContext, ['a', 'b', 'c','d']);
+            await dll.pop(mainContext, 1 , false);
             await dll.pop(mainContext);
             await dll.pop(mainContext);
             await dll.pop(mainContext);
