@@ -210,14 +210,14 @@ export class LinkedList {
     async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
         
         const promises: Promise<void>[] = [];
-        let currNode = this.headPtr;
+        let tempPtr = this.headPtr; // This pointer will be used to help move the LL forward
         
         // Slide the whole LL forward to make room for the new head
-        while (currNode) {
-            const targetX = currNode.x + this.nodeWidth * 2;
+        while (tempPtr) {
+            const targetX = tempPtr.x + this.nodeWidth * 2;
 
             const promise = new Promise<void>((resolve) => {
-                gsap.to(currNode, {
+                gsap.to(tempPtr, {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
@@ -231,7 +231,7 @@ export class LinkedList {
             });
 
             promises.push(promise);
-            currNode = currNode.next;
+            tempPtr = tempPtr.next;
         }
         
         await Promise.all(promises);
@@ -418,15 +418,15 @@ export class LinkedList {
                 });
             });
 
-            let currNode = this.headPtr;
+            let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
             const promises: Promise<void>[] = [];
             
             // Slide the rest of the linked list back
-            while (currNode) {
-                const targetX = currNode.x - this.nodeWidth * 2;
+            while (tempPtr) {
+                const targetX = tempPtr.x - this.nodeWidth * 2;
 
                 const promise = new Promise<void>((resolve) => {
-                    gsap.to(currNode, {
+                    gsap.to(tempPtr, {
                         x: targetX,
                         duration: 1,
                         onUpdate: () => {
@@ -440,7 +440,7 @@ export class LinkedList {
                 });
 
                 promises.push(promise);
-                currNode = currNode.next;
+                tempPtr = tempPtr.next;
             }
 
             await Promise.all(promises);

@@ -140,14 +140,14 @@ export class DummyNodeSLL extends LinkedList {
     // Insert right after dummy head node
     async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {    
         const promises: Promise<void>[] = [];
-        let currNode = this.headPtr.next;
+        let tempPtr = this.headPtr.next;    // This pointer will be used to help move the LL forward
         
         // Slide the whole LL forward to make room for the new head
-        while (currNode) {
-            const targetX = currNode.x + this.nodeWidth * 2;
+        while (tempPtr) {
+            const targetX = tempPtr.x + this.nodeWidth * 2;
 
             const promise = new Promise<void>((resolve) => {
-                gsap.to(currNode, {
+                gsap.to(tempPtr, {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
@@ -161,7 +161,7 @@ export class DummyNodeSLL extends LinkedList {
             });
 
             promises.push(promise);
-            currNode = currNode.next;
+            tempPtr = tempPtr.next;
         }
         
         await Promise.all(promises);
@@ -367,11 +367,11 @@ export class DummyNodeSLL extends LinkedList {
         }
 
         const firstRealNode = this.headPtr.next;
-        let currNode = firstRealNode.next;  // Set currNode to the node after firstRealNode if it exists
+        let tempPtr = firstRealNode.next;  // Set tempPtr to the node after firstRealNode if it exists
         firstRealNode.next = null;  // Ensure the deleted nodes pointers are set to null as well
 
         // If the removal of the node only leaves the dummy head, set the tail pointer to the head
-        if (!currNode) {
+        if (!tempPtr) {
             this.tailPtr = this.headPtr;
         }
 
@@ -391,7 +391,7 @@ export class DummyNodeSLL extends LinkedList {
                 pointerOpacity: 1,
                 duration: fadeOutTime,
                 onStart: () => {
-                    this.headPtr.next = currNode;   // Update the head node next pointer to point to currNode
+                    this.headPtr.next = tempPtr;   // Update the head node next pointer to point to currNode
                 },
                 onUpdate: () => {
                     this.headPtr.drawNode(context);
@@ -416,11 +416,11 @@ export class DummyNodeSLL extends LinkedList {
         const promises: Promise<void>[] = [];
         
         // Slide the rest of the linked list back
-        while (currNode) {
-            const targetX = currNode.x - this.nodeWidth * 2;
+        while (tempPtr) {
+            const targetX = tempPtr.x - this.nodeWidth * 2;
 
             const promise = new Promise<void>((resolve) => {
-                gsap.to(currNode, {
+                gsap.to(tempPtr, {
                     x: targetX,
                     duration: 1,
                     onUpdate: () => {
@@ -434,7 +434,7 @@ export class DummyNodeSLL extends LinkedList {
             });
 
             promises.push(promise);
-            currNode = currNode.next;
+            tempPtr = tempPtr.next;
         }
 
         await Promise.all(promises);
