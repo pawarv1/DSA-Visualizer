@@ -264,7 +264,7 @@ export class LinkedList {
     // Insert at the given index
     async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
         // Error if the insertion index is not valid
-        if (this.headPtr === null || index < 0 || index > this.numElements) {
+        if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
@@ -273,7 +273,7 @@ export class LinkedList {
             await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
         }
         else {
-            let currNode = this.headPtr;
+            let currNode = this.headPtr!;
 
             // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
@@ -512,7 +512,7 @@ export class LinkedList {
     // Remove at the given index
     async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         // Error if index of deletion is invalid
-        if (this.headPtr === null || index < 0 || index >= this.numElements) {
+        if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
@@ -522,7 +522,7 @@ export class LinkedList {
             await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
         }
         else {
-            let currNode = this.headPtr;
+            let currNode = this.headPtr!;
 
             // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
             for (let i = 0; i < index - 1; i++) {
