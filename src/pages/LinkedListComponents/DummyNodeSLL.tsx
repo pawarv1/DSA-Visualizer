@@ -247,21 +247,21 @@ export class DummyNodeSLL extends LinkedList {
             await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
         }
         else {
-            let currNode = this.headPtr.next;
+            let currNode = this.headPtr.next!;
 
             // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
                 if (iterationAnimation) {
-                    await this.highlightNode(context, currNode!);
+                    await this.highlightNode(context, currNode);
                 }
-                currNode = currNode!.next;
+                currNode = currNode.next!;
             }
             if (iterationAnimation) {
-                await this.highlightNode(context, currNode!);
+                await this.highlightNode(context, currNode);
             }
 
             // Insertions in the middle of the SLL
-            if (currNode?.next) {
+            if (currNode.next) {
                 const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
                 const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", currNode.next);
