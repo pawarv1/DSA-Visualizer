@@ -1,5 +1,6 @@
 import gsap, { timeline } from 'gsap';
-import { ArrayCell, Array } from './ArrayAnimationGraphics';
+import { ArrayCell } from './ArrayCell';
+import { Array } from './Array';
 
 // Dynamic Array Class, inherits from array class
 export class DynamicArray extends Array {
