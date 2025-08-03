@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
-import { Array, DynamicArray } from './ArrayAnimationGraphics';
+import { DynamicArray } from './DynamicArray';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap, { context, timeline } from 'gsap';
 

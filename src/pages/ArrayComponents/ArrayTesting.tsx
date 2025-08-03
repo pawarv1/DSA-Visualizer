@@ -210,7 +210,7 @@ function ArrayTestCases() {
     // Printing array
     const step14 = async () => {
       setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Looping through an array");
+      const testCaseHeader = new Text (70, 40, "Traversing through an array and printing");
       const array = new Array (50, 100, 30, 30, ["A", "B", "C", "D", "E", "F", "G", "H"]);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
