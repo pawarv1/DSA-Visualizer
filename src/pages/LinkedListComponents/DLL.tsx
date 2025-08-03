@@ -363,7 +363,7 @@ export class DoublyLinkedList {
                         duration: fadeIntime,
                         onUpdate: () => {
                             // Clear the area between the current node and nextNode (to fade out currNode next pointer)
-                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight / 2); // Clear the area between the current node and the next node
+                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight / 2);
                             newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
                             currNode.drawNode(context);
                         },
@@ -664,8 +664,8 @@ export class DoublyLinkedList {
                     },
                     onUpdate: () => {
                         deleteNode.drawNode(context);
-                        prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers arent cleared
-                        nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers arent cleared
+                        prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
+                        nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
                     }
                 });
             });
