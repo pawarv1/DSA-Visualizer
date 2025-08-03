@@ -411,7 +411,7 @@ export class DoublyLinkedList {
                         y: this.y,
                         duration: fadeIntime,
                         onUpdate: () => {
-                            // Clear area between prevNode and nextNode, with enough height to clear new node
+                            // Clear area between currNode and nextNode, with enough height to clear new node
                             context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
                             newNode.drawNode(context);  // draw new node after clearing
                             currNode.drawNode(context); // draw prev node after clearing and pointer movement
@@ -708,7 +708,7 @@ export class DoublyLinkedList {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];
 
-        // Fade out the SLL
+        // Fade out the DLL
         while (currNode) {
             const node = currNode;
             currNode = currNode.next;
