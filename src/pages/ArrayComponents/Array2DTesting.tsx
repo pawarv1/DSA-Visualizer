@@ -207,14 +207,11 @@ function Array2DTestCases() {
             setIsAnimating(false);
         }
 
-        /* 
-        Clear has not be implemented yet
-
         // Clearing an array test case
         const step14 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Clearing an array");
-            const array = new Array (100, 100, 80, 50, [2,4,6,8]);
+            const array = new Array2D (100, 100, 80, 50, 2, 2, [2,4,6,8]);
             testCaseHeader.draw(mainContext);
             array.draw(mainContext);
             setTimeout(() => {
@@ -222,9 +219,6 @@ function Array2DTestCases() {
                 setIsAnimating(false);
             }, 2000);
         }
-        */
-
-        
 
         // Switch statement which runs the associated step method for the given step
         switch(step) {
@@ -267,17 +261,15 @@ function Array2DTestCases() {
             case 13:
                 step13();
                 break;
-            /*
             case 14:
                 step14();
                 break;
-            */
             default:
                 break
         }
     }
 
-    return <StepPlayer totalSteps={13} runStep={run2DArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={14} runStep={run2DArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default Array2DTestCases;

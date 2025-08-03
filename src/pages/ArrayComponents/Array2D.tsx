@@ -1,13 +1,11 @@
 import gsap, { timeline } from 'gsap';
-import { ArrayCell } from './ArrayCell';
-import { useParams } from 'react-router-dom';
+import { ArrayCell2D } from './ArrayCell';
 
-// Need to make an additional ArrayCell component to fix clearing bugs and get index numbers
-// For now the current one will suffice, but will be slightly buggy
+// Current implementation cannot show index numbers
 
 // 2D Array Class
 export class Array2D {
-    private cells: ArrayCell[][];
+    private cells: ArrayCell2D[][];
 
     constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
         if (rows * columns != contents.length) {
@@ -32,11 +30,29 @@ export class Array2D {
         for (let i = 0; i < contents.length; i++) {
             const currRow = Math.floor(i / columns);
             const currCol = i % columns;
-            this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white");
+            this.cells[currRow][currCol] = new ArrayCell2D(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, currRow, currCol, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white");
         }
     }
 
-    draw(context: CanvasRenderingContext2D) {
+    draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+        if (drawIndex) {
+            let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
+            context.save();
+            context.globalAlpha = this.opacity;
+            context.fillStyle = 'black';
+            context.font = `${fontSize}px Arial`;
+            context.textAlign = 'center';
+            context.textBaseline = 'top';
+            
+            for (let c = 0; c < this.columns; c++) {
+                context.fillText(c.toString(), this.x + (this.cellWidth * c) + this.cellWidth / 2, this.y - 14);
+            }
+            for (let r = 0; r < this.rows; r++) {
+                context.fillText(r.toString(), this.x - 10, this.y + (this.cellHeight * r) + this.cellHeight / 2);
+            }
+            context.restore();
+        }
+
         for (let i = 0; i < this.rows; i++) {
             for (let j = 0; j < this.columns; j++) {
                 const cell = this.cells[i][j];
@@ -215,12 +231,15 @@ export class Array2D {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color back to what it was without redrawings
+            // Reset the fill color back to what it was without redrawing
             cell1.fillColor = "white";
             cell2.fillColor = "white";
         }
     }
 
-
-    // Need to implement clear
+    // Clear the array
+    clear(context: CanvasRenderingContext2D) {
+        // Need to clear more space to account for index numbers
+        context.clearRect(this.x - 15, this.y - 15, (this.cellWidth * this.rows) + 16, (this.cellHeight * this.columns) + 16);
+    }
 }

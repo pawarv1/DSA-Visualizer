@@ -229,7 +229,7 @@ export class Array {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color back to what it was without redrawings
+            // Reset the fill color back to what it was without redrawing
             cell1.fillColor = "white";
             cell2.fillColor = "white";
         }
