@@ -7,7 +7,7 @@ export class DynamicArray extends Array {
     private capacity: number;
 
     constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', initialCapacity: number = contents.length) {
-        super(x, y, cellWidth, cellHeight, contents, opacity, outlineColor, fillColor);
+        super(x, y, cellWidth, cellHeight, contents, opacity);
         this.capacity = Math.max(initialCapacity, contents.length);
     }
 
@@ -40,7 +40,7 @@ export class DynamicArray extends Array {
         // Expand
         if (this.capacity < newCapacity) {
             for (let i = this.capacity; i < newCapacity; i++) {
-                this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, this.outlineColor, this.fillColor, false));
+                this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, "black", "white", false));
             }
 
             const newCells = this.cells.slice(this.capacity);
@@ -89,7 +89,7 @@ export class DynamicArray extends Array {
     // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
         if (this.capacity === 0) {
-            this.cells.push(new ArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, this.outlineColor, this.fillColor));
+            this.cells.push(new ArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, "black", "white"));
             this.capacity = 1;
         }
     }

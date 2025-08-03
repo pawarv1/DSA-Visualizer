@@ -68,26 +68,22 @@ export class Array {
     protected arraySize: number;
     protected cells: ArrayCell[];
 
-    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], protected opacity: number = 1, protected outlineColor: string = 'black', protected fillColor: string = "white") {
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], protected opacity: number = 1) {
         this.x = x;
         this.y = y;
         this.cellWidth = cellWidth;
         this.cellHeight = cellHeight;
         this.arraySize = contents.length;
         this.opacity = opacity;
-        this.outlineColor = outlineColor;
-        this.fillColor = fillColor;
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, this.outlineColor, this.fillColor));
+            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
         }
     }
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         this.cells.forEach(cell => {
             cell.opacity = this.opacity;
-            cell.outlineColor = this.outlineColor;
-            cell.fillColor = this.fillColor;
             cell.drawCell(context, drawIndex);
         });
     }
@@ -128,40 +124,24 @@ export class Array {
         }
     }
 
-    // Can change outline color of an individual cell or all the cells
-    setOutlineColor(context: CanvasRenderingContext2D, index: string | number, outlineColor: string, redraw: boolean = true) {
-        if (typeof index === 'string' && index === "all") {
-            this.outlineColor = outlineColor;
-            if (redraw) {
-                this.draw(context);
-            }
-        }
-        else if (typeof index === 'number') {
-            if (this.checkIndexValidity(index)) {
-                this.cells[index].outlineColor = outlineColor;
+    // Can change outline color of an individual cell
+    setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true) {
+        if (this.checkIndexValidity(index)) {
+            this.cells[index].outlineColor = outlineColor;
 
-                if (redraw) {
-                    this.cells[index].drawCell(context);
-                }
+            if (redraw) {
+                this.cells[index].drawCell(context);
             }
         }
     }
 
-    // Can change fill color of an individual cell or all the cells
-    setFillColor(context: CanvasRenderingContext2D, index: string | number, fillColor: string, redraw: boolean = true) {
-        if (typeof index === 'string') {
-            this.fillColor = fillColor;
-            if (redraw) {
-                this.draw(context);
-            }
-        }
-        else if (typeof index === 'number') {
-            if (this.checkIndexValidity(index)) {
-                this.cells[index].fillColor = fillColor;
+    // Can change fill color of an individual cell
+    setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true) {
+        if (this.checkIndexValidity(index)) {
+            this.cells[index].fillColor = fillColor;
 
-                if (redraw) {
-                    this.cells[index].drawCell(context);
-                }
+            if (redraw) {
+                this.cells[index].drawCell(context);
             }
         }
     }
@@ -250,8 +230,8 @@ export class Array {
             swapContent();
             await fadeIn();
             // Reset the fill color back to what it was without redrawings
-            cell1.fillColor = this.fillColor;
-            cell2.fillColor = this.fillColor;
+            cell1.fillColor = "white";
+            cell2.fillColor = "white";
         }
     }
 

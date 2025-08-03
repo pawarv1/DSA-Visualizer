@@ -4,8 +4,6 @@ import { DynamicArray } from './DynamicArray';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap, { context, timeline } from 'gsap';
 
-//This component handles all the canvas logic needed for the various array animations
-
 function DynamicArrayTestCases() {
 
   let canvasWidth = 800;

@@ -1,6 +1,7 @@
 import React from "react";
 import ArrayTestCases from "./ArrayTesting";
 import DynamicArrayTestCases from "./DynamicArrayTesting";
+import Array2DTestCases from "./Array2DTesting";
 
 /*
 The array view component seres aws the page for the arrays section
@@ -20,6 +21,11 @@ function ArrayView() {
         <h1>Dynamic Array Testing</h1>
         <h2>Update when finished</h2>
         <DynamicArrayTestCases></DynamicArrayTestCases>
+      </div>
+      <div>
+        <h1>2D Array Testing</h1>
+        <h2>Update when finished</h2>
+        <Array2DTestCases></Array2DTestCases>
       </div>
     </>
   );

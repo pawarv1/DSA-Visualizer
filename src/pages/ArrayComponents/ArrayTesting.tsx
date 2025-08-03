@@ -4,8 +4,6 @@ import { Array } from './Array';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap from 'gsap';
 
-//This component handles all the canvas logic needed for the various array animations
-
 function ArrayTestCases() {
   let canvasWidth = 800;
   let canvasHeight = 600;
@@ -123,7 +121,6 @@ function ArrayTestCases() {
       setIsAnimating(false);
     }
     
-
     // Set outline color for a single cell test case
     const step7 = () => {
       setIsAnimating(true);
@@ -135,19 +132,8 @@ function ArrayTestCases() {
       setIsAnimating(false);
     }
 
-    // Set outline color for whole array test case
-    const step8 = () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Changing outline color for whole array");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50], 1);
-      testCaseHeader.draw(mainContext);
-      array1.draw(mainContext);
-      array1.setOutlineColor(mainContext, "all", "red");
-      setIsAnimating(false);
-    }
-
     // Set fill color for a single cell test case
-    const step9 = () => {
+    const step8 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing fill color for a single cell");
       const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50]);
@@ -157,19 +143,8 @@ function ArrayTestCases() {
       setIsAnimating(false);
     }
 
-    // Set fill color for whole array test case
-    const step10 = () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Changing fill color for whole array");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50], 1);
-      testCaseHeader.draw(mainContext);
-      array1.draw(mainContext);
-      array1.setFillColor(mainContext, "all", "yellow");
-      setIsAnimating(false);
-    }
-
     // Getting array length test case
-    const step11 = () => {
+    const step9 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Checking array length");
       const array = new Array (100, 100, 80, 50, ['A', 'B', 'C', 'D', 'E', 'F']);
@@ -184,7 +159,7 @@ function ArrayTestCases() {
     }
 
     // Swapping two values in the array test case
-    const step12 = async () => {
+    const step10 = async () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Swapping two elements of the array");
       const array = new Array (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
@@ -195,7 +170,7 @@ function ArrayTestCases() {
     }
 
     // Clearing an array test case
-    const step13 = () => {
+    const step11 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Clearing an array");
       const array = new Array (100, 100, 80, 50, [2,4,6,8]);
@@ -208,7 +183,7 @@ function ArrayTestCases() {
     }
 
     // Printing array
-    const step14 = async () => {
+    const step12 = async () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Traversing through an array and printing");
       const array = new Array (50, 100, 30, 30, ["A", "B", "C", "D", "E", "F", "G", "H"]);
@@ -219,7 +194,7 @@ function ArrayTestCases() {
     }
 
     // Creating an empty array test case
-    const step15 = () => {
+    const step13 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Creating an empty array");
       const array = new Array (100, 100, 80, 50, []);
@@ -270,18 +245,12 @@ function ArrayTestCases() {
       case 13:
         step13();
         break;
-      case 14:
-        step14();
-        break;
-      case 15:
-        step15();
-        break;
       default:
         break
     }
   }
 
-  return <StepPlayer totalSteps={15} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={13} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default ArrayTestCases;
