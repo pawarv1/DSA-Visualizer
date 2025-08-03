@@ -6,7 +6,7 @@ import { Array } from './Array';
 export class DynamicArray extends Array {
     private capacity: number;
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', initialCapacity: number = contents.length) {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, initialCapacity: number = contents.length) {
         super(x, y, cellWidth, cellHeight, contents, opacity);
         this.capacity = Math.max(initialCapacity, contents.length);
     }

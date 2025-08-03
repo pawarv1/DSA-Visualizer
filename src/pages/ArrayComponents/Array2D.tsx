@@ -2,9 +2,12 @@ import gsap, { timeline } from 'gsap';
 import { ArrayCell } from './ArrayCell';
 import { useParams } from 'react-router-dom';
 
+// Need to make an additional ArrayCell component to fix clearing bugs and get index numbers
+// For now the current one will suffice, but will be slightly buggy
+
 // 2D Array Class
 export class Array2D {
-    cells: ArrayCell[][];
+    private cells: ArrayCell[][];
 
     constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
         if (rows * columns != contents.length) {
@@ -32,16 +35,6 @@ export class Array2D {
             this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white");
         }
     }
-    
-    // For debugging
-    print() {
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.columns; j++) {
-                console.log(`${i},${j}`);
-                console.log(this.cells[i][j].content);
-            }
-        }
-    }
 
     draw(context: CanvasRenderingContext2D) {
         for (let i = 0; i < this.rows; i++) {
@@ -52,4 +45,182 @@ export class Array2D {
             }
         }
     }
+
+    // Throws RangeError if either index is out of bounds
+    checkIndexValidity(rowIndex: number, columnIndex: number) {
+        if ((rowIndex < 0 || rowIndex >= this.rows) || (columnIndex < 0 || columnIndex >= this.columns)) {
+            console.error(`[${rowIndex}, ${columnIndex}] is out of bounds`);
+            return false;
+        }
+        return true;
+    }
+
+    // Set the element at the given indexes
+    setElementAt(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, newElement: any) {
+        if (this.checkIndexValidity(rowIndex, columnIndex)) {
+            this.cells[rowIndex][columnIndex].content = newElement;
+            this.cells[rowIndex][columnIndex].drawCell(context, false);
+        }
+    }
+
+    // Can change opacity of an individual cell or all the cells
+    setOpacity(context: CanvasRenderingContext2D, index: string | [number, number], opacity: number, redraw: boolean = true) {
+        if (typeof index === 'string') {
+            this.opacity = opacity;
+            if (redraw) {
+                this.draw(context);
+            }
+        }
+        else {
+            if (this.checkIndexValidity(index[0], index[1])) {
+                this.cells[index[0]][index[1]].opacity = opacity;
+
+                if (redraw) {
+                    this.cells[index[0]][index[1]].drawCell(context, false);
+                }
+            }
+        }
+    }
+
+    // Can change outline color of an individual cell
+    setOutlineColor(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, outlineColor: string, redraw: boolean = true) {
+        if (this.checkIndexValidity(rowIndex, columnIndex)) {
+            this.cells[rowIndex][columnIndex].outlineColor = outlineColor;
+
+            if (redraw) {
+                this.cells[rowIndex][columnIndex].drawCell(context, false);
+            }
+        }
+    }
+
+    // Can change fill color of an individual cell
+    setFillColor(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, fillColor: string, redraw: boolean = true) {
+        if (this.checkIndexValidity(rowIndex, columnIndex)) {
+            this.cells[rowIndex][columnIndex].fillColor = fillColor;
+
+            if (redraw) {
+                this.cells[rowIndex][columnIndex].drawCell(context, false);
+            }
+        }
+    }
+
+    // Get the row size of the array
+    getArraySize() {
+        return this.cells.length;
+    }
+
+    // Get the column size of the array
+    getArraySizeAtRow(rowIndex: number) {
+        if (rowIndex < 0 || rowIndex >= this.rows) {
+            console.error(`${rowIndex} is out of bounds`);
+            return false;
+        }
+        return this.cells[rowIndex].length;
+    }
+
+    // Return the element at the given indexes
+    getElementAt(rowIndex: number, columnIndex: number) {
+        if (this.checkIndexValidity(rowIndex, columnIndex)) {
+            return this.cells[rowIndex][columnIndex].content;
+        }
+    }
+
+    // For debugging, get rid of later
+    printDEBUG() {
+        for (let i = 0; i < this.rows; i++) {
+            for (let j = 0; j < this.columns; j++) {
+                console.log(`${i},${j}`);
+                console.log(this.cells[i][j].content);
+            }
+        }
+    }
+
+    // Traverse through the array and print each element
+    // Hightlight and change outline color of the current element
+    async print(context: CanvasRenderingContext2D) {
+        await new Promise<void>((resolve) => {
+            // Resolve after the timeline animation completes
+            const timeline = gsap.timeline({onComplete: () => { resolve() }});
+        
+            for (let i = 0; i < this.rows; i++) {
+                for (let j = 0; j < this.columns; j++) {
+                    timeline.to(this, {
+                        duration: 1,
+                        onUpdate: () => {
+                            if (i != 0) {
+                                if (j == 0) {
+                                    this.setOutlineColor(context, i - 1, this.columns - 1, "black");
+                                    this.setFillColor(context, i - 1, this.columns - 1, "white");
+                                }
+                            }
+                            if (j != 0) {
+                                this.setOutlineColor(context, i, j - 1, "black");
+                                this.setFillColor(context, i, j - 1, "white");
+                            }
+                            this.setOutlineColor(context, i, j, "red");
+                            this.setFillColor(context, i, j, "yellow");
+                            console.log(this.getElementAt(i, j));
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    // Animate the swap of two elements through fading
+    async swapElements(context: CanvasRenderingContext2D, rowIndex1: number, columnIndex1: number, rowIndex2: number, columnIndex2: number,) {
+        if (this.checkIndexValidity(rowIndex1, columnIndex1) && this.checkIndexValidity(rowIndex2, columnIndex2)) {
+            const cell1 = this.cells[rowIndex1][columnIndex1];
+            const cell2 = this.cells[rowIndex2][columnIndex2];
+            cell1.fillColor = "yellow";
+            cell2.fillColor = "yellow";
+            
+            // Fade out both cells
+            const fadeOut = () => new Promise<void>((resolve) => {
+                gsap.to([cell1, cell2], {
+                    opacity: 0,
+                    duration: 1,
+                    onUpdate: () => {
+                        cell1.clear(context);
+                        cell2.clear(context);
+                        cell1.drawCell(context, false);
+                        cell2.drawCell(context, false);
+                    },
+                    onComplete: () => resolve()
+                });
+            });
+
+            // Swap the contents while the two cells are still faded out 
+            const swapContent = () => {
+                const temp = cell1.content;
+                cell1.content = cell2.content;
+                cell2.content = temp;
+            };
+
+            // Fade the swapped cells back in
+            const fadeIn = () => new Promise<void>((resolve) => {
+                gsap.to([cell1, cell2], {
+                    opacity: 1,
+                    duration: 1,
+                    onUpdate: () => {
+                        cell1.clear(context);
+                        cell2.clear(context);
+                        cell1.drawCell(context, false);
+                        cell2.drawCell(context, false);
+                    },
+                    onComplete: () => resolve()
+                });
+            });
+
+            await fadeOut();
+            swapContent();
+            await fadeIn();
+            // Reset the fill color back to what it was without redrawings
+            cell1.fillColor = "white";
+            cell2.fillColor = "white";
+        }
+    }
+
+
+    // Need to implement clear
 }

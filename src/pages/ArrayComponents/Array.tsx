@@ -98,7 +98,7 @@ export class Array {
     }
 
     // Set the element at the given index
-    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: string) {
+    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
             this.cells[index].drawCell(context);
