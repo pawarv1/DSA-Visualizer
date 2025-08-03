@@ -50,7 +50,7 @@ export class LinkedListNode {
 
         if (this.next) {
             // Represent the next pointer (if it is not null) with an arrow
-            let pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
+            const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
             pointerArrow.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
