@@ -80,6 +80,27 @@ export class DoublyLinkedList {
         });
     }
 
+    // Helper method which genealizes the central draw loop pattern
+    // Improves efficiency for large movement animations
+    async runWithCentralDrawLoop(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
+        let animating = true;
+
+        const drawLoop = () => {
+            if (!animating) {
+                return;
+            }
+            context.clearRect(0, 0, canvasWidth, canvasHeight);
+            drawFn(context);
+        };
+
+        gsap.ticker.add(drawLoop);
+
+        await Promise.all(animationPromises);
+
+        animating = false;
+        gsap.ticker.remove(drawLoop);
+    }
+
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
         // Error if the index is not valid
@@ -225,33 +246,28 @@ export class DoublyLinkedList {
 
     // Insert to the head of the DLL
     async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
-            
-        const promises: Promise<void>[] = [];
+        const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
         let tempPtr = this.headPtr;    // This pointer will be used to help move the DLL forward
         
-        // Slide the whole DLL forward to make room for the new head
+        // Add the nodes to movingNodes
         while (tempPtr) {
-            const targetX = tempPtr.x + this.nodeWidth * 2;
-
-            const promise = new Promise<void>((resolve) => {
-                gsap.to(tempPtr, {
-                    x: targetX,
-                    duration: 1,
-                    onUpdate: () => {
-                        // Clear the whole canvas, then draw the whole LL
-                        // May be inefficient, but otherwise leaves ghost lines on the canvas
-                        context.clearRect(0, 0, canvasWidth, canvasHeight);
-                        this.draw(context);
-                    },
-                    onComplete: () => resolve()
-                });
-            });
-
-            promises.push(promise);
+            movingNodes.push(tempPtr);
             tempPtr = tempPtr.next;
         }
-        
-        await Promise.all(promises);
+
+        // Calculate the updated x values
+        const animationPromises = movingNodes.map(node => {
+            return new Promise<void>((resolve) => {
+                gsap.to(node, {
+                    x: node.x + this.nodeWidth * 2,
+                    duration: 1,
+                    onComplete: resolve
+                });
+            });
+        });
+
+        // Call runWithCentralDrawLoop to animate the movement
+        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
         // newNode is initialized with its next pointer pointing to the head
         const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", this.headPtr);
@@ -316,33 +332,29 @@ export class DoublyLinkedList {
                 // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
                 const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", nextNode, currNode);
 
+                const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr: DLLNode | null = currNode.next; // This pointer will be used to help move nodes following the new node forward
-                const promises: Promise<void>[] = [];
 
-                // Slide the nodes after the insertion index forward to make space for the new node
+                // Add the nodes to movingNodes
                 while (tempPtr) {
-                    const targetX = tempPtr.x + this.nodeWidth * 2;
-
-                    const promise = new Promise<void>((resolve) => {
-                        gsap.to(tempPtr, {
-                            x: targetX,
-                            duration: 1,
-                            onUpdate: () => {
-                                // Clear the whole canvas, then draw the whole LL
-                                // May be inefficient, but otherwise leaves ghost lines on the canvas
-                                context.clearRect(0, 0, canvasWidth, canvasHeight);
-                                this.draw(context);
-                            },
-                            onComplete: () => resolve()
-                        });
-                    });
-
-                    promises.push(promise);
+                    movingNodes.push(tempPtr);
                     tempPtr = tempPtr.next;
                 }
-                
-                await Promise.all(promises);
 
+                // Calculate the updated x values
+                const animationPromises = movingNodes.map(node => {
+                    return new Promise<void>((resolve) => {
+                        gsap.to(node, {
+                            x: node.x + this.nodeWidth * 2,
+                            duration: 1,
+                            onComplete: resolve
+                        });
+                    });
+                });
+
+                // Call runWithCentralDrawLoop to animate the movement
+                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -468,32 +480,29 @@ export class DoublyLinkedList {
                 });
             });
 
+            const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
             let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
-            const promises: Promise<void>[] = [];
-            
-            // Slide the rest of the linked list back
+
+            // Add the nodes to movingNodes
             while (tempPtr) {
-                const targetX = tempPtr.x - this.nodeWidth * 2;
-
-                const promise = new Promise<void>((resolve) => {
-                    gsap.to(tempPtr, {
-                        x: targetX,
-                        duration: 1,
-                        onUpdate: () => {
-                            // Clear the whole canvas, then draw the whole LL
-                            // May be inefficient, but otherwise leaves ghost lines on the canvas
-                            context.clearRect(0, 0, canvasWidth, canvasHeight);
-                            this.draw(context);
-                        },
-                        onComplete: () => resolve()
-                    });
-                });
-
-                promises.push(promise);
+                movingNodes.push(tempPtr);
                 tempPtr = tempPtr.next;
             }
 
-            await Promise.all(promises);
+            // Calculate the updated x values
+            const animationPromises = movingNodes.map(node => {
+                return new Promise<void>((resolve) => {
+                    gsap.to(node, {
+                        x: node.x - this.nodeWidth * 2,
+                        duration: 1,
+                        onComplete: resolve
+                    });
+                });
+            });
+
+            // Call runWithCentralDrawLoop to animate the movement
+            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+
             this.numElements--; // Decrement the number of elements
 
             // Return the removed nodes data
@@ -670,34 +679,30 @@ export class DoublyLinkedList {
                 });
             });
 
-            const promises: Promise<void>[] = [];
+            const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
             let tempPtr = nextNode; // This pointer will be used to move the nodes following the removed node back
 
-            // Slide the following nodes back
+            // Add the nodes to movingNodes
             while (tempPtr) {
-                const targetX = tempPtr.x - this.nodeWidth * 2;
-
-                const promise = new Promise<void>((resolve) => {
-                    gsap.to(tempPtr, {
-                        x: targetX,
-                        duration: 1,
-                        onUpdate: () => {
-                            // Clear the whole canvas, then draw the whole LL
-                            // May be inefficient, but otherwise leaves ghost lines on the canvas
-                            context.clearRect(0, 0, canvasWidth, canvasHeight);
-                            this.draw(context);
-                        },
-                        onComplete: () => resolve()
-                    });
-                });
-
-                promises.push(promise);
+                movingNodes.push(tempPtr);
                 tempPtr = tempPtr.next;
             }
-            
-            await Promise.all(promises);
-            this.numElements--; // Decrement the number of elements
 
+            // Calculate the updated x values
+            const animationPromises = movingNodes.map(node => {
+                return new Promise<void>((resolve) => {
+                    gsap.to(node, {
+                        x: node.x - this.nodeWidth * 2,
+                        duration: 1,
+                        onComplete: resolve
+                    });
+                });
+            });
+
+            // Call runWithCentralDrawLoop to animate the movement
+            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+
+            this.numElements--; // Decrement the number of elements
             return true;    // Deletion was successful
         }
     }

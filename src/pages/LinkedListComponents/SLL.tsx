@@ -103,7 +103,6 @@ export class LinkedList {
         gsap.ticker.remove(drawLoop);
     }
 
-
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
         // Error if the index is not valid
@@ -455,6 +454,7 @@ export class LinkedList {
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
             this.numElements--; // Decrement number of elements
+           
             // Return the removed nodes data
             return firstNode.data;
         }

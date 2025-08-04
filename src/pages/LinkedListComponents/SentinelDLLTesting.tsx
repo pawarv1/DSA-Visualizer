@@ -87,6 +87,7 @@ function SentinelDLLTestCases() {
             testCaseHeader.draw(staticContext);
             const dll = new SentinelDLL(100, 100, 50, 30);
             dll.loadDLL(mainContext, []);
+            await dll.prepend(mainContext, 'b', canvasWidth, canvasHeight);
             await dll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
             setIsAnimating(false);
         }

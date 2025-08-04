@@ -46,7 +46,7 @@ function DoublyLLTestCases() {
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             await dll.append(mainContext, 'e', 1, false);
-            await dll.append(mainContext, 'f');
+            await dll.append(mainContext, 'f', 1, false);
             setIsAnimating(false);
         }
 
@@ -89,9 +89,9 @@ function DoublyLLTestCases() {
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c','d']);
             await dll.pop(mainContext, 1 , false);
-            await dll.pop(mainContext);
-            await dll.pop(mainContext);
-            await dll.pop(mainContext);
+            await dll.pop(mainContext, 1, false);
+            await dll.pop(mainContext, 1, false);
+            await dll.pop(mainContext, 1, false);
             setIsAnimating(false);
         }
 
