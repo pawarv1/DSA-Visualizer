@@ -68,7 +68,7 @@ function LinkedListTestCases() {
         const step6 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Prepend linked list node to empty list");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.prepend(mainContext, "a", canvasWidth, canvasHeight);
             setIsAnimating(false);
