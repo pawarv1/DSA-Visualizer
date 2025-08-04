@@ -10,7 +10,7 @@ export class DummyNodeSLL extends LinkedList {
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
-        this.headPtr = new LinkedListNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity); // Head is set to a dummy node
+        this.headPtr = new LinkedListNode(x, y, nodeWidth, nodeHeight, null, null, opacity, opacity); // Head is set to a dummy node
         this.tailPtr = this.headPtr;    // Set tail to the head when initialized
         this.numElements = 0;
     }
@@ -20,7 +20,7 @@ export class DummyNodeSLL extends LinkedList {
         let currNode = this.headPtr
 
         for (let i = 0; i < nodeData.length; i++) {
-            const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+            const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, this.opacity, this.opacity);
             currNode.next = newNode;
             currNode.drawNode(context);  // Draw currNode after the pointer update
             newNode.drawNode(context);
@@ -116,7 +116,7 @@ export class DummyNodeSLL extends LinkedList {
             }
         }
             
-        const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+        const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, null, 0, 0);
         currNode.next = newNode;
         currNode.drawNode(context);  // Redraw currNode after its pointer is updated
         this.tailPtr = newNode; // Update the tail pointer to the new node (regardless of which animation is being used)
@@ -170,7 +170,7 @@ export class DummyNodeSLL extends LinkedList {
         else {
             const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
             // newNode is initialized with its next pointer pointing to same location as head node next pointer
-            const newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", this.headPtr.next);
+            const newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, this.headPtr.next, 0, 0);
 
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
@@ -260,7 +260,7 @@ export class DummyNodeSLL extends LinkedList {
             if (currNode.next) {
                 const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
-                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", currNode.next);
+                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, currNode.next, 0, 0);
 
                 const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr: LinkedListNode | null = currNode.next;  // This pointer will be used to help move nodes following the new node forward

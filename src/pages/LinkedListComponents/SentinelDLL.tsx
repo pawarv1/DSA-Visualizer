@@ -11,8 +11,8 @@ export class SentinelDLL extends DoublyLinkedList {
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
         // Head and tail are set to sentinel nodes
-        this.headPtr = new DLLNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity);
-        this.tailPtr = new DLLNode(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, opacity, opacity);
+        this.headPtr = new DLLNode(x, y, nodeWidth, nodeHeight, null, null, null, opacity, opacity);
+        this.tailPtr = new DLLNode(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, null, null, opacity, opacity);
         // Update head next pointer to tail and tail prev pointer to head
         this.headPtr.next = this.tailPtr;
         this.tailPtr.prev = this.headPtr;
@@ -25,7 +25,7 @@ export class SentinelDLL extends DoublyLinkedList {
         
         for (let i = 0; i < nodeData.length; i++) {
             // newNode is intialized with tail as the next node and currNode as the previous node
-            const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity, "black", "white", this.tailPtr, currNode);
+            const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.tailPtr, currNode, this.opacity, this.opacity, this.opacity);
             currNode.next = newNode;
             this.tailPtr.prev = newNode;
             this.tailPtr.x = newNode.x + this.nodeWidth * 2 // Update the position of sentinel tail node
@@ -126,7 +126,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const prevNode = this.tailPtr.prev!;  // Store the node right before the tail
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
         // newNode is initialized with its next pointer pointing to the tail node and its prev pointer pointing to prevNode
-        const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", this.tailPtr, prevNode);
+        const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, this.tailPtr, prevNode, 0, 0, 0);
 
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
@@ -249,7 +249,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
         const nextNode = this.headPtr.next!;  // Save the next node after the head node using this pointer
         // newNode is initialized with its next pointer pointing to nextNode and prev pointer pointing to the head node
-        const newNode = new DLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", nextNode, this.headPtr);
+        const newNode = new DLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, this.headPtr, 0, 0, 0);
         
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
@@ -362,7 +362,7 @@ export class SentinelDLL extends DoublyLinkedList {
                 const nextNode = currNode.next;  // Save the next node after the current node using this pointer
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
-                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", nextNode, currNode);
+                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, currNode, 0, 0, 0);
 
                 const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr: DLLNode | null = currNode.next; // This pointer will be used to help move nodes following the new node forward

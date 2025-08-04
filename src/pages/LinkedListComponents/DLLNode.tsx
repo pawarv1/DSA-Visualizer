@@ -15,19 +15,19 @@ export class DLLNode {
     next: DLLNode | null;
     prev: DLLNode | null;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white", next: DLLNode | null = null, prev: DLLNode | null = null) {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, next: DLLNode | null = null, prev: DLLNode | null = null, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
+        this.next = next;
+        this.prev = prev;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacityNext = pointerOpacityNext;
         this.pointerOpacityPrev = pointerOpacityPrev;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
-        this.next = next;
-        this.prev = prev;
     }
 
     // Adjust font size to fit within the node
@@ -47,11 +47,6 @@ export class DLLNode {
 
     // Draws the next and the prev pointers
     drawPointers(context: CanvasRenderingContext2D) {
-        context.save();
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillStyle = "black";
-
         if (this.next) {
             const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 2, this.next.y + this.next.nodeHeight/4, this.pointerOpacityNext);
             pointerArrowNext.draw(context);
@@ -71,8 +66,6 @@ export class DLLNode {
             const nullSlash = new Line(this.x, this.y, this.x + this.nodeWidth / 4, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
         }
-
-        context.restore();
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {

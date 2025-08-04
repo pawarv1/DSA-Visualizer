@@ -26,13 +26,13 @@ export class LinkedList {
         for (let i = 0; i < nodeData.length; i++) {
             // Loading in the first node
             if (currNode === null) {
-                this.headPtr = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+                this.headPtr = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             // Loading in following nodes
             else {
-                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, this.opacity, this.opacity);
                 currNode.next = newNode;
                 currNode.drawNode(context);
                 newNode.drawNode(context);
@@ -179,7 +179,7 @@ export class LinkedList {
 
         // Empty SLL case
         if (this.headPtr === null) {
-            newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, null, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
@@ -205,7 +205,7 @@ export class LinkedList {
                 }
             }
 
-            newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, null, 0, 0);
             currNode.next = newNode;
             currNode.drawNode(context); // Redraw currNode after its pointer is updated
             this.tailPtr = newNode; // Update the tail pointer to the new node (regardless of which animation is being used)
@@ -253,7 +253,7 @@ export class LinkedList {
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
         // newNode is initialized with its next pointer pointing to the head
-        const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", this.headPtr);
+        const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, this.headPtr, 0, 0);
 
         // If the SLL was previously empty, tail pointer will also point to the new node 
         if (!this.headPtr) {
@@ -306,7 +306,7 @@ export class LinkedList {
             if (currNode.next) {
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
-                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, "black", "white", currNode.next);
+                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, currNode.next, 0, 0);
                 
                 const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr: LinkedListNode | null = currNode.next;  // This pointer will be used to help move nodes following the new node forward

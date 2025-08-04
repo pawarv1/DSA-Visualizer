@@ -24,12 +24,12 @@ export class DoublyLinkedList {
 
         for (let i = 0; i < nodeData.length; i++) {
             if (currNode === null) {
-                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
+                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, null, this.opacity, this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             else {
-                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
+                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, null, this.opacity, this.opacity, this.opacity);
                 currNode.next = newNode;
                 newNode.prev = currNode;
                 currNode.drawNode(context);
@@ -195,7 +195,7 @@ export class DoublyLinkedList {
 
         // Empty DLL case
         if (this.headPtr === null) {
-            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, null, null, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
@@ -221,7 +221,7 @@ export class DoublyLinkedList {
             }
 
             // newNode is initialized with its prev pointer pointing to currNode
-            newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", null, currNode);
+            newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, null, currNode, 0, 0, 0, "black", "white");
             currNode.next = newNode;
             currNode.drawNode(context); // Redraw currNode after its pointer is updated
             this.tailPtr = newNode; // Update the tail pointer to the new node (regardless of which animation is being used)
@@ -270,7 +270,7 @@ export class DoublyLinkedList {
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
         // newNode is initialized with its next pointer pointing to the head
-        const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", this.headPtr);
+        const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, this.headPtr, null, 0, 0, 0);
 
         // If the DLL was previously empty, tail pointer will also point to the new node 
         if (!this.headPtr) {
@@ -330,7 +330,7 @@ export class DoublyLinkedList {
                 const nextNode = currNode.next;  // Save the next node after the current node using this pointer
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
-                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, "black", "white", nextNode, currNode);
+                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, currNode, 0, 0, 0);
 
                 const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr: DLLNode | null = currNode.next; // This pointer will be used to help move nodes following the new node forward

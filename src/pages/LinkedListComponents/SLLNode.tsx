@@ -13,17 +13,17 @@ export class LinkedListNode {
     fillColor: string;
     next: LinkedListNode | null;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white", next: LinkedListNode | null = null) {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, next: LinkedListNode | null = null, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
+        this.next = next;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacity = pointerOpacity;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
-        this.next = next;
     }
 
     // Adjust font size to fit within the node data section
@@ -43,11 +43,6 @@ export class LinkedListNode {
 
     // Function for drawing the next pointer
     drawPointer(context: CanvasRenderingContext2D) {
-        context.save();
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillStyle = "black";
-
         if (this.next) {
             // Represent the next pointer (if it is not null) with an arrow
             const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
@@ -58,8 +53,6 @@ export class LinkedListNode {
             const nullSlash = new Line(this.x + (this.nodeWidth * 2 / 3), this.y, this.x + this.nodeWidth, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
         }
-
-        context.restore();
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
