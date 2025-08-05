@@ -109,8 +109,9 @@ function CircularLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Shift");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(180, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b']);
+            const cll = new CircularLinkedList(100, 100, 50, 30);
+            cll.loadLinkedList(mainContext, ['a', 'b', 'c']);
+            await cll.shift(mainContext, canvasWidth, canvasHeight);
             await cll.shift(mainContext, canvasWidth, canvasHeight);
             await cll.shift(mainContext, canvasWidth, canvasHeight);
             setIsAnimating(false);
@@ -122,14 +123,14 @@ function CircularLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Pop");
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(80, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c']);
-            await cll.pop(mainContext);
+            cll.loadLinkedList(mainContext, ['a', 'b']);
             await cll.pop(mainContext);
             await cll.pop(mainContext);
             setIsAnimating(false);
         }
 
         // Remove at test cases
+        // Bit of a clearing bug on node b after node a is removed
         const step11 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "removeAt");

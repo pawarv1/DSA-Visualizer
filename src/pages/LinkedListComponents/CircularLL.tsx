@@ -22,18 +22,17 @@ export class CircularLinkedList extends LinkedList {
         for (let i = 0; i < nodeData.length; i++) {
             // Loading in the first node
             if (!currNode) {
-                // headPtr next points to itself, and isTailNode is true to get the wrap around pointer arrow
-                this.headPtr = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], true, this.opacity, this.opacity);
+                // headPtr next pointer points to itself
+                this.headPtr = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             // Loading in following nodes
             else {
-                // Set newNode isTailNode parameter to true to get the wrap around pointer arrow, and its next to the head node
-                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], true, this.opacity, this.opacity, this.headPtr!);
-                // Set currNode isTailNode parameter to false to get a normal pointer arrow, and its next to the new node
+                // Set newNode next pointer to the head node
+                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.headPtr!);
+                // Set currNode next pointer to the new node
                 currNode.next = newNode;
-                currNode.isTailNode = false;
                 currNode.drawNode(context);
                 newNode.drawNode(context);
                 currNode = currNode.next;
@@ -198,17 +197,16 @@ export class CircularLinkedList extends LinkedList {
 
         // Empty CLL case
         if (!this.headPtr) {
-            newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, true, 0, 0);
+            newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
         else {
             let currNode = this.tailPtr!;
-            // Set newNode isTailNode parameter to true to get the wrap around pointer arrow, and its next to the head node
-            newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, true, 0, 0, this.headPtr);
-            // Set currNode isTailNode parameter to false to get a normal pointer arrow, and its next to the new node
+            // Set newNode next pointer to the head node
+            newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.headPtr);
+            // Set currNode next pointer to the new node
             currNode.next = newNode;
-            currNode.isTailNode = false;
             currNode.drawNode(context); // Redraw currNode after its pointer is updated
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
@@ -233,7 +231,7 @@ export class CircularLinkedList extends LinkedList {
     async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
 
         // newNode is initialized with its next pointer pointing to the head
-        const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, true, 0, 0);
+        const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
         // If the CLL was previously empty, tail will also point to the newNode
         if (!this.headPtr) {
@@ -264,9 +262,8 @@ export class CircularLinkedList extends LinkedList {
             // Call runWithCentralDrawLoop to animate the movement
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
-            // Set newNode next to head and set isTailNode to false to get a normal pointer arrow
+            // Set newNode next pointer to the head
             newNode.next = this.headPtr;
-            newNode.isTailNode = false;
             this.tailPtr!.next = newNode;   // Set tail node next to newNode
             this.tailPtr!.drawNode(context);    // Redraw after pointer update
         }
@@ -318,7 +315,7 @@ export class CircularLinkedList extends LinkedList {
             if (currNode.next != this.headPtr) {
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
                 // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
-                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, false, 0, 0, currNode.next!);
+                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, currNode.next!);
                 
                 const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr = currNode.next!;  // This pointer will be used to help move nodes following the new node forward
@@ -393,7 +390,7 @@ export class CircularLinkedList extends LinkedList {
                             // Clear the area affected by the movement
                             context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
                             this.tailPtr!.drawNode(context);    // Redraw tail node so part of its next pointer does not get cleared
-                            newNode.drawNode(context, false);  // Redraw newNode to show its position at current frame
+                            newNode.drawNode(context, false);   // Redraw newNode to show its position at current frame
                             currNode.drawNode(context); // Redraw currNode to show updated next pointer position
                         }
                     });
@@ -457,33 +454,26 @@ export class CircularLinkedList extends LinkedList {
                     });
                 }
 
-                // If firstNode is the only node, need an extra step to show the next pointer being set to null, and still clear it correctly
-                if (firstNode.next === firstNode) {
-                    timeline.to(firstNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            firstNode.drawNode(context);
-                        },
-                        onComplete: () => {
-                            firstNode.next = null;
-                        }
-                    });
-                }
-                else {
-                    // Otherwise firstNode next pointer can be set to null before the animation
-                    firstNode.next = null;
-                }
-
-                // Fade out the first node
+                // Fade out the first node next pointer
                 timeline.to(firstNode, {
-                    nodeOpacity: 0,
                     pointerOpacity: 0,
                     duration: fadeOutTime,
                     onUpdate: () => {
                         firstNode.drawNode(context);
                         this.tailPtr?.drawNode(context);    // Draw the tail node if it exists so part of its pointer does not get cut off
+                    }
+                });
+
+                // Fade out the first node
+                timeline.to(firstNode, {
+                    nodeOpacity: 0,
+                    duration: fadeOutTime,
+                    onStart: () => {
+                        firstNode.next = null;
                     },
+                    onUpdate: () => {
+                        firstNode.drawNode(context, false);
+                    }
                 });
             });
 
@@ -560,19 +550,6 @@ export class CircularLinkedList extends LinkedList {
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
-                // Fade out lastNode next pointer
-                timeline.to(lastNode, {
-                    pointerOpacity: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        lastNode.drawNode(context);
-                    },
-                    onComplete: () => {
-                        lastNode.next = null;
-                        lastNode.drawNode(context); // Redraw after pointer update
-                    }
-                });
-
                 // This branch should execute as long as there is at least one node remaining after the deletion, otherwise tail would be null
                 if (this.tailPtr) {
                     // Fade out the tail node next pointer than set it to the head
@@ -584,7 +561,6 @@ export class CircularLinkedList extends LinkedList {
                         },
                         onComplete: () => {
                             this.tailPtr!.next = this.headPtr;
-                            this.tailPtr!.isTailNode = true; // Set isTailNode to true to get the wrap around pointer arrow
                         }
                     });
 
@@ -598,17 +574,26 @@ export class CircularLinkedList extends LinkedList {
                     });
                 }
                 
-                // Fade out the last node
+                // Fade out the last node next pointer arrow
+                timeline.to(lastNode, {
+                    pointerOpacity: 0,
+                    duration: fadeOutTime,
+                    onUpdate: () => {
+                        lastNode.drawNode(context);
+                        this.tailPtr!.drawNode(context);
+                    }
+                });
+
+                // Fade out the last node after setting its next pointer to null
                 timeline.to(lastNode, {
                     nodeOpacity: 0,
                     duration: fadeOutTime,
                     onStart: () => {
-                        // Set isTailNode to true to get clear properly
-                        lastNode.isTailNode = true;
+                        lastNode.next = null;
                     },
                     onUpdate: () => {
-                        lastNode.drawNode(context);
-                    },
+                        lastNode.drawNode(context, false);
+                    }
                 });
             });
 
@@ -717,19 +702,6 @@ export class CircularLinkedList extends LinkedList {
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
-                    // Fade out deleteNode next pointer
-                    timeline.to(deleteNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            deleteNode.drawNode(context);
-                        },
-                        onComplete: () => {
-                            deleteNode.next = null;
-                            deleteNode.drawNode(context); // Redraw after pointer update
-                        }
-                    });
-
                     // Fade out the tail node next pointer than set it to the head
                     timeline.to(this.tailPtr, {
                         pointerOpacity: 0,
@@ -739,7 +711,6 @@ export class CircularLinkedList extends LinkedList {
                         },
                         onComplete: () => {
                             this.tailPtr!.next = this.headPtr;
-                            this.tailPtr!.isTailNode = true; // Set isTailNode to true to get the wrap around pointer arrow
                         }
                     });
 
@@ -752,17 +723,26 @@ export class CircularLinkedList extends LinkedList {
                         }
                     });
 
-                    // Fade out the deleted node
+                    // Fade out deleteNode next pointer arrow
+                    timeline.to(deleteNode, {
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            deleteNode.drawNode(context);
+                            this.tailPtr!.drawNode(context);
+                        }
+                    });
+
+                    // Fade out deleteNode node after setting its next pointer to null
                     timeline.to(deleteNode, {
                         nodeOpacity: 0,
                         duration: fadeOutTime,
                         onStart: () => {
-                            // Set isTailNode to true to get clear properly
-                            deleteNode.isTailNode = true;
+                            deleteNode.next = null;
                         },
                         onUpdate: () => {
-                            deleteNode.drawNode(context);
-                        },
+                            deleteNode.drawNode(context, false);
+                        }
                     });
                 });
             }
@@ -784,33 +764,21 @@ export class CircularLinkedList extends LinkedList {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];
 
-        // Fade out all but the tail node of the CLL
+        // Fade out the CLL
         do {
             const node = currNode;
             currNode = currNode.next!;
+            node.next = null;
 
             const promise = new Promise<void>((resolve) => {
-                const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                // Fade out the pointer first
-                timeline.to(node, {
+                gsap.to(node, {
+                    nodeOpacity: 0,
                     pointerOpacity: 0,
-                    duration: 0.5,
+                    duration: 1,
                     onUpdate: () => {
                         node.drawNode(context);
                     },
-                    onComplete: () => {
-                        node.next = null;   // Set each next pointer to null
-                    }
-                });
-
-                // Fade out the node second
-                timeline.to(node, {
-                    nodeOpacity: 0,
-                    duration: 0.5,
-                    onUpdate: () => {
-                        node.drawNode(context);
-                    }
+                    onComplete: resolve
                 });
             });
 
