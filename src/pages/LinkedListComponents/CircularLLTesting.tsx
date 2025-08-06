@@ -197,17 +197,6 @@ function CircularLLTestCases() {
             case 12:
                 step12();
                 break;
-            /*
-            case 13:
-                step13();
-                break;
-            case 14:
-                step14();
-                break;
-            case 15:
-                step15();
-                break;
-            */
             default:
                 break;
         }

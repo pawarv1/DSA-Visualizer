@@ -59,33 +59,6 @@ export class CircularLinkedList extends LinkedList {
         } while (currNode != this.headPtr);
     }
 
-    // Return the data at the given index
-    async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
-        // Error if the index is not valid
-        if (index < 0 || index >= this.numElements) {
-            console.error(`Index ${index} is out of bounds`);
-            return false;
-        }
-        else {
-            let currNode = this.headPtr;
-
-            for (let i = 0; i < index; i++) {
-                // Highlight nodes to show traversal if iterationAnimation is true
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode!);
-                }
-                currNode = currNode!.next;
-            }
-
-            // Highlight nodes to show traversal if iterationAnimation is true
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode!);
-            }
-
-            return currNode!.data;
-        }
-    }
-
     // Search through the CLL for the given data argument, and return the index where it is found, or if not, -1
     async find(context: CanvasRenderingContext2D, data: any) {
         // Return early if the list is empty
