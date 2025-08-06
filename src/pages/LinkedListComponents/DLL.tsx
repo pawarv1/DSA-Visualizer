@@ -193,7 +193,7 @@ export class DoublyLinkedList {
         }
     }
 
-    // If the DLL uses a tail pointer, traverse backwards from tail to head and print nodes index and data
+    // Traverse backwards from tail to head and print nodes index and data
     async traverseBackward(context: CanvasRenderingContext2D) {
         
         let currNode = this.tailPtr;

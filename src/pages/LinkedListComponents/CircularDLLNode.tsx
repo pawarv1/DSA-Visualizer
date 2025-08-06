@@ -1,6 +1,6 @@
 import { Arrow, Line, Rectangle } from "../GeneralAnimating/GeneralAnimationGraphics";
 
-// Animates individual CLL nodes
+// Animates individual CDLL nodes
 export class CircularDLLNode {
     x: number;
     y: number;
