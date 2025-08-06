@@ -113,7 +113,7 @@ export class DoublyLinkedList {
             let currNode = this.headPtr!;
 
             // Traversal is more / as efficient from the head than tail
-            if (index <= Math.floor(this.numElements / 2)) {
+            if (index <= Math.floor((this.numElements - 1) / 2)) {
                 // currNode is already set to the head
                 
                 // Highlight nodes to show traversal if iterationAnimation is true
@@ -609,12 +609,12 @@ export class DoublyLinkedList {
             return false;
         }
         else {
-            // Pointer for the node that will be deleted
+            // Pointer for the node that will be deleted, initialized to the head
             let deleteNode = this.headPtr!;
 
             // Traversal is more / as efficient from head than tail
             if (index <= Math.floor((this.numElements - 1) / 2)) {
-                //deleteNode is already set to the head
+                // deleteNode is already set to the head
 
                 // Highlight nodes to show traversal if iterationAnimation is true
                 // Stop when the index of deletion is reached

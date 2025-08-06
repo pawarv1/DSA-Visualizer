@@ -32,12 +32,17 @@ function SentinelDLLTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
-            testCaseHeader.draw(mainContext);
-            const text1 = new Text (100, 200, "");
+            const text1 = new Text(100, 200, "");
+            const text2 = new Text(100, 300, "");
+            const text3 = new Text(100, 400, "");
             const dll = new SentinelDLL(100, 100, 50, 30);
-            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
             text1.setContent(await dll.getAt(mainContext, 2));
             text1.draw(mainContext);
+            text2.setContent(await dll.getAt(mainContext, 3));
+            text2.draw(mainContext);
+            text3.setContent(await dll.getAt(mainContext, 4));
+            text3.draw(mainContext);
             setIsAnimating(false);
         }
 
@@ -97,10 +102,12 @@ function SentinelDLLTestCases() {
             const testCaseHeader = new Text (70, 40, "insertAt");
             testCaseHeader.draw(staticContext);
             const dll = new SentinelDLL(80, 100, 50, 30);
-            dll.loadDLL(mainContext, ['b', 'c', 'e', 'f']);
-            await dll.insertAt(mainContext, 2, 'd', canvasWidth, canvasHeight);
+            dll.loadDLL(mainContext, ['b', 'f']);
+            await dll.insertAt(mainContext, 1, 'd', canvasWidth, canvasHeight);
             await dll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
-            await dll.insertAt(mainContext, 6, 'g', canvasWidth, canvasHeight);
+            await dll.insertAt(mainContext, 4, 'g', canvasWidth, canvasHeight);
+            await dll.insertAt(mainContext, 2, 'c', canvasWidth, canvasHeight);
+            await dll.insertAt(mainContext, 4, 'e', canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
 
@@ -131,10 +138,12 @@ function SentinelDLLTestCases() {
             const testCaseHeader = new Text (70, 40, "removeAt");
             testCaseHeader.draw(staticContext);
             const dll = new SentinelDLL(80, 100, 50, 30);
-            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+            await dll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
+            await dll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
             await dll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
             await dll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
-            await dll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
+            await dll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
 
