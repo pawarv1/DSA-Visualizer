@@ -59,55 +59,6 @@ export class CircularLinkedList extends LinkedList {
         } while (currNode != this.headPtr);
     }
 
-    // Return true if the CLL is empty
-    isEmpty() {
-        return this.numElements === 0;
-    }
-
-    // Return the size of the CLL
-    getSize() {
-        return this.numElements;
-    }
-
-    // Method to higlight a specific node for a short duration then set it back to normal afterwards
-    // This is usually used to portray traversals, and can be disabled if needed using the iterationAnimation parameter
-    async highlightNode(context: CanvasRenderingContext2D, node: CircularLLNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
-        return new Promise<void>((resolve) => {
-            node.outlineColor = outlineColor
-            node.fillColor = fillColor;
-            node.drawNode(context);
-
-            setTimeout(() => {
-                // Reset to orignal colors
-                node.outlineColor = "black";
-                node.fillColor = "white";
-                node.drawNode(context);
-                resolve();
-            }, duration);
-        });
-    }
-
-    // Helper method which genealizes the central draw loop pattern
-    // Improves efficiency for large movement animations
-    async runWithCentralDrawLoop(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
-        let animating = true;
-
-        const drawLoop = () => {
-            if (!animating) {
-                return;
-            }
-            context.clearRect(0, 0, canvasWidth, canvasHeight);
-            drawFn(context);
-        };
-
-        gsap.ticker.add(drawLoop);
-
-        await Promise.all(animationPromises);
-
-        animating = false;
-        gsap.ticker.remove(drawLoop);
-    }
-
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
         // Error if the index is not valid
@@ -162,12 +113,6 @@ export class CircularLinkedList extends LinkedList {
 
         // Data was not found
         return -1;
-    }
-
-    // Return true if the CLL has the provided data
-    async contains(context: CanvasRenderingContext2D, data: any) {
-        const findOutput = await this.find(context, data);
-        return findOutput != -1;
     }
 
     // Traverse through CLL and print the nodes index and data

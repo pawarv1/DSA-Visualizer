@@ -48,7 +48,7 @@ export class DLLNode {
     // Draws the next and the prev pointers
     drawPointers(context: CanvasRenderingContext2D) {
         if (this.next) {
-            const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 2, this.next.y + this.next.nodeHeight/4, this.pointerOpacityNext);
+            const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 2, this.next.y + this.nodeHeight/4, this.pointerOpacityNext);
             pointerArrowNext.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
@@ -58,7 +58,7 @@ export class DLLNode {
         }
 
         if (this.prev) {
-            const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.prev.nodeWidth + 2, this.prev.y + this.prev.nodeHeight * 3 / 4, this.pointerOpacityPrev);
+            const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 2, this.prev.y + this.nodeHeight * 3 / 4, this.pointerOpacityPrev);
             pointerArrowPrev.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
