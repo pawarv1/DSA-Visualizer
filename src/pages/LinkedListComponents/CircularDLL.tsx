@@ -638,12 +638,14 @@ export class CircularDLL extends DoublyLinkedList {
                 // deleteNode is already set to the head
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = 0; i < index; i++) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.next!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
             // Traversal is more efficient from tail than head
@@ -652,12 +654,14 @@ export class CircularDLL extends DoublyLinkedList {
                 deleteNode = this.tailPtr!;
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = this.numElements - 1; i > index; i--) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.prev!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
 
