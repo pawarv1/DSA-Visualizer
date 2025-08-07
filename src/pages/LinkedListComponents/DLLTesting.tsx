@@ -80,7 +80,7 @@ function DoublyLLTestCases() {
 
         const step7 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list insert at");
+            const testCaseHeader = new Text (70, 40, "insertAt");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['b', 'f']);
@@ -94,7 +94,7 @@ function DoublyLLTestCases() {
 
         const step8 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list remove first");
+            const testCaseHeader = new Text (70, 40, "Shift");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c']);
@@ -104,7 +104,7 @@ function DoublyLLTestCases() {
 
         const step9 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list pop");
+            const testCaseHeader = new Text (70, 40, "Pop");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c','d']);
@@ -117,7 +117,7 @@ function DoublyLLTestCases() {
 
         const step10 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list remove at");
+            const testCaseHeader = new Text (70, 40, "removeAt");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
@@ -131,11 +131,11 @@ function DoublyLLTestCases() {
 
         const step11 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list clear");
+            const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await dll.clear(mainContext);
+            await dll.clearAll(mainContext);
             setIsAnimating(false);
         }
 

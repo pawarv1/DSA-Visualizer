@@ -2,17 +2,17 @@ import gsap, { context, set, timeline } from "gsap";
 import { DLLNode } from "./DLLNode";
 import { DoublyLinkedList } from "./DLL";
 
-// Doubly linked list, but both the head and tail use sentinel nodes
+// Doubly linked list, but both the head and tail use sentinel nodes, inherits from regular Doubly Linked List
 export class SentinelDLL extends DoublyLinkedList {
     protected headPtr: DLLNode;
-    protected tailPtr: DLLNode; // Animations always use the tail pointer unlike in previous LL classes where some animations gave the user the choice
+    protected tailPtr: DLLNode;
     protected numElements: number;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
         // Head and tail are set to sentinel nodes
-        this.headPtr = new DLLNode(x, y, nodeWidth, nodeHeight, null, null, null, opacity, opacity);
-        this.tailPtr = new DLLNode(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, null, null, opacity, opacity);
+        this.headPtr = new DLLNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
+        this.tailPtr = new DLLNode(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
         // Update head next pointer to tail and tail prev pointer to head
         this.headPtr.next = this.tailPtr;
         this.tailPtr.prev = this.headPtr;
@@ -25,13 +25,18 @@ export class SentinelDLL extends DoublyLinkedList {
         
         for (let i = 0; i < nodeData.length; i++) {
             // newNode is intialized with tail as the next node and currNode as the previous node
-            const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.tailPtr, currNode, this.opacity, this.opacity, this.opacity);
-            currNode.next = newNode;
-            this.tailPtr.prev = newNode;
-            this.tailPtr.x = newNode.x + this.nodeWidth * 2 // Update the position of sentinel tail node
+            const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
+            newNode.next = this.tailPtr;    // Set newNode.next to the tail
+            newNode.prev = currNode;    // Set newNode.prev to currNode
+
+            currNode.next = newNode;    // Set currNode.next to newNode
+            this.tailPtr.prev = newNode;    // Set tail node prev to newNode
+            this.tailPtr.x = newNode.x + this.nodeWidth * 2 // Update the position of the tail node
+            
             currNode.drawNode(context); // Draw currNode after the pointer update
-            this.tailPtr.drawNode(context); // Draw tail node after its moved
+            this.tailPtr.drawNode(context); // Draw tail node after it is moved
             newNode.drawNode(context);
+
             currNode = currNode.next;
             this.numElements++; // Increment number of elements
         }
@@ -87,15 +92,17 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
         // currNode starts at the node after head
         let currNode = this.headPtr.next!;
         let index = 0;
 
         // Iterate until currNode is the sentinel tail node
         while (currNode != this.tailPtr) {
-            // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            // Highlight nodes to show traversal if iterationAnimation is true
+            if (iterationAnimation) {
+                await this.highlightNode(context, currNode);
+            }
             
             // Data was found
             if (currNode.data === data) {
@@ -127,7 +134,7 @@ export class SentinelDLL extends DoublyLinkedList {
         }
     }
 
-    // If the DLL uses a tail pointer, traverse backwards from tail to head and print nodes index and data
+    // Traverse backwards from tail to head and print nodes index and data
     async traverseBackward(context: CanvasRenderingContext2D) {
         // currNode starts at the node before tail
         let currNode = this.tailPtr.prev!;
@@ -147,9 +154,12 @@ export class SentinelDLL extends DoublyLinkedList {
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
         const prevNode = this.tailPtr.prev!;  // Store the node right before the tail
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        // newNode is initialized with its next pointer pointing to the tail node and its prev pointer pointing to prevNode
-        const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, this.tailPtr, prevNode, 0, 0, 0);
 
+        const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = this.tailPtr;    // Set newNode.next to the sentinel tail node
+        newNode.prev = prevNode;    // Set newNode.prev to prevNode
+
+        // Animate the node creation and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
             
@@ -254,25 +264,18 @@ export class SentinelDLL extends DoublyLinkedList {
             tempPtr = tempPtr.next;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x + this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
         
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
         const nextNode = this.headPtr.next!;  // Save the next node after the head node using this pointer
-        // newNode is initialized with its next pointer pointing to nextNode and prev pointer pointing to the head node
-        const newNode = new DLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, this.headPtr, 0, 0, 0);
+
+        const newNode = new DLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = nextNode;    // Set newNode.next to nextNode
+        newNode.prev = this.headPtr;    // Set newNode.prev to the sentinel head node
         
+        // Animate node creation and pointer change sequence with timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -386,7 +389,7 @@ export class SentinelDLL extends DoublyLinkedList {
                 }
             }
         }
-        // Traversal is more efficient from tail then head
+        // Traversal is more efficient from tail than head
         else {
             if (index === this.numElements) {
                 await this.append(context, newData, fadeIntime);
@@ -412,11 +415,13 @@ export class SentinelDLL extends DoublyLinkedList {
         // Insertions in the middle of the DLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
-        const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, currNode, 0, 0, 0);
+
+        const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = nextNode;    // Set newNode.next to nextNode
+        newNode.prev = currNode;    // Set newNode.prev to currNode
 
         const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
-        let tempPtr: DLLNode | null = currNode.next; // This pointer will be used to help move nodes following the new node forward
+        let tempPtr: DLLNode | null = nextNode; // This pointer will be used to help move nodes following the new node forward
 
         // Add the nodes to movingNodes
         while (tempPtr) {
@@ -424,20 +429,11 @@ export class SentinelDLL extends DoublyLinkedList {
             tempPtr = tempPtr.next;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x + this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
         
+        // Animate the creation of the new node and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -520,8 +516,6 @@ export class SentinelDLL extends DoublyLinkedList {
         return true;    // Insertion was successful
     }
 
-    // Implement shift next, use DummyNodeSLL.tsx as starting point not DLL.tsx
-
     // Remove the first node after the dummy head node, and return its data
     async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
         // No such node to remove so return early
@@ -532,6 +526,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const firstRealNode = this.headPtr.next!;
         const nextNode = firstRealNode.next!;  // Save the next node after firstRealNode with this pointer
 
+        // Animate the node removal and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -604,18 +599,8 @@ export class SentinelDLL extends DoublyLinkedList {
             tempPtr = tempPtr.next;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x - this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
         
         this.numElements--; // Decrement number of elements
@@ -634,6 +619,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const lastRealNode = this.tailPtr.prev!;
         const prevNode = lastRealNode.prev!;    // Save the node before lastRealNode with this pointer
         
+        // Animate the node removal and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -696,7 +682,7 @@ export class SentinelDLL extends DoublyLinkedList {
                 }
             });
 
-            // Move the sentinel tail back
+            // Move the sentinel tail node back
             timeline.to(this.tailPtr, {
                 x: prevNode.x + this.nodeWidth * 2,
                 duration: fadeOutTime,
@@ -731,12 +717,14 @@ export class SentinelDLL extends DoublyLinkedList {
                 // deleteNode is already set to node after the head
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = 0; i < index; i++) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.next!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
             // Traversal is more efficient from tail than head
@@ -745,12 +733,14 @@ export class SentinelDLL extends DoublyLinkedList {
                 deleteNode = this.tailPtr.prev!;
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = this.numElements - 1; i > index; i--) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.prev!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
 
@@ -758,6 +748,7 @@ export class SentinelDLL extends DoublyLinkedList {
             const prevNode = deleteNode.prev!;
             const nextNode = deleteNode.next!;
 
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -830,18 +821,8 @@ export class SentinelDLL extends DoublyLinkedList {
                 tempPtr = tempPtr.next;
             }
 
-            // Calculate the updated x values
-            const animationPromises = movingNodes.map(node => {
-                return new Promise<void>((resolve) => {
-                    gsap.to(node, {
-                        x: node.x - this.nodeWidth * 2,
-                        duration: 1,
-                        onComplete: resolve
-                    });
-                });
-            });
-
-            // Call runWithCentralDrawLoop to animate the movement
+            // Animate the movement of the following nodes
+            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
             
             this.numElements--; // Decrement the number of elements
@@ -850,7 +831,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Clear all but the sentinel head and tail nodes, and also set each non sentinel nodes pointers to null
-    async clear(context: CanvasRenderingContext2D) {
+    async clearAll(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr.next;
 
         // Make head and tail nodes point to each other and redraw them

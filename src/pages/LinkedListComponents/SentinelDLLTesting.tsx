@@ -149,11 +149,11 @@ function SentinelDLLTestCases() {
 
         const step13 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Clear");
+            const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
             const dll = new SentinelDLL(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await dll.clear(mainContext);
+            await dll.clearAll(mainContext);
             setIsAnimating(false);
         }
 

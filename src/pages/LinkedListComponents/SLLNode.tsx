@@ -9,19 +9,20 @@ export class LinkedListNode {
     data: any;
     nodeOpacity: number;
     pointerOpacity: number;
+    next: LinkedListNode | null;
     outlineColor: string;
     fillColor: string;
-    next: LinkedListNode | null;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, next: LinkedListNode | null = null, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+    // Constructor sets next to null by default
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, next: LinkedListNode | null = null, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
-        this.next = next;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacity = pointerOpacity;
+        this.next = next;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -44,7 +45,7 @@ export class LinkedListNode {
     // Function for drawing the next pointer
     drawPointer(context: CanvasRenderingContext2D) {
         if (this.next) {
-            // Represent the next pointer (if it is not null) with an arrow
+            // Represent the next pointer with an arrow
             const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
             pointerArrow.draw(context);
         } else {
@@ -56,7 +57,7 @@ export class LinkedListNode {
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
-        this.clearNode(context);
+        this.clearNode(context);    // Clear the node and pointer space first
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -77,6 +78,7 @@ export class LinkedListNode {
     }
 
     clearNode(context: CanvasRenderingContext2D) { 
+        // Clear both the node and the pointer space
         context.clearRect(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2);
     }
 }

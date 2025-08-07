@@ -103,11 +103,11 @@ function DummyNodeSLLTestCases() {
         
         const step9 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list clear");
+            const testCaseHeader = new Text (70, 40, "Linked list clearAll");
             testCaseHeader.draw(mainContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            await ll.clear(mainContext);
+            await ll.clearAll(mainContext);
             setIsAnimating(false);
         }
 

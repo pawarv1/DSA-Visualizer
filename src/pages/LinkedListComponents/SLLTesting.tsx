@@ -17,7 +17,7 @@ function LinkedListTestCases() {
             testCaseHeader.draw(mainContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a']);
-            await ll.clear(mainContext);
+            await ll.clearAll(mainContext);
             setIsAnimating(false);
         }
 
@@ -34,11 +34,11 @@ function LinkedListTestCases() {
         // Clearing a linked list
         const step3 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list clear");
+            const testCaseHeader = new Text (70, 40, "Linked list clearAll");
             testCaseHeader.draw(mainContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            await ll.clear(mainContext);
+            await ll.clearAll(mainContext);
             setIsAnimating(false);
         }
 

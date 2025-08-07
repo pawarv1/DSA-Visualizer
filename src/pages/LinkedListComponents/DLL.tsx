@@ -20,18 +20,22 @@ export class DoublyLinkedList {
 
     // Preload the DLL without gsap animating
     loadDLL(context: CanvasRenderingContext2D, nodeData: any[]) {
+        // Initialize currNode to null as the DLL is empty
         let currNode = null;
 
         for (let i = 0; i < nodeData.length; i++) {
+            // Loading in the first node
             if (currNode === null) {
-                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, null, this.opacity, this.opacity, this.opacity);
+                this.headPtr = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
+            // Loading in the following nodes
             else {
-                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], null, null, this.opacity, this.opacity, this.opacity);
+                const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 currNode.next = newNode;
                 newNode.prev = currNode;
+                // Draw the nodes after setting their pointers
                 currNode.drawNode(context);
                 newNode.drawNode(context);
                 currNode = currNode.next;
@@ -78,6 +82,19 @@ export class DoublyLinkedList {
                 resolve();
             }, duration);
         });
+    }
+
+    // Helper method to extract logic animating the movements of nodes
+    animateNodeShift(nodes: DLLNode[], offsetX: number, duration: number): Promise<void>[] {
+        return nodes.map(node =>
+            new Promise(resolve => {
+                gsap.to(node, {
+                    x: node.x + offsetX,
+                    duration,
+                    onComplete: resolve
+                });
+            })
+        );
     }
 
     // Helper method which genealizes the central draw loop pattern
@@ -151,13 +168,15 @@ export class DoublyLinkedList {
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
         let currNode = this.headPtr;
         let index = 0;
 
         while (currNode) {
-            // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            // Highlight nodes to show traversal if iterationAnimation is true
+            if (iterationAnimation) {
+                await this.highlightNode(context, currNode);
+            }
             
             // Data was found
             if (currNode.data === data) {
@@ -171,12 +190,6 @@ export class DoublyLinkedList {
 
         // Data was not found
         return -1;
-    }
-
-    // Return true if the DLL has the provided data
-    async contains(context: CanvasRenderingContext2D, data: any) {
-        const findOutput = await this.find(context, data);
-        return findOutput != -1;
     }
 
     // Traverse forward through the DLL and print the nodes index and data
@@ -214,15 +227,15 @@ export class DoublyLinkedList {
 
         // Empty DLL case
         if (this.headPtr === null) {
-            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, null, null, 0, 0, 0);
+            newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
         else {
-            // newNode is initialized with its prev pointer pointing to tail node
-            newNode = new DLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, null, this.tailPtr, 0, 0, 0, "black", "white");
-            this.tailPtr!.next = newNode;
-            this.tailPtr!.drawNode(context); // Redraw tail node after its pointer is updated
+            newNode = new DLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            newNode.prev = this.tailPtr;    // Set newNode.prev to the tail node
+            this.tailPtr!.next = newNode;   // Set the tail node next pointer to newNode then redraw
+            this.tailPtr!.drawNode(context);
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
@@ -254,29 +267,19 @@ export class DoublyLinkedList {
             tempPtr = tempPtr.next;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x + this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
-        // newNode is initialized with its next pointer pointing to the head
-        const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, this.headPtr, null, 0, 0, 0);
+        const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = this.headPtr;    // Set newNode.next to the head node
 
         // If the DLL was previously empty, tail pointer will also point to the new node 
         if (!this.headPtr) {
             this.tailPtr = newNode;
         }
         else {
-            // Set the head node prev to newNode then draw the head node
+            // Set the head node prev to newNode then redraw
             this.headPtr.prev = newNode;
             this.headPtr.drawNode(context);
         }
@@ -312,6 +315,7 @@ export class DoublyLinkedList {
 
         // Traversal is more / as efficient from head than tail
         if (index <= Math.floor(this.numElements / 2)) {
+            // Inserting to the head can be taken care of with prepend
             if (index === 0) {
                 await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
                 return true;    // Insertion was successful
@@ -331,8 +335,9 @@ export class DoublyLinkedList {
                 }
             }
         }
-        // Traversal is more efficient from tail then head
+        // Traversal is more efficient from tail than head
         else {
+            // Inserting to the tail can be taken care of with append
             if (index === this.numElements) {
                 await this.append(context, newData, fadeIntime);
                 return true;    // Insertion was successful
@@ -357,11 +362,13 @@ export class DoublyLinkedList {
         // Insertions in the middle of the DLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
-        const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, nextNode, currNode, 0, 0, 0);
+
+        const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = nextNode;    // Set newNode.next to nextNode
+        newNode.prev = currNode;    // Set newNode.prev to currNode
 
         const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
-        let tempPtr: DLLNode | null = currNode.next; // This pointer will be used to help move nodes following the new node forward
+        let tempPtr: DLLNode | null = nextNode; // This pointer will be used to help move nodes following the new node forward
 
         // Add the nodes to movingNodes
         while (tempPtr) {
@@ -369,20 +376,11 @@ export class DoublyLinkedList {
             tempPtr = tempPtr.next;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x + this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
         
+        // Animate the creation of the new node and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -510,18 +508,8 @@ export class DoublyLinkedList {
                 tempPtr = tempPtr.next;
             }
 
-            // Calculate the updated x values
-            const animationPromises = movingNodes.map(node => {
-                return new Promise<void>((resolve) => {
-                    gsap.to(node, {
-                        x: node.x - this.nodeWidth * 2,
-                        duration: 1,
-                        onComplete: resolve
-                    });
-                });
-            });
-
-            // Call runWithCentralDrawLoop to animate the movement
+            // Animate the movement of the following nodes
+            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
             this.numElements--; // Decrement the number of elements
@@ -541,7 +529,7 @@ export class DoublyLinkedList {
         else {
             let lastNode;
 
-            // If the linked list becomes empty after this removal, both head and tail pointers should be null
+            // If the linked list becomes empty after this removal, both head and tail pointers should become null
             // This will happen when there is only one node, and that is the one being removed
             if (this.headPtr.next === null) {
                 lastNode = this.headPtr;
@@ -550,9 +538,9 @@ export class DoublyLinkedList {
             }
             else {
                 lastNode = this.tailPtr;
-                this.tailPtr = this.tailPtr!.prev;
-                this.tailPtr!.next = null;
-                lastNode!.prev = null;
+                this.tailPtr = this.tailPtr!.prev;  // Set tailPtr to the node before the tail
+                this.tailPtr!.next = null;  // Set the tail next to null
+                lastNode!.prev = null;  // Ensure the deleted nodes pointers are also set to null
             }
 
             // Redraw the new last node if it exists
@@ -565,7 +553,7 @@ export class DoublyLinkedList {
                     pointerOpacityPrev: 0,
                     duration: fadeOutTime,
                     onUpdate: () => {
-                        lastNode?.drawNode(context);
+                        lastNode!.drawNode(context);
                     },
                     onComplete: () => resolve()
                 });
@@ -574,7 +562,7 @@ export class DoublyLinkedList {
             this.numElements--; // Decrement the number of elements
 
             // Return the removed nodes data
-            return lastNode?.data;
+            return lastNode!.data;
         }
     }
 
@@ -594,12 +582,14 @@ export class DoublyLinkedList {
                 // deleteNode is already set to the head
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = 0; i < index; i++) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.next!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
             // Traversal is more efficient from tail than head
@@ -608,12 +598,14 @@ export class DoublyLinkedList {
                 deleteNode = this.tailPtr!;
 
                 // Highlight nodes to show traversal if iterationAnimation is true
-                // Stop when the index of deletion is reached
                 for (let i = this.numElements - 1; i > index; i--) {
                     if (iterationAnimation) {
                         await this.highlightNode(context, deleteNode);
                     }
                     deleteNode = deleteNode.prev!;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
                 }
             }
 
@@ -630,6 +622,7 @@ export class DoublyLinkedList {
                 this.tailPtr = prevNode;
             }
 
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -706,18 +699,8 @@ export class DoublyLinkedList {
                 tempPtr = tempPtr.next;
             }
 
-            // Calculate the updated x values
-            const animationPromises = movingNodes.map(node => {
-                return new Promise<void>((resolve) => {
-                    gsap.to(node, {
-                        x: node.x - this.nodeWidth * 2,
-                        duration: 1,
-                        onComplete: resolve
-                    });
-                });
-            });
-
-            // Call runWithCentralDrawLoop to animate the movement
+            // Animate the movement of the following nodes
+            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
             this.numElements--; // Decrement the number of elements
@@ -727,7 +710,7 @@ export class DoublyLinkedList {
 
     // Clear the DLL and set head and tail to null
     // Also set each next and prev pointer to null
-    async clear(context: CanvasRenderingContext2D) {
+    async clearAll(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];
 

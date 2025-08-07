@@ -10,22 +10,22 @@ export class DLLNode {
     nodeOpacity: number;
     pointerOpacityNext: number;
     pointerOpacityPrev: number;
-    outlineColor: string;
-    fillColor: string;
     next: DLLNode | null;
     prev: DLLNode | null;
+    outlineColor: string;
+    fillColor: string;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, next: DLLNode | null = null, prev: DLLNode | null = null, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, next: DLLNode | null = null, prev: DLLNode | null = null, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
-        this.next = next;
-        this.prev = prev;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacityNext = pointerOpacityNext;
         this.pointerOpacityPrev = pointerOpacityPrev;
+        this.next = next;
+        this.prev = prev;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -91,8 +91,11 @@ export class DLLNode {
 
     // May have to adjust 
     clearNode(context: CanvasRenderingContext2D) { 
+        // Clear the next pointer area
         context.clearRect(this.x + this.nodeWidth, this.y, this.nodeWidth - 1, this.nodeHeight / 2 - 1);
+        // Clear the prev pointer area
         context.clearRect(this.x - this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2);
+        // Clear the node
         context.clearRect(this.x - 2, this.y - 2, this.nodeWidth + 3, this.nodeHeight + 3);
     }
 }
