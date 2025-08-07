@@ -219,7 +219,6 @@ export class DoublyLinkedList {
             this.tailPtr = newNode;
         }
         else {
-
             // newNode is initialized with its prev pointer pointing to tail node
             newNode = new DLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, null, this.tailPtr, 0, 0, 0, "black", "white");
             this.tailPtr!.next = newNode;
@@ -533,7 +532,7 @@ export class DoublyLinkedList {
     }
 
     // Remove from the end of the DLL and return its data
-    async pop(context: CanvasRenderingContext2D, fadeOutTime: number = 1, usingTailPointer: boolean = true, iterationAnimation: boolean = true) {
+    async pop(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if linked list is empty
         if (this.headPtr === null) {
             console.error("DLL is empty, cannot pop from it");
@@ -549,33 +548,11 @@ export class DoublyLinkedList {
                 this.headPtr = null;
                 this.tailPtr = null;
             }
-            // Option to use more efficient tail pointer implementation
-            else if (usingTailPointer) {
+            else {
                 lastNode = this.tailPtr;
                 this.tailPtr = this.tailPtr!.prev;
                 this.tailPtr!.next = null;
                 lastNode!.prev = null;
-            }
-            // Or pop as if the DLL has no tail pointer
-            else {
-                let currNode = this.headPtr;
-
-                // Highlight nodes to show traversal, if iterationAnimation is true
-                // Iteration stops right before the last node
-                while (currNode.next?.next) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
-                    currNode = currNode.next;
-                }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
-
-                lastNode = currNode.next;
-                currNode.next = null;   // currNode next now points to null
-                lastNode!.prev = null;  // Ensure the deleted nodes prev pointer is also set to null
-                this.tailPtr = currNode;    // Update the tail pointer
             }
 
             // Redraw the new last node if it exists

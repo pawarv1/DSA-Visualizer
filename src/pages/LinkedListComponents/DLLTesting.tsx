@@ -108,10 +108,10 @@ function DoublyLLTestCases() {
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c','d']);
-            await dll.pop(mainContext, 1 , false);
-            await dll.pop(mainContext, 1, false);
-            await dll.pop(mainContext, 1, false);
-            await dll.pop(mainContext, 1, false);
+            await dll.pop(mainContext, 1);
+            await dll.pop(mainContext, 1);
+            await dll.pop(mainContext, 1);
+            await dll.pop(mainContext, 1);
             setIsAnimating(false);
         }
 
