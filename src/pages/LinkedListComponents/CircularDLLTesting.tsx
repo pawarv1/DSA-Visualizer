@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import { CircularDLLNode } from './CircularDLLNode';
+import { CircularDLL } from './CircularDLL';
 import { context } from 'gsap';
 
 function CircularDLLTestCases() {
@@ -16,19 +16,18 @@ function CircularDLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Creating a single node");
             testCaseHeader.draw(mainContext);
-            const cdll = new CircularDLLNode(100, 100, 50, 30, 'a');
-            cdll.drawNode(mainContext);
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a']);
             setIsAnimating(false);
         }
 
-        /*
-        // Preload circular linked list test case
+        // Preload circular doubly linked list test case
         const step2 = () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list loaded in");
+            const testCaseHeader = new Text (70, 40, "CDLL loaded in");
             testCaseHeader.draw(mainContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
         }
 
@@ -36,36 +35,37 @@ function CircularDLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
             testCaseHeader.draw(mainContext);
-            const text1 = new Text (100, 200, "");
-            const text2 = new Text (100, 300, "");
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            text1.setContent(await cll.getAt(mainContext, 0));
-            text2.setContent(await cll.getAt(mainContext, 3));
+            const text1 = new Text(100, 300, "");
+            const text2 = new Text(100, 400, "");
+            const text3 = new Text(100, 500, "");
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+            text1.setContent(await cdll.getAt(mainContext, 2));
             text1.draw(mainContext);
+            text2.setContent(await cdll.getAt(mainContext, 3));
             text2.draw(mainContext);
+            text3.setContent(await cdll.getAt(mainContext, 4));
+            text3.draw(mainContext);
             setIsAnimating(false);
         }
 
         const step4 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "find");
+            const testCaseHeader = new Text (70, 40, "Traverse forward");
             testCaseHeader.draw(mainContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            await cll.find(mainContext, 'a');
-            await cll.find(mainContext, 'd');
-            await cll.find(mainContext, 'z');
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            await cdll.traverseForward(mainContext);
             setIsAnimating(false);
         }
 
         const step5 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Traverse");
+            const testCaseHeader = new Text (70, 40, "Traverse backward");
             testCaseHeader.draw(mainContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            await cll.traverse(mainContext);
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            await cdll.traverseBackward(mainContext);
             setIsAnimating(false);
         }
 
@@ -73,11 +73,10 @@ function CircularDLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Appending ");
             testCaseHeader.draw(mainContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, []);
-            await cll.append(mainContext, 'a');
-            await cll.append(mainContext, 'b');
-            await cll.append(mainContext, 'c');
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            await cdll.append(mainContext, 'e', 1);
+            await cdll.append(mainContext, 'f', 1);
             setIsAnimating(false);
         }
 
@@ -85,83 +84,80 @@ function CircularDLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Prepending ");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, []);
-            await cll.prepend(mainContext, 'b', canvasWidth, canvasHeight);
-            await cll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
+            const cdll = new CircularDLL(100, 100, 50, 30);
+            cdll.loadDLL(mainContext, []);
+            await cdll.prepend(mainContext, 'c', canvasWidth, canvasHeight);
+            await cdll.prepend(mainContext, 'b', canvasWidth, canvasHeight);
+            await cdll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
 
-        // Insert at test cases
         const step8 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "insertAt");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(80, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['b', 'c', 'e', 'f']);
-            await cll.insertAt(mainContext, 2, 'd', canvasWidth, canvasHeight);
-            await cll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
-            await cll.insertAt(mainContext, 6, 'g', canvasWidth, canvasHeight);
+            const cdll = new CircularDLL(80, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['b', 'f']);
+            await cdll.insertAt(mainContext, 1, 'd', canvasWidth, canvasHeight);
+            await cdll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
+            await cdll.insertAt(mainContext, 4, 'g', canvasWidth, canvasHeight);
+            await cdll.insertAt(mainContext, 2, 'c', canvasWidth, canvasHeight);
+            await cdll.insertAt(mainContext, 4, 'e', canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
 
-        // Shift test case
         const step9 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Shift");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(100, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c']);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
+            const cdll = new CircularDLL(80, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            await cdll.shift(mainContext, canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
 
-        // Pop test cases
         const step10 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Pop");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(80, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b']);
-            await cll.pop(mainContext);
-            await cll.pop(mainContext);
+            const cdll = new CircularDLL(80, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c','d']);
+            await cdll.pop(mainContext, 1);
+            await cdll.pop(mainContext, 1);
+            await cdll.pop(mainContext, 1);
+            await cdll.pop(mainContext, 1);
             setIsAnimating(false);
         }
 
-        // Remove at test cases
-        // Bit of a clearing bug on node b after node a is removed
         const step11 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "removeAt");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(80, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await cll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
-            await cll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
-            await cll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
+            const cdll = new CircularDLL(80, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
+            await cdll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
+            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
+            await cdll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
+            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
-
-        // Clear test case
+        
         const step12 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "clear");
             testCaseHeader.draw(staticContext);
-            const cll = new CircularLinkedList(80, 100, 50, 30);
-            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await cll.clear(mainContext);
+            const cdll = new CircularDLL(80, 100, 50, 30);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+            await cdll.clear(mainContext);
             setIsAnimating(false);
         }
-        */
 
         // Switch statement which runs the associated step method for the given step
         switch(step) {
             case 1:
                 step1();
                 break;
-            /*
             case 2:
                 step2();
                 break;
@@ -195,22 +191,12 @@ function CircularDLLTestCases() {
             case 12:
                 step12();
                 break;
-            case 13:
-                step13();
-                break;
-            case 14:
-                step14();
-                break;
-            case 15:
-                step15();
-                break;
-            */
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={1} runStep={runCircularDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={12} runStep={runCircularDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default CircularDLLTestCases;

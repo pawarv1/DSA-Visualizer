@@ -68,7 +68,7 @@ export class CircularDLLNode {
                 // May need adjusting
                 this.clearAreaCoordinates1 = [
                     // out going line
-                    new Rectangle(this.x + this.nodeWidth + 1, this.y - 1, this.nodeWidth, this.nodeHeight / 2),
+                    new Rectangle(this.x + this.nodeWidth + 1, this.y - 1, this.nodeWidth - 2, this.nodeHeight / 2),
                     // line from curr to next
                     new Rectangle(this.next.x - this.nodeWidth/2 - 2, this.y - this.nodeHeight, (this.x + this.nodeWidth * 1.5) - (this.next.x - this.nodeWidth/2) + 4, this.nodeHeight - 1),
                     // arrow
@@ -94,10 +94,10 @@ export class CircularDLLNode {
             if (this.prev.x >= this.x) {
                 const pointerSegments = [
                     new Line(this.x + 4, this.y + this.nodeHeight * 3/4, this.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/4, this.pointerOpacityPrev),
-                    new Line(this.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/4, this.x - this.nodeWidth /2, this.y + this.nodeHeight * 3/2),
-                    new Line(this.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.pointerOpacityNext),
-                    new Line(this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/4, this.pointerOpacityNext),
-                    new Arrow(this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/4, this.prev.x + this.nodeWidth + 4, this.y + this.nodeHeight * 3/4, this.pointerOpacityNext)
+                    new Line(this.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/4, this.x - this.nodeWidth /2, this.y + this.nodeHeight * 3/2, this.pointerOpacityPrev),
+                    new Line(this.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.pointerOpacityPrev),
+                    new Line(this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/4, this.pointerOpacityPrev),
+                    new Arrow(this.prev.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/4, this.prev.x + this.nodeWidth + 4, this.y + this.nodeHeight * 3/4, this.pointerOpacityPrev)
                 ];
 
                 pointerSegments.forEach(segment => {
@@ -106,19 +106,19 @@ export class CircularDLLNode {
 
                 this.clearAreaCoordinates2 = [
                     // outgoing line
-                    new Rectangle(this.x - this.nodeWidth - 1, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2),
+                    new Rectangle(this.x - this.nodeWidth * 3/4 + 8, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2),
                     // line from curr to prev
-                    new Rectangle(this.x - this.nodeWidth + 1, this.y + this.nodeHeight + 1, (this.prev.x + this.nodeWidth * 2) - (this.x - this.nodeWidth/2) + 4, this.nodeHeight / 2),
+                    new Rectangle(this.x - this.nodeWidth * 3/4 + 8, this.y + this.nodeHeight + 1, (this.prev.x + this.nodeWidth * 3/2 + 1) - (this.x - this.nodeWidth/2) + 4, this.nodeHeight / 2),
                     // arrow
-                    new Rectangle(this.prev.x + this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, (this.prev.x + this.nodeWidth * 2) - (this.x - this.nodeWidth/2) + 4, this.nodeHeight / 2)
+                    new Rectangle(this.prev.x + this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, (this.prev.x + this.nodeWidth * 3/2) - (this.prev.x + this.nodeWidth) + 1, this.nodeHeight / 2)
                 ];
             }
             else {
-                const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 2, this.prev.y + this.nodeHeight * 3 / 4, this.pointerOpacityPrev);
+                const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 4, this.prev.y + this.nodeHeight * 3 / 4, this.pointerOpacityPrev);
                 pointerArrowPrev.draw(context);
 
                 this.clearAreaCoordinates2 = [
-                    new Rectangle(this.x - this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2)
+                    new Rectangle(this.x - this.nodeWidth + 4, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2)
                 ];
 
             }
