@@ -7,22 +7,23 @@ export class CircularLLNode {
     nodeWidth: number;
     nodeHeight: number;
     data: any;
-    next: CircularLLNode | null;
     nodeOpacity: number;
     pointerOpacity: number;
+    next: CircularLLNode | null;
     outlineColor: string;
     fillColor: string;
-    private clearAreaCoordinates: Rectangle[];
+    private clearAreaCoordinates: Rectangle[];  // Covers the region where the node and the next pointer is drawn
 
+    // By default a node next pointer points to itself
     constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, next: CircularLLNode = this, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
-        this.next = next;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacity = pointerOpacity;
+        this.next = next;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
         this.clearAreaCoordinates = [];
@@ -43,24 +44,35 @@ export class CircularLLNode {
         return context.font;
     }
 
+    // May need adjusting
     drawPointer(context: CanvasRenderingContext2D) {
         if (this.next) {
             if (this.next.x <= this.x) {
                 const pointerSegments = [
+                    // Line 1
                     new Line(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight/2, this.pointerOpacity),
+                    // Line 2
                     new Line(this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight/2, this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.pointerOpacity),
+                    // Line 3
                     new Line(this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.next.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.pointerOpacity),
+                    // Line 4
                     new Line(this.next.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.next.x - this.nodeWidth / 2, this.y + this.nodeHeight/2, this.pointerOpacity),
+                    // Arrow 1
                     new Arrow(this.next.x - this.nodeWidth/2, this.y + this.nodeHeight/2, this.next.x - 4, this.y + this.nodeHeight/2, this.pointerOpacity)
                 ];
 
+                // Draw each of the graphics in pointerSegments
                 pointerSegments.forEach(segment => {
                     segment.draw(context);
                 });
                 
+                // May need adjusting
                 this.clearAreaCoordinates = [
+                    // This clears the region with the node, Line 1 and Line 2
                     new Rectangle(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2),
+                    // This clears the region with Line 3
                     new Rectangle(this.next.x - this.nodeWidth/2 - 2, this.y + this.nodeHeight + 1, (this.x + this.nodeWidth * 1.5) - (this.next.x - this.nodeWidth/2) + 4, this.nodeHeight),
+                    // This clears the region with Line 4 and Arrow 1
                     new Rectangle(this.next.x - this.nodeWidth/2 - 4, this.y - 1, this.nodeWidth / 2, this.nodeHeight + 2)
                 ];
             }
@@ -69,6 +81,7 @@ export class CircularLLNode {
                 pointerArrow.draw(context);
 
                 this.clearAreaCoordinates = [
+                    // This clears the region where the node and pointerArrow are drawn
                     new Rectangle(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2)
                 ];
             }
@@ -79,6 +92,7 @@ export class CircularLLNode {
             nullSlash.draw(context);
 
             this.clearAreaCoordinates = [
+                // This clears the region where the node is drawn
                 new Rectangle(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2)
             ];
         }
@@ -105,9 +119,9 @@ export class CircularLLNode {
         context.restore();
     }
 
-    // Needs fixing
+    // May need fixing / adjusting
     clearNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true) {
-        // Clearing includes pointers
+        // Clearing the regions where both the node and the pointer is drawn
         if (useAreaCoordinates) {
             this.clearAreaCoordinates.forEach(Rectangle => {
                 context.clearRect(Rectangle.getX(), Rectangle.getY(), Rectangle.getWidth(), Rectangle.getHeight());

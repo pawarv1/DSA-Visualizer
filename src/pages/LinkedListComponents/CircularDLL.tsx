@@ -2,6 +2,7 @@ import { DoublyLinkedList } from "./DLL";
 import { CircularDLLNode } from "./CircularDLLNode";
 import gsap, { context, set, timeline } from "gsap";
 
+// Circular Doubly Linked List class extends DoublyLinkedList
 export class CircularDLL extends DoublyLinkedList {
     protected headPtr: CircularDLLNode | null;
     protected tailPtr: CircularDLLNode | null;
@@ -20,24 +21,29 @@ export class CircularDLL extends DoublyLinkedList {
 
         for (let i = 0; i < nodeData.length; i++) {
             if (currNode === null) {
-                // headPtr next and prev pointers points to itself
+                // headPtr next and prev pointers points to itself by default, as defined in CircularDLLNode constructor
                 this.headPtr = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             else {
+                
+                const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
                 // Set newNode next pointer to the head node and its prev pointer to currNode
-                const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity, this.headPtr!, currNode);
-                this.headPtr!.prev = newNode;
+                newNode.next = this.headPtr;
+                newNode.prev = currNode;
+
+                this.headPtr!.prev = newNode;   // Set head node prev pointer to newNode then redraw
                 this.headPtr!.drawNode(context);
-                currNode.next = newNode;
+                currNode.next = newNode;    // Set currNode next pointer to newNode then redraw
                 currNode.drawNode(context);
+
                 newNode.drawNode(context);
                 currNode = currNode.next;
             }
 
-            this.tailPtr = currNode;
-            this.numElements++;
+            this.tailPtr = currNode;    // Update tailPtr
+            this.numElements++; // Increment number of elements
         }
     }
 
@@ -57,8 +63,21 @@ export class CircularDLL extends DoublyLinkedList {
         } while (currNode != this.headPtr);
     }
 
+    // Helper method to extract logic animating the movements of nodes
+    protected animateNodeShift(nodes: CircularDLLNode[], offsetX: number, duration: number): Promise<void>[] {
+        return nodes.map(node =>
+            new Promise(resolve => {
+                gsap.to(node, {
+                    x: node.x + offsetX,
+                    duration,
+                    onComplete: resolve
+                });
+            })
+        );
+    }
+
     // Search through the CDLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
         // Return early if the list is empty
         if (!this.headPtr) {
             return -1;
@@ -69,8 +88,10 @@ export class CircularDLL extends DoublyLinkedList {
 
         // Use do while loop to traverse CDLL
         do {
-            // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            // Highlight nodes to show traversal if iterationAnimation is true
+            if (iterationAnimation) {
+                await this.highlightNode(context, currNode);
+            }
             
             // Data was found
             if (currNode.data === data) {
@@ -134,18 +155,20 @@ export class CircularDLL extends DoublyLinkedList {
 
         // Empty CDLL case
         if (this.headPtr === null) {
-            // newNode next and prev point to itself
+            // newNode next and prev pointers point to itself by default as defined in CircularDLLNode constructor
             newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
         else {
-            // newNode is initialized with its prev pointer pointing to tail node and next pointer pointing to the head node
-            newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, this.headPtr, this.tailPtr!);
-            this.headPtr.prev = newNode;
-            this.headPtr.drawNode(context); // Redraw head node after its pointer is updated
-            this.tailPtr!.next = newNode;
-            this.tailPtr!.drawNode(context); // Redraw tail node after its pointer is updated
+            newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            newNode.next = this.headPtr;    // Set newNode.next to the head node
+            newNode.prev = this.tailPtr;    // Set newNode.prev to the tail node
+
+            this.headPtr.prev = newNode;    // Set the head node prev pointer to newNode then redraw
+            this.headPtr.drawNode(context);
+            this.tailPtr!.next = newNode;   // Set the tail node next pointer to newNode then redraw
+            this.tailPtr!.drawNode(context);
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
@@ -171,7 +194,7 @@ export class CircularDLL extends DoublyLinkedList {
 
         const newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
-        // If the CDLL was previously empty, tail will also point to the newNode
+        // If the CDLL was previously empty, tailPtr will also point to the newNode
         if (!this.headPtr) {
             this.tailPtr = newNode;
         }
@@ -186,32 +209,22 @@ export class CircularDLL extends DoublyLinkedList {
             }
             while (tempPtr != this.headPtr);
 
-            // Calculate the updated x values
-            const animationPromises = movingNodes.map(node => {
-                return new Promise<void>((resolve) => {
-                    gsap.to(node, {
-                        x: node.x + this.nodeWidth * 2,
-                        duration: 1,
-                        onComplete: resolve
-                    });
-                });
-            });
-
-            // Call runWithCentralDrawLoop to animate the movement
+            // Animate the movement of the following nodes
+            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
             // Set newNode next pointer to the head, and prev to the tail
             newNode.next = this.headPtr;
             newNode.prev = this.tailPtr;
-            this.headPtr.prev = newNode;    // Set the head node prev to newNode
-            this.headPtr.drawNode(context); // Redraw after pointer update
-            this.tailPtr!.next = newNode;   // Set tail node next to newNode
-            this.tailPtr!.drawNode(context);    // Redraw after pointer update
+            this.headPtr.prev = newNode;    // Set the head node prev to newNode then redraw
+            this.headPtr.drawNode(context);
+            this.tailPtr!.next = newNode;   // Set tail node next to newNode then redraw
+            this.tailPtr!.drawNode(context);
         }
 
-        this.headPtr = newNode; // Update the head to point to the new node
+        this.headPtr = newNode; // Update the headPtr to the new node
 
-        // Fade in new node
+        // Fade in the new node
         await new Promise<void>((resolve) => {
             gsap.to(newNode, {
                 nodeOpacity: 1,
@@ -286,8 +299,10 @@ export class CircularDLL extends DoublyLinkedList {
         // Insertions in the middle of the CDLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        // newNode is initialized with its next pointer pointing to nextNode and its prev pointer pointing to currNode
-        const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0, nextNode, currNode);
+
+        const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = nextNode;    // Set newNode.next to nextNode
+        newNode.prev = currNode;    // Set newNode.prev to currNode
 
         const movingNodes: CircularDLLNode[] = [];   // This array is used to store the nodes which will be moving
         let tempPtr: CircularDLLNode | null = currNode.next!; // This pointer will be used to help move nodes following the new node forward
@@ -298,20 +313,11 @@ export class CircularDLL extends DoublyLinkedList {
             tempPtr = tempPtr.next!;
         }
 
-        // Calculate the updated x values
-        const animationPromises = movingNodes.map(node => {
-            return new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    x: node.x + this.nodeWidth * 2,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            });
-        });
-
-        // Call runWithCentralDrawLoop to animate the movement
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
         
+        // Animate the creation of the new node and pointer change sequence with timeline
         await new Promise<void>((resolve) => {
             const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -415,12 +421,13 @@ export class CircularDLL extends DoublyLinkedList {
                 this.headPtr = firstNode.next;  // Update the head to the node after firstNode next
             }
 
+            // Animate the node removal and pointer change sequence with timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
                 // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head would be null
                 if (this.headPtr) {
-                    // Fade out the new head node prev pointer than set it to tail
+                    // Fade out the new head node prev pointer than set it to the tail node
                     timeline.to(this.headPtr, {
                         pointerOpacityPrev: 0,
                         duration: fadeOutTime,
@@ -441,7 +448,7 @@ export class CircularDLL extends DoublyLinkedList {
                         }
                     });
 
-                    // Fade out the tail node next pointer than set it to the new head
+                    // Fade out the tail node next pointer than set it to the new head node
                     timeline.to(this.tailPtr, {
                         pointerOpacityNext: 0,
                         duration: fadeOutTime,
@@ -501,20 +508,9 @@ export class CircularDLL extends DoublyLinkedList {
                 }
                 while(tempPtr != this.headPtr);
 
-                // Calculate the updated x values
-                const animationPromises = movingNodes.map(node => {
-                    return new Promise<void>((resolve) => {
-                        gsap.to(node, {
-                            x: node.x - this.nodeWidth * 2,
-                            duration: 1,
-                            onComplete: resolve
-                        });
-                    });
-                });
-
-                // Call runWithCentralDrawLoop to animate the movement
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
-                console.log("REACHED");
             }
 
             this.numElements--; // Decrement number of elements
@@ -544,12 +540,13 @@ export class CircularDLL extends DoublyLinkedList {
                 this.tailPtr = this.tailPtr!.prev;
             }
 
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
                 // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head would be null
                 if (this.headPtr) {
-                    // Fade out the head node prev pointer than set it to the new tail
+                    // Fade out the head node prev pointer than set it to the new tail node
                     timeline.to(this.headPtr, {
                         pointerOpacityPrev: 0,
                         duration: fadeOutTime,
@@ -570,7 +567,7 @@ export class CircularDLL extends DoublyLinkedList {
                         }
                     });
 
-                    // Fade out the new tail node next pointer than set it to the head
+                    // Fade out the new tail node next pointer than set it to the head node
                     timeline.to(this.tailPtr, {
                         pointerOpacityNext: 0,
                         duration: fadeOutTime,
@@ -679,7 +676,8 @@ export class CircularDLL extends DoublyLinkedList {
                 return true;    // Deletion was successful
             }
 
-
+            // Middle of the CDLL removals
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>(async (resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -758,18 +756,8 @@ export class CircularDLL extends DoublyLinkedList {
                     tempPtr = tempPtr.next!;
                 }
 
-                // Calculate the updated x values
-                const animationPromises = movingNodes.map(node => {
-                    return new Promise<void>((resolve) => {
-                        gsap.to(node, {
-                            x: node.x - this.nodeWidth * 2,
-                            duration: 1,
-                            onComplete: resolve
-                        });
-                    });
-                });
-
-                // Call runWithCentralDrawLoop to animate the movement
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
             }
 
@@ -780,7 +768,7 @@ export class CircularDLL extends DoublyLinkedList {
     
     // Clear the CDLL and set head and tail to null
     // Also set each next and prev pointer to null
-    async clear(context: CanvasRenderingContext2D) {
+    async clearAll(context: CanvasRenderingContext2D) {
         // Return early if the list is empty
         if (!this.headPtr) {
             return;
@@ -789,7 +777,7 @@ export class CircularDLL extends DoublyLinkedList {
         let currNode = this.headPtr;
         const promises: Promise<void>[] = [];
 
-        // Fade out the CLL
+        // Fade out the CDLL
         do {
             const node = currNode;
             currNode = currNode.next!;

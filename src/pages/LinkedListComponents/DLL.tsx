@@ -41,8 +41,8 @@ export class DoublyLinkedList {
                 currNode = currNode.next;
             }
 
-            this.tailPtr = currNode;
-            this.numElements++;
+            this.tailPtr = currNode;    // Update tailPtr
+            this.numElements++; // Increment number of elements
         }
     }
 
@@ -85,7 +85,7 @@ export class DoublyLinkedList {
     }
 
     // Helper method to extract logic animating the movements of nodes
-    animateNodeShift(nodes: DLLNode[], offsetX: number, duration: number): Promise<void>[] {
+    protected animateNodeShift(nodes: DLLNode[], offsetX: number, duration: number): Promise<void>[] {
         return nodes.map(node =>
             new Promise(resolve => {
                 gsap.to(node, {

@@ -482,7 +482,7 @@ export class DummyNodeSLL extends LinkedList {
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
-                    // Fade out the pointer which pointed from currNode to deleteNode
+                    // Fade out currNode next pointer
                     timeline.to(currNode, {
                         pointerOpacity: 0,
                         duration: fadeOutTime,
@@ -491,7 +491,7 @@ export class DummyNodeSLL extends LinkedList {
                         }
                     });
 
-                    // Set the currNode to the node after deleteNode, then fade currNode pointer back in
+                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
                     timeline.to(currNode, {
                         pointerOpacity: 1,
                         duration: fadeOutTime,

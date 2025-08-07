@@ -145,11 +145,11 @@ function CircularDLLTestCases() {
         
         const step12 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "clear");
+            const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
-            await cdll.clear(mainContext);
+            await cdll.clearAll(mainContext);
             setIsAnimating(false);
         }
 

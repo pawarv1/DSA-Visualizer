@@ -2,7 +2,7 @@ import { LinkedList } from "./SLL";
 import { CircularLLNode } from "./CLLNode";
 import gsap, { context, set, timeline } from "gsap";
 
-// Circular linked list class
+// Circular linked list class, extends LinkedList
 export class CircularLinkedList extends LinkedList {
     protected headPtr: CircularLLNode | null;
     protected tailPtr: CircularLLNode | null;
@@ -22,17 +22,16 @@ export class CircularLinkedList extends LinkedList {
         for (let i = 0; i < nodeData.length; i++) {
             // Loading in the first node
             if (!currNode) {
-                // headPtr next pointer points to itself
+                // headPtr next pointer points to itself by default, as defined in CircularLLNode constructor
                 this.headPtr = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             // Loading in following nodes
             else {
-                // Set newNode next pointer to the head node
-                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.headPtr!);
-                // Set currNode next pointer to the new node
-                currNode.next = newNode;
+                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+                newNode.next = this.headPtr;    // Set newNode.next to the head node
+                currNode.next = newNode;    // Set currNode next pointer to the new node, then redraw
                 currNode.drawNode(context);
                 newNode.drawNode(context);
                 currNode = currNode.next;
@@ -59,8 +58,21 @@ export class CircularLinkedList extends LinkedList {
         } while (currNode != this.headPtr);
     }
 
+    // Helper method to extract logic animating the movements of nodes
+    protected animateNodeShift(nodes: CircularLLNode[], offsetX: number, duration: number): Promise<void>[] {
+        return nodes.map(node =>
+            new Promise(resolve => {
+                gsap.to(node, {
+                    x: node.x + offsetX,
+                    duration,
+                    onComplete: resolve
+                });
+            })
+        );
+    }
+
     // Search through the CLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
         // Return early if the list is empty
         if (!this.headPtr) {
             return -1;
@@ -71,8 +83,10 @@ export class CircularLinkedList extends LinkedList {
 
         // Use do while loop to traverse CLL
         do {
-            // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            // Highlight nodes to show traversal if iterationAnimation is true
+            if (iterationAnimation) {
+                await this.highlightNode(context, currNode);
+            }
             
             // Data was found
             if (currNode.data === data) {
@@ -115,17 +129,17 @@ export class CircularLinkedList extends LinkedList {
 
         // Empty CLL case
         if (!this.headPtr) {
+            // newNode next pointer points to itself by default, as defined in CircularLLNode constructor
             newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
         }
         else {
             let currNode = this.tailPtr!;
-            // Set newNode next pointer to the head node
-            newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, this.headPtr);
-            // Set currNode next pointer to the new node
-            currNode.next = newNode;
-            currNode.drawNode(context); // Redraw currNode after its pointer is updated
+            newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            newNode.next = this.headPtr;    // Set newNode.next to the head node
+            currNode.next = newNode;    // Set currNode.next to the new node then redraw
+            currNode.drawNode(context);
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
@@ -148,10 +162,9 @@ export class CircularLinkedList extends LinkedList {
     // Insert to the head of the CLL
     async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
 
-        // newNode is initialized with its next pointer pointing to the head
         const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
-        // If the CLL was previously empty, tail will also point to the newNode
+        // If the CLL was previously empty, tailPtr will also point to the newNode
         if (!this.headPtr) {
             this.tailPtr = newNode;
         }
@@ -166,29 +179,18 @@ export class CircularLinkedList extends LinkedList {
             }
             while (tempPtr != this.headPtr);
 
-            // Calculate the updated x values
-            const animationPromises = movingNodes.map(node => {
-                return new Promise<void>((resolve) => {
-                    gsap.to(node, {
-                        x: node.x + this.nodeWidth * 2,
-                        duration: 1,
-                        onComplete: resolve
-                    });
-                });
-            });
-
-            // Call runWithCentralDrawLoop to animate the movement
+            // Animate the movement of the following nodes
+            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
             await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
-            // Set newNode next pointer to the head
-            newNode.next = this.headPtr;
+            newNode.next = this.headPtr;    // Set newNode.next to the head node
             this.tailPtr!.next = newNode;   // Set tail node next to newNode
             this.tailPtr!.drawNode(context);    // Redraw after pointer update
         }
 
         this.headPtr = newNode; // Update the head to point to the new node
 
-        // Fade in new node
+        // Fade in the new node
         await new Promise<void>((resolve) => {
             gsap.to(newNode, {
                 nodeOpacity: 1,
@@ -232,8 +234,9 @@ export class CircularLinkedList extends LinkedList {
             // Insertions in the middle of the CLL
             if (currNode.next != this.headPtr) {
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-                // newNode is initialized with its next pointer pointing to the same location as currNodes next pointer
-                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, currNode.next!);
+
+                const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+                newNode.next = currNode.next;   // Set newNode.next to currNode.next
                 
                 const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
                 let tempPtr = currNode.next!;  // This pointer will be used to help move nodes following the new node forward
@@ -244,20 +247,11 @@ export class CircularLinkedList extends LinkedList {
                     tempPtr = tempPtr.next!;
                 }
 
-                // Calculate the updated x values
-                const animationPromises = movingNodes.map(node => {
-                    return new Promise<void>((resolve) => {
-                        gsap.to(node, {
-                            x: node.x + this.nodeWidth * 2,
-                            duration: 1,
-                            onComplete: resolve
-                        });
-                    });
-                });
-
-                // Call runWithCentralDrawLoop to animate the movement
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
 
+                // Animate the node creation and pointer change sequence using timeline
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -345,6 +339,7 @@ export class CircularLinkedList extends LinkedList {
                 this.headPtr = firstNode.next;  // Update the head to the node after firstNode next
             }
 
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -382,7 +377,7 @@ export class CircularLinkedList extends LinkedList {
                     }
                 });
 
-                // Fade out the first node
+                // Fade out the first node, after setting its next pointer to null
                 timeline.to(firstNode, {
                     nodeOpacity: 0,
                     duration: fadeOutTime,
@@ -407,18 +402,8 @@ export class CircularLinkedList extends LinkedList {
                 }
                 while(tempPtr != this.headPtr);
 
-                // Calculate the updated x values
-                const animationPromises = movingNodes.map(node => {
-                    return new Promise<void>((resolve) => {
-                        gsap.to(node, {
-                            x: node.x - this.nodeWidth * 2,
-                            duration: 1,
-                            onComplete: resolve
-                        });
-                    });
-                });
-
-                // Call runWithCentralDrawLoop to animate the movement
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
             }
 
@@ -465,6 +450,7 @@ export class CircularLinkedList extends LinkedList {
                 this.tailPtr = currNode;    // Update the tail pointer
             }
 
+            // Animate the node removal and pointer change sequence using timeline
             await new Promise<void>((resolve) => {
                 const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -529,9 +515,8 @@ export class CircularLinkedList extends LinkedList {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
-        // Deletions at the head
+        // Deletions at the head are taken care of using shift
         else if (index === 0) {
-            // Taken care of using shift
             await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
         }
         else {
@@ -554,10 +539,11 @@ export class CircularLinkedList extends LinkedList {
             if (deleteNode.next != this.headPtr) {
                 let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
 
+                // Animate node removal and pointer change sequence using timeline
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
-                    // Fade out the pointer which pointed from currNode to deleteNode
+                    // Fade out currNode next pointer
                     timeline.to(currNode, {
                         pointerOpacity: 0,
                         duration: fadeOutTime,
@@ -566,24 +552,26 @@ export class CircularLinkedList extends LinkedList {
                         }
                     });
 
-                    // Set the currNode to the node after deleteNode, and deleteNode next pointer to null, then fade currNode pointer back in
+                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
                     timeline.to(currNode, {
                         pointerOpacity: 1,
                         duration: fadeOutTime,
                         onStart: () => {
                             currNode.next = tempPtr;
-                            deleteNode.next = null;
                         },
                         onUpdate: () => {
                             currNode.drawNode(context);
                         }
                     });
 
-                    // Fade out the deleted node
+                    // Fade out the deleted node, after setting its next pointer to null
                     timeline.to(deleteNode, {
                         nodeOpacity : 0,
                         pointerOpacity: 0,
                         duration: fadeOutTime,
+                        onStart: () => {
+                            deleteNode.next = null;
+                        },
                         onUpdate: () => {
                             deleteNode.drawNode(context);
                             currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
@@ -599,24 +587,15 @@ export class CircularLinkedList extends LinkedList {
                     tempPtr = tempPtr.next!;
                 }
 
-                // Calculate the updated x values
-                const animationPromises = movingNodes.map(node => {
-                    return new Promise<void>((resolve) => {
-                        gsap.to(node, {
-                            x: node.x - this.nodeWidth * 2,
-                            duration: 1,
-                            onComplete: resolve
-                        });
-                    });
-                });
-
-                // Call runWithCentralDrawLoop to animate the movement
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
             }
             // Deletions from the end of the CLL
             else {
                 this.tailPtr = currNode;    // Update the tail pointer
 
+                // Animate the node removal and pointer change sequence using timeline
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
@@ -673,7 +652,7 @@ export class CircularLinkedList extends LinkedList {
 
     // Clear the CLL and set head and tail to null
     // Also set each next pointer to null
-    async clear(context: CanvasRenderingContext2D) {
+    async clearAll(context: CanvasRenderingContext2D) {
         // Return early if the list is empty
         if (!this.headPtr) {
             return;

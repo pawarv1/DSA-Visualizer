@@ -84,7 +84,7 @@ export class LinkedList {
     }
 
     // Helper method to extract logic animating the movements of nodes
-    animateNodeShift(nodes: LinkedListNode[], offsetX: number, duration: number): Promise<void>[] {
+    protected animateNodeShift(nodes: LinkedListNode[], offsetX: number, duration: number): Promise<void>[] {
         return nodes.map(node =>
             new Promise(resolve => {
                 gsap.to(node, {
@@ -533,7 +533,7 @@ export class LinkedList {
                 await new Promise<void>((resolve) => {
                     const timeline = gsap.timeline({onComplete: () => resolve()});
 
-                    // Fade out the pointer which pointed from currNode to deleteNode
+                    // Fade out currNode next pointer
                     timeline.to(currNode, {
                         pointerOpacity: 0,
                         duration: fadeOutTime,
@@ -542,7 +542,7 @@ export class LinkedList {
                         }
                     });
 
-                    // Set the currNode to tempPtr (the node after deleteNode), then fade currNode pointer back in
+                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
                     timeline.to(currNode, {
                         pointerOpacity: 1,
                         duration: fadeOutTime,
@@ -578,7 +578,7 @@ export class LinkedList {
                 }
 
                 // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);                
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
             }
             // Deletions from the end of the SLL

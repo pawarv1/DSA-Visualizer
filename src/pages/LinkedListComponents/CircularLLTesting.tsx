@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import { CircularLinkedList } from './CircularLL';
-import { context } from 'gsap';
 
 function CircularLLTestCases() {
     let canvasWidth = 1000;
@@ -146,18 +145,13 @@ function CircularLLTestCases() {
         // Clear test case
         const step12 = async () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "clear");
+            const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(80, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await cll.clear(mainContext);
+            await cll.clearAll(mainContext);
             setIsAnimating(false);
         }
-
-
-
-
-
         
         // Switch statement which runs the associated step method for the given step
         switch(step) {
