@@ -215,7 +215,51 @@ function DynamicArrayTestCases() {
         array.clearAll(mainContext);
         setIsAnimating(false);
       });
+    }
 
+    // isEmpty test cases
+    const step12 = async () => {
+      setIsAnimating(true);
+      const header = new Text(70, 40, "DynamicArray: isEmpty()");
+      const array = new DynamicArray(100, 100, 60, 50, []);
+      header.draw(mainContext);
+      array.draw(mainContext);
+      const text1 = new Text (100, 300, "array.isEmpty() =", 1, "16px Arial");
+      const text2 = new Text (230, 300, "", 1);
+      text2.setContent(String(array.isEmpty()));
+      text1.draw(mainContext);
+      text2.draw(mainContext);
+      await array.append(mainContext, "1");
+      const text3 = new Text (100, 400, "array.isEmpty() =", 1, "16px Arial");
+      const text4 = new Text (230, 400, "", 1);
+      text4.setContent(String(array.isEmpty()));
+      text3.draw(mainContext);
+      text4.draw(mainContext);
+      setIsAnimating(false);
+    }
+
+    const step13 = async () => {
+      setIsAnimating(true);
+      const header = new Text(70, 40, "DynamicArray: search()");
+      const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
+      header.draw(mainContext);
+      array.draw(mainContext);
+      const text1 = new Text (100, 300, "array.search(\"C\") =", 1, "16px Arial");
+      const text2 = new Text (250, 300, "", 1);
+      text2.setContent(String(await array.search(mainContext, "C", 0.5)));
+      text1.draw(mainContext);
+      text2.draw(mainContext);
+      const text3 = new Text (100, 400, "array.search(\"E\") =", 1, "16px Arial");
+      const text4 = new Text (250, 400, "", 1);
+      text4.setContent(String(await array.search(mainContext, "E", 0.5)));
+      text3.draw(mainContext);
+      text4.draw(mainContext);
+      const text5 = new Text (100, 500, "array.search(\"X\") =", 1, "16px Arial");
+      const text6 = new Text (250, 500, "", 1);
+      text6.setContent(String(await array.search(mainContext, "X", 0.5)));
+      text5.draw(mainContext);
+      text6.draw(mainContext);
+      setIsAnimating(false);
     }
 
     // Switch statement which runs the associated step method for the given step
@@ -253,12 +297,18 @@ function DynamicArrayTestCases() {
       case 11:
         step11();
         break;
+      case 12:
+        step12();
+        break;
+      case 13:
+        step13();
+        break;
       default:
         break
     }
   }
 
-  return <StepPlayer totalSteps={11} runStep={runDynamicArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={13} runStep={runDynamicArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default DynamicArrayTestCases;

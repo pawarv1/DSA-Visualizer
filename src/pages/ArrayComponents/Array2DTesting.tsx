@@ -68,7 +68,7 @@ function Array2DTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Array index access");
             const array = new Array2D(100, 100, 80, 50, 3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
-            const text1 = new Text (100, 300, "Array[2,2] =");
+            const text1 = new Text (100, 300, "Array[1,1] =");
             const text2 =  new Text (200,300, array.getElementAt(1,1), 0);
 
             testCaseHeader.draw(staticContext);

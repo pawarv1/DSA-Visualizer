@@ -107,12 +107,14 @@ export class Array {
 
     // Can change opacity of an individual cell or all the cells
     setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
+        // All cells
         if (typeof index === 'string' && index === "all") {
             this.opacity = opacity;
             if (redraw) {
                 this.draw(context);
             }
         }
+        // Individual cell
         else if (typeof index === 'number') {
             if (this.checkIndexValidity(index)) {
                 this.cells[index].opacity = opacity;
@@ -124,7 +126,7 @@ export class Array {
         }
     }
 
-    // Can change outline color of an individual cell
+    // Change outline color of an individual cell
     setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].outlineColor = outlineColor;
@@ -135,7 +137,7 @@ export class Array {
         }
     }
 
-    // Can change fill color of an individual cell
+    // Change fill color of an individual cell
     setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].fillColor = fillColor;
@@ -159,22 +161,23 @@ export class Array {
 
     // Traverse through the array and print each element
     // Hightlight and change outline color of the current element
-    async print(context: CanvasRenderingContext2D) {
+    async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
         await new Promise<void>((resolve) => {
             // Resolve after the timeline animation completes
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
         
             for (let i = 0; i < this.getArraySize(); i++) {
                 timeline.to(this, {
-                    duration: 1,
+                    duration: iterationSpeed,
                     onUpdate: () => {
-                        if (i > 0) {
-                            this.setOutlineColor(context, i - 1, "black");
-                            this.setFillColor(context, i - 1, "white");
-                        }
                         this.setOutlineColor(context, i, "red");
                         this.setFillColor(context, i, "yellow");
                         console.log(this.getElementAt(i));
+                    },
+                    onComplete: () => {
+                        // Set the outline and fill color back to normal when finished
+                        this.setOutlineColor(context, i, "black");
+                        this.setFillColor(context, i, "white");
                     }
                 });
             }
@@ -195,8 +198,6 @@ export class Array {
                     opacity: 0,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.clear(context);
-                        cell2.clear(context);
                         cell1.drawCell(context);
                         cell2.drawCell(context);
                     },
@@ -217,8 +218,6 @@ export class Array {
                     opacity: 1,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.clear(context);
-                        cell2.clear(context);
                         cell1.drawCell(context);
                         cell2.drawCell(context);
                     },
@@ -229,7 +228,7 @@ export class Array {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color back to what it was without redrawing
+            // Reset the fill color without redrawing
             cell1.fillColor = "white";
             cell2.fillColor = "white";
         }

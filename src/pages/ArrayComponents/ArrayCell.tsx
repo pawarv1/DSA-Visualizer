@@ -74,6 +74,7 @@ export class ArrayCell {
     }
 
     clear(context: CanvasRenderingContext2D) {
+        // Have to add extra height to account for index numbers below the cells
         const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
         context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + extraHeight);
     }
@@ -123,22 +124,6 @@ export class ArrayCell2D {
         return font;
     }
 
-    // Displays the index number of the cell
-    // NEEDS FIXING
-    /*
-    drawIndex(context: CanvasRenderingContext2D) {
-        let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
-        context.save();
-        context.globalAlpha = this.opacity;
-        context.fillStyle = 'black';
-        context.font = `${fontSize}px Arial`;
-        context.textAlign = 'center';
-        context.textBaseline = 'top';
-        context.fillText(this.index.toString(), this.x + this.cellWidth / 2, this.y + this.cellHeight + 3);
-        context.restore();
-    }
-    */
-
     // Draw the cell
     drawCell(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         this.clear(context);
@@ -154,12 +139,6 @@ export class ArrayCell2D {
         context.font = this.adjustFontSize(context);
         context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
-
-        /*
-        if (drawIndex) {
-            this.drawIndex(context);
-        }
-        */
     }
 
     clear(context: CanvasRenderingContext2D) {

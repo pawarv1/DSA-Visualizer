@@ -1,13 +1,12 @@
 import gsap, { timeline } from 'gsap';
 import { ArrayCell2D } from './ArrayCell';
 
-// Current implementation cannot show index numbers
-
 // 2D Array Class
 export class Array2D {
     private cells: ArrayCell2D[][];
 
     constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
+        // Cannot make a 2D array if its shape is invalid
         if (rows * columns != contents.length) {
             console.error("INVALID SHAPE");
             this.cells = [];
@@ -21,12 +20,15 @@ export class Array2D {
         this.rows = rows;
         this.columns = columns;
         this.opacity = opacity;
+        // Allocate an array of the row length
         this.cells = new Array(rows);
 
+        // At each row allocate an array of the column length
         for (let i = 0; i < rows; i++) {
             this.cells[i] = new Array(columns);
         }
 
+        // Calculate each row and column from the 1D input array
         for (let i = 0; i < contents.length; i++) {
             const currRow = Math.floor(i / columns);
             const currCol = i % columns;
@@ -44,9 +46,11 @@ export class Array2D {
             context.textAlign = 'center';
             context.textBaseline = 'top';
             
+            // Print the column index on the top of the 2d array
             for (let c = 0; c < this.columns; c++) {
                 context.fillText(c.toString(), this.x + (this.cellWidth * c) + this.cellWidth / 2, this.y - 14);
             }
+            // Print the row index to the left of the 2d array
             for (let r = 0; r < this.rows; r++) {
                 context.fillText(r.toString(), this.x - 10, this.y + (this.cellHeight * r) + this.cellHeight / 2);
             }
@@ -81,12 +85,14 @@ export class Array2D {
 
     // Can change opacity of an individual cell or all the cells
     setOpacity(context: CanvasRenderingContext2D, index: string | [number, number], opacity: number, redraw: boolean = true) {
+        // All the cells
         if (typeof index === 'string') {
             this.opacity = opacity;
             if (redraw) {
                 this.draw(context);
             }
         }
+        // Individual cell
         else {
             if (this.checkIndexValidity(index[0], index[1])) {
                 this.cells[index[0]][index[1]].opacity = opacity;
@@ -98,7 +104,7 @@ export class Array2D {
         }
     }
 
-    // Can change outline color of an individual cell
+    // Change outline color of an individual cell
     setOutlineColor(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, outlineColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(rowIndex, columnIndex)) {
             this.cells[rowIndex][columnIndex].outlineColor = outlineColor;
@@ -109,7 +115,7 @@ export class Array2D {
         }
     }
 
-    // Can change fill color of an individual cell
+    // Change fill color of an individual cell
     setFillColor(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, fillColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(rowIndex, columnIndex)) {
             this.cells[rowIndex][columnIndex].fillColor = fillColor;
@@ -141,19 +147,9 @@ export class Array2D {
         }
     }
 
-    // For debugging, get rid of later
-    printDEBUG() {
-        for (let i = 0; i < this.rows; i++) {
-            for (let j = 0; j < this.columns; j++) {
-                console.log(`${i},${j}`);
-                console.log(this.cells[i][j].content);
-            }
-        }
-    }
-
     // Traverse through the array and print each element
     // Hightlight and change outline color of the current element
-    async print(context: CanvasRenderingContext2D) {
+    async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
         await new Promise<void>((resolve) => {
             // Resolve after the timeline animation completes
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
@@ -161,21 +157,16 @@ export class Array2D {
             for (let i = 0; i < this.rows; i++) {
                 for (let j = 0; j < this.columns; j++) {
                     timeline.to(this, {
-                        duration: 1,
+                        duration: iterationSpeed,
                         onUpdate: () => {
-                            if (i != 0) {
-                                if (j == 0) {
-                                    this.setOutlineColor(context, i - 1, this.columns - 1, "black");
-                                    this.setFillColor(context, i - 1, this.columns - 1, "white");
-                                }
-                            }
-                            if (j != 0) {
-                                this.setOutlineColor(context, i, j - 1, "black");
-                                this.setFillColor(context, i, j - 1, "white");
-                            }
                             this.setOutlineColor(context, i, j, "red");
                             this.setFillColor(context, i, j, "yellow");
                             console.log(this.getElementAt(i, j));
+                        },
+                        onComplete: () => {
+                            // Set the outline and fill color back to normal when finished
+                            this.setOutlineColor(context, i, j, "black");
+                            this.setFillColor(context, i, j, "white");
                         }
                     });
                 }
@@ -197,8 +188,6 @@ export class Array2D {
                     opacity: 0,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.clear(context);
-                        cell2.clear(context);
                         cell1.drawCell(context, false);
                         cell2.drawCell(context, false);
                     },
@@ -219,8 +208,6 @@ export class Array2D {
                     opacity: 1,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.clear(context);
-                        cell2.clear(context);
                         cell1.drawCell(context, false);
                         cell2.drawCell(context, false);
                     },
@@ -231,7 +218,7 @@ export class Array2D {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color back to what it was without redrawing
+            // Reset the fill color without redrawing
             cell1.fillColor = "white";
             cell2.fillColor = "white";
         }
