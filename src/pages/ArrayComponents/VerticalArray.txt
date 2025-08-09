@@ -1,0 +1,4 @@
+Create a vertical array/s to help with stacks and hash tables
+Stack should go up, hash table should go down,
+If they inherit from array / dynamic array, really only have to override draw and clear
+Stack can inherit from either dynamic array or array, but hash table should only inherit from array

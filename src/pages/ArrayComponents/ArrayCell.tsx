@@ -54,7 +54,7 @@ export class ArrayCell {
 
     // Draw the cell
     drawCell(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        this.clear(context);
+        this.clear(context, drawIndex);
         context.save();
         context.globalAlpha = this.opacity;
         context.fillStyle = this.inUse ? this.fillColor : "#f0f0f0"; // Dim the cell if it is not in use, for dynamic arrays
@@ -73,10 +73,17 @@ export class ArrayCell {
         }
     }
 
-    clear(context: CanvasRenderingContext2D) {
-        // Have to add extra height to account for index numbers below the cells
-        const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
-        context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + extraHeight);
+    clear(context: CanvasRenderingContext2D, extraHeightNeeded: boolean = true) {
+        // Clear extra space to remove index numbers (if they are drawn)
+        if (extraHeightNeeded) {
+            // Have to add extra height to account for index numbers below the cells
+            const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
+            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + extraHeight);
+        }
+        // Just clear the array cell
+        else {
+            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + 2);
+        }
     }
 }
 
