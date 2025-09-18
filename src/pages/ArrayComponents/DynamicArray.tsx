@@ -16,6 +16,13 @@ export class DynamicArray extends Array {
         }
     }
 
+    draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+        this.cells.forEach(cell => {
+            cell.opacity = this.opacity;
+            cell.drawCell(context, drawIndex);
+        });
+    }
+
     // Clear the dynamic array
     clear(context: CanvasRenderingContext2D) {
         // Add extra height to clear the index numbers below the array cells
