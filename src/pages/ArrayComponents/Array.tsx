@@ -82,14 +82,15 @@ export class Array {
     }
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+        context.save();
         if (drawIndex) {
             let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
-            context.save();
             context.globalAlpha = this.opacity;
             context.fillStyle = 'black';
             context.font = `${fontSize}px Arial`;
             context.textAlign = 'center';
             context.textBaseline = 'top';
+            
         }
 
         for (let i = 0; i < this.arraySize; i++) {
@@ -100,6 +101,7 @@ export class Array {
                 context.fillText(i.toString(), this.x + (this.cellWidth * i) + this.cellWidth / 2, this.y + this.cellHeight + 3);
             }
         };
+        context.restore();
     }
 
     // Throws RangeError if index is out of bounds
