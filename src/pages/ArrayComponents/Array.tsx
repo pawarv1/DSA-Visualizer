@@ -260,8 +260,6 @@ export class Array {
 
 // Vertical Array class, used to help with hashing animations
 export class VerticalArray extends Array {
-    protected arraySize: number;
-    protected cells: ArrayCell[];
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], protected opacity: number = 1) {
         super(x, y, cellWidth, cellHeight, contents, opacity);
@@ -291,37 +289,6 @@ export class VerticalArray extends Array {
             }
             context.restore();
         }
-    }
-
-    // Set the element at the given index
-    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
-        super.setElementAt(context, index, newElement);
-    }
-
-    // Can change opacity of an individual cell or all the cells
-    setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
-        super.setOpacity(context, index, opacity, redraw);
-    }
-
-    // Change outline color of an individual cell
-    setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true) {
-        super.setOutlineColor(context, index, outlineColor, redraw);
-    }
-
-    // Change fill color of an individual cell
-    setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true) {
-        super.setFillColor(context, index, fillColor, redraw)
-    }
-
-     // Traverse through the array and print each element
-    // Hightlight and change outline color of the current element
-    async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
-        await super.print(context, iterationSpeed);
-    }
-
-     // Animate the swap of two elements through fading
-    async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number) {
-        await super.swapElements(context, index1, index2);
     }
 
     // Clear the array
