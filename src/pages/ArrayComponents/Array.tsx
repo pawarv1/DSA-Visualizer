@@ -90,7 +90,6 @@ export class Array {
             context.font = `${fontSize}px Arial`;
             context.textAlign = 'center';
             context.textBaseline = 'top';
-            
         }
 
         for (let i = 0; i < this.arraySize; i++) {
@@ -277,25 +276,27 @@ export class VerticalArray extends Array {
     }
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+        context.save();
         if (drawIndex) {
             let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
-            context.save();
             context.globalAlpha = this.opacity;
             context.fillStyle = 'black';
             context.font = `${fontSize}px Arial`;
             context.textAlign = 'center';
             context.textBaseline = 'top';
-
-            // Print index to the left of the array
-            for (let i = 0; i < this.arraySize; i++) {
-                context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight / 2);
-                const cell = this.cells[i];
-                cell.opacity = this.opacity;
-                // Set clearExtra to false so cells are not cleared
-                cell.drawCell(context, false);
-            }
-            context.restore();
         }
+
+        for (let i = 0; i < this.arraySize; i++) {
+            const cell = this.cells[i];
+            cell.opacity = this.opacity;
+            // Set clearExtra to false so cells are not cleared
+            cell.drawCell(context, false);
+            if (drawIndex) {
+                // Print index to the left of the array
+                context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight / 2);
+            }
+        }
+        context.restore();
     }
 
     // Clear the array
