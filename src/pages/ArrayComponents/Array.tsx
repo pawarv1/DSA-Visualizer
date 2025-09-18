@@ -117,6 +117,7 @@ export class Array {
     setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
+            // Set clearExtra to false so index numbers are not cleared if they are used
             this.cells[index].drawCell(context, false);
         }
     }
@@ -136,6 +137,7 @@ export class Array {
                 this.cells[index].opacity = opacity;
 
                 if (redraw) {
+                    // Set clearExtra to false so index numbers are not cleared if they are used
                     this.cells[index].drawCell(context, false);
                 }
             }
@@ -148,6 +150,7 @@ export class Array {
             this.cells[index].outlineColor = outlineColor;
 
             if (redraw) {
+                // Set clearExtra to false so index numbers are not cleared if they are used
                 this.cells[index].drawCell(context, false);
             }
         }
@@ -159,6 +162,7 @@ export class Array {
             this.cells[index].fillColor = fillColor;
 
             if (redraw) {
+                // Set clearExtra to false so index numbers are not cleared if they are used
                 this.cells[index].drawCell(context, false);
             }
         }
@@ -214,6 +218,7 @@ export class Array {
                     opacity: 0,
                     duration: 1,
                     onUpdate: () => {
+                        // Set clearExtra to false so index numbers are not cleared if they are used
                         cell1.drawCell(context, false);
                         cell2.drawCell(context, false);
                     },
@@ -234,6 +239,7 @@ export class Array {
                     opacity: 1,
                     duration: 1,
                     onUpdate: () => {
+                        // Set clearExtra to false so index numbers are not cleared if they are used
                         cell1.drawCell(context, false);
                         cell2.drawCell(context, false);
                     },
@@ -285,6 +291,7 @@ export class VerticalArray extends Array {
                 context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight / 2);
                 const cell = this.cells[i];
                 cell.opacity = this.opacity;
+                // Set clearExtra to false so cells are not cleared
                 cell.drawCell(context, false);
             }
             context.restore();

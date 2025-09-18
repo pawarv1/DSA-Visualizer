@@ -68,7 +68,7 @@ export class ArrayCell {
 
 
 // ArrayCell for dynamic arrays
-export class DynamicArrayCell extends ArrayCell{
+export class DynamicArrayCell extends ArrayCell {
     index: number;
     inUse: boolean;
 
