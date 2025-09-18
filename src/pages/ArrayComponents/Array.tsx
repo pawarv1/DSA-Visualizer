@@ -77,15 +77,29 @@ export class Array {
         this.opacity = opacity;
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
         }
     }
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        this.cells.forEach(cell => {
-            cell.opacity = this.opacity;
-            cell.drawCell(context, drawIndex);
-        });
+        if (drawIndex) {
+            let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
+            context.save();
+            context.globalAlpha = this.opacity;
+            context.fillStyle = 'black';
+            context.font = `${fontSize}px Arial`;
+            context.textAlign = 'center';
+            context.textBaseline = 'top';
+        }
+
+        for (let i = 0; i < this.arraySize; i++) {
+            this.cells[i].opacity = this.opacity;
+            this.cells[i].drawCell(context);
+            if (drawIndex) {
+                // Print index numbers below array cells
+                context.fillText(i.toString(), this.x + (this.cellWidth * i) + this.cellWidth / 2, this.y + this.cellHeight + 3);
+            }
+        };
     }
 
     // Throws RangeError if index is out of bounds
@@ -98,15 +112,15 @@ export class Array {
     }
 
     // Set the element at the given index
-    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any, drawIndex: boolean = true) {
+    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
-            this.cells[index].drawCell(context, drawIndex);
+            this.cells[index].drawCell(context, false);
         }
     }
 
     // Can change opacity of an individual cell or all the cells
-    setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true, drawIndex: boolean = true) {
+    setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
         // All cells
         if (typeof index === 'string' && index === "all") {
             this.opacity = opacity;
@@ -120,30 +134,30 @@ export class Array {
                 this.cells[index].opacity = opacity;
 
                 if (redraw) {
-                    this.cells[index].drawCell(context, drawIndex);
+                    this.cells[index].drawCell(context, false);
                 }
             }
         }
     }
 
     // Change outline color of an individual cell
-    setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true, drawIndex: boolean = true) {
+    setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].outlineColor = outlineColor;
 
             if (redraw) {
-                this.cells[index].drawCell(context, drawIndex);
+                this.cells[index].drawCell(context, false);
             }
         }
     }
 
     // Change fill color of an individual cell
-    setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true, drawIndex: boolean = true) {
+    setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].fillColor = fillColor;
 
             if (redraw) {
-                this.cells[index].drawCell(context, drawIndex);
+                this.cells[index].drawCell(context, false);
             }
         }
     }
@@ -161,7 +175,7 @@ export class Array {
 
     // Traverse through the array and print each element
     // Hightlight and change outline color of the current element
-    async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1, drawIndex: boolean = true) {
+    async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
         await new Promise<void>((resolve) => {
             // Resolve after the timeline animation completes
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
@@ -170,14 +184,14 @@ export class Array {
                 timeline.to(this, {
                     duration: iterationSpeed,
                     onUpdate: () => {
-                        this.setOutlineColor(context, i, "red", true, drawIndex);
-                        this.setFillColor(context, i, "yellow", true,  drawIndex);
+                        this.setOutlineColor(context, i, "red", true);
+                        this.setFillColor(context, i, "yellow", true);
                         console.log(this.getElementAt(i));
                     },
                     onComplete: () => {
                         // Set the outline and fill color back to normal when finished
-                        this.setOutlineColor(context, i, "black", true,  drawIndex);
-                        this.setFillColor(context, i, "white", true, drawIndex);
+                        this.setOutlineColor(context, i, "black", true);
+                        this.setFillColor(context, i, "white", true);
                     }
                 });
             }
@@ -185,7 +199,7 @@ export class Array {
     }
     
     // Animate the swap of two elements through fading
-    async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number, drawIndex: boolean = true) {
+    async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number) {
         if (this.checkIndexValidity(index1) && this.checkIndexValidity(index2)) {
             const cell1 = this.cells[index1];
             const cell2 = this.cells[index2];
@@ -198,8 +212,8 @@ export class Array {
                     opacity: 0,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.drawCell(context, drawIndex);
-                        cell2.drawCell(context, drawIndex);
+                        cell1.drawCell(context, false);
+                        cell2.drawCell(context, false);
                     },
                     onComplete: () => resolve()
                 });
@@ -218,8 +232,8 @@ export class Array {
                     opacity: 1,
                     duration: 1,
                     onUpdate: () => {
-                        cell1.drawCell(context, drawIndex);
-                        cell2.drawCell(context, drawIndex);
+                        cell1.drawCell(context, false);
+                        cell2.drawCell(context, false);
                     },
                     onComplete: () => resolve()
                 });
@@ -252,7 +266,7 @@ export class VerticalArray extends Array {
         this.arraySize = contents.length;
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x, this.y + i * this.cellHeight, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+            this.cells.push(new ArrayCell(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
         }
     }
 
@@ -279,33 +293,33 @@ export class VerticalArray extends Array {
 
     // Set the element at the given index
     setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
-        super.setElementAt(context, index, newElement, false);
+        super.setElementAt(context, index, newElement);
     }
 
     // Can change opacity of an individual cell or all the cells
     setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
-        super.setOpacity(context, index, opacity, redraw, false);
+        super.setOpacity(context, index, opacity, redraw);
     }
 
     // Change outline color of an individual cell
     setOutlineColor(context: CanvasRenderingContext2D, index: number, outlineColor: string, redraw: boolean = true) {
-        super.setOutlineColor(context, index, outlineColor, redraw, false);
+        super.setOutlineColor(context, index, outlineColor, redraw);
     }
 
     // Change fill color of an individual cell
     setFillColor(context: CanvasRenderingContext2D, index: number, fillColor: string, redraw: boolean = true) {
-        super.setFillColor(context, index, fillColor, redraw, false)
+        super.setFillColor(context, index, fillColor, redraw)
     }
 
      // Traverse through the array and print each element
     // Hightlight and change outline color of the current element
     async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
-        await super.print(context, iterationSpeed, false);
+        await super.print(context, iterationSpeed);
     }
 
      // Animate the swap of two elements through fading
     async swapElements(context: CanvasRenderingContext2D, index1: number, index2: number) {
-        await super.swapElements(context, index1, index2, false);
+        await super.swapElements(context, index1, index2);
     }
 
     // Clear the array

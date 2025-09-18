@@ -1,14 +1,19 @@
 import gsap, { timeline } from 'gsap';
-import { ArrayCell } from './ArrayCell';
+import { ArrayCell, DynamicArrayCell } from './ArrayCell';
 import { Array } from './Array';
 
 // Dynamic Array Class, inherits from array class
 export class DynamicArray extends Array {
     private capacity: number;
+    protected cells: DynamicArrayCell[];
 
     constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, initialCapacity: number = contents.length) {
         super(x, y, cellWidth, cellHeight, contents, opacity);
         this.capacity = Math.max(initialCapacity, contents.length);
+        this.cells = [];
+        for (let i = 0; i < this.arraySize; i++) {
+            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+        }
     }
 
     // Clear the dynamic array
@@ -26,6 +31,7 @@ export class DynamicArray extends Array {
         }
         return true;
     }
+
 
     // Return the capacity of the dynamic array, as opposed to the size
     getCapacity() {
@@ -83,7 +89,7 @@ export class DynamicArray extends Array {
         // Expand
         if (this.capacity < newCapacity) {
             for (let i = this.capacity; i < newCapacity; i++) {
-                this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, "black", "white", false));
+                this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, "black", "white", false));
             }
 
             const newCells = this.cells.slice(this.capacity);
@@ -130,7 +136,7 @@ export class DynamicArray extends Array {
     // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
         if (this.capacity === 0) {
-            this.cells.push(new ArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, "black", "white"));
+            this.cells.push(new DynamicArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, "black", "white"));
             this.capacity = 1;
         }
     }

@@ -2,7 +2,6 @@
 export class ArrayCell {
     x: number;
     y: number;
-    index: number;
     cellWidth: number;
     cellHeight: number;
     content: any;
@@ -11,10 +10,9 @@ export class ArrayCell {
     fillColor: string;
     inUse: boolean;
 
-    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', inUse: boolean = true) {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', inUse: boolean = true) {
         this.x = x; 
         this.y = y;
-        this.index = index;
         this.cellWidth = cellWidth;
         this.cellHeight = cellHeight;
         this.content = content;
@@ -37,6 +35,47 @@ export class ArrayCell {
             textWidth = context.measureText(this.content).width;
         }
         return font;
+    }
+
+    // Draw the cell
+    drawCell(context: CanvasRenderingContext2D, clearExtra: boolean = true) {
+        this.clear(context, clearExtra);
+        context.save();
+        context.globalAlpha = this.opacity;
+        context.fillStyle = this.inUse ? this.fillColor : "#f0f0f0"; // Dim the cell if it is not in use, for dynamic arrays
+        context.fillRect(this.x, this.y, this.cellWidth, this.cellHeight);
+        context.strokeStyle = this.outlineColor;
+        context.strokeRect(this.x, this.y, this.cellWidth, this.cellHeight);
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.font = this.adjustFontSize(context);
+        context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
+        context.restore();
+    }
+
+    clear(context: CanvasRenderingContext2D, extraHeightNeeded: boolean = true) {
+        // Clear extra space to remove index numbers (if they are drawn)
+        if (extraHeightNeeded) {
+            // Have to add extra height to account for index numbers below the cells
+            const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
+            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + extraHeight);
+        }
+        // Just clear the array cell
+        else {
+            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + 2);
+        }
+    }
+}
+
+
+// ArrayCell for dynamic arrays
+export class DynamicArrayCell extends ArrayCell{
+    index: number;
+
+    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', inUse: boolean = true) {
+        super(x, y, cellWidth, cellHeight, content, opacity, outlineColor, fillColor, inUse);
+        this.index = index;
     }
 
     // Displays the index number of the cell
@@ -72,21 +111,7 @@ export class ArrayCell {
             this.drawIndex(context);
         }
     }
-
-    clear(context: CanvasRenderingContext2D, extraHeightNeeded: boolean = true) {
-        // Clear extra space to remove index numbers (if they are drawn)
-        if (extraHeightNeeded) {
-            // Have to add extra height to account for index numbers below the cells
-            const extraHeight = 18; // 3px offset + ~12px font + 3px buffer
-            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + extraHeight);
-        }
-        // Just clear the array cell
-        else {
-            context.clearRect(this.x - 1, this.y - 1, this.cellWidth + 2, this.cellHeight + 2);
-        }
-    }
 }
-
 
 // ArrayCell class for 2D arrays
 export class ArrayCell2D {
