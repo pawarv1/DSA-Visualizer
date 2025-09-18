@@ -237,7 +237,8 @@ function DynamicArrayTestCases() {
       text4.draw(mainContext);
       setIsAnimating(false);
     }
-
+    
+    // Search test cases
     const step13 = async () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: search()");
