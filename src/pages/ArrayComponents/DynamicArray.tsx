@@ -12,7 +12,7 @@ export class DynamicArray extends Array {
         this.capacity = Math.max(initialCapacity, contents.length);
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity));
         }
     }
 
@@ -143,7 +143,7 @@ export class DynamicArray extends Array {
     // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
         if (this.capacity === 0) {
-            this.cells.push(new DynamicArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity, "black", "white"));
+            this.cells.push(new DynamicArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity));
             this.capacity = 1;
         }
     }

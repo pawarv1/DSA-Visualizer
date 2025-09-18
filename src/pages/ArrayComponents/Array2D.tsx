@@ -1,9 +1,9 @@
 import gsap, { timeline } from 'gsap';
-import { ArrayCell2D } from './ArrayCell';
+import { ArrayCell } from './ArrayCell';
 
 // 2D Array Class
 export class Array2D {
-    private cells: ArrayCell2D[][];
+    private cells: ArrayCell[][];
 
     constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
         // Cannot make a 2D array if its shape is invalid
@@ -32,7 +32,7 @@ export class Array2D {
         for (let i = 0; i < contents.length; i++) {
             const currRow = Math.floor(i / columns);
             const currCol = i % columns;
-            this.cells[currRow][currCol] = new ArrayCell2D(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, currRow, currCol, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white");
+            this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, this.cellWidth, this.cellHeight, contents[i], this.opacity);
         }
     }
 

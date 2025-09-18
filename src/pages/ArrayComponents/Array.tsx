@@ -77,7 +77,7 @@ export class Array {
         this.opacity = opacity;
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i], this.opacity));
         }
     }
 
@@ -266,7 +266,7 @@ export class VerticalArray extends Array {
         this.arraySize = contents.length;
         this.cells = [];
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, contents[i], this.opacity, "black", "white"));
+            this.cells.push(new ArrayCell(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, contents[i], this.opacity));
         }
     }
 
