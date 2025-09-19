@@ -293,7 +293,7 @@ export class VerticalArray extends Array {
             cell.drawCell(context, false);
             if (drawIndex) {
                 // Print index to the left of the array
-                context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight / 2);
+                context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight * 2/3);
             }
         }
         context.restore();

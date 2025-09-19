@@ -1,10 +1,10 @@
 import gsap, { timeline } from 'gsap';
-import { ArrayCell, DynamicArrayCell } from './ArrayCell';
+import { DynamicArrayCell } from './ArrayCell';
 import { Array } from './Array';
 
 // Dynamic Array Class, inherits from array class
 export class DynamicArray extends Array {
-    private capacity: number;
+    protected capacity: number;
     protected cells: DynamicArrayCell[];
 
     constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, initialCapacity: number = contents.length) {

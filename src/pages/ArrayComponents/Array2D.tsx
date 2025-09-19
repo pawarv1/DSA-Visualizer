@@ -52,7 +52,7 @@ export class Array2D {
             }
             // Print the row index to the left of the 2d array
             for (let r = 0; r < this.rows; r++) {
-                context.fillText(r.toString(), this.x - 10, this.y + (this.cellHeight * r) + this.cellHeight / 2);
+                context.fillText(r.toString(), this.x - 10, this.y + (this.cellHeight * r) + this.cellHeight * 2/3);
             }
             context.restore();
         }
