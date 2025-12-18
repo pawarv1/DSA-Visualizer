@@ -17,11 +17,11 @@ export class ArrayCell {
         this.content = content;
         this.opacity = opacity;
         this.outlineColor = outlineColor;     
-        this.fillColor = fillColor;   
+        this.fillColor = fillColor;
     }
 
     // Adjust font size to fit within the cell
-    adjustFontSize(context: CanvasRenderingContext2D) {
+    protected adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
         let font = `${fontSize}px Arial`;
         let textWidth = context.measureText(this.content).width;
@@ -71,15 +71,17 @@ export class ArrayCell {
 export class DynamicArrayCell extends ArrayCell {
     index: number;
     inUse: boolean;
+    font: string;
 
-    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white', inUse: boolean = true) {
+    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, inUse: boolean = true, outlineColor: string = 'black', fillColor: string = 'white') {
         super(x, y, cellWidth, cellHeight, content, opacity, outlineColor, fillColor);
         this.index = index;
         this.inUse = inUse;
+        this.font = '16px Arial';   // Track font for element movement during resizing
     }
 
     // Displays the index number of the cell
-    drawIndex(context: CanvasRenderingContext2D) {
+    protected drawIndex(context: CanvasRenderingContext2D) {
         let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
         context.save();
         context.globalAlpha = this.opacity;
@@ -103,7 +105,8 @@ export class DynamicArrayCell extends ArrayCell {
         context.fillStyle = 'black';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
-        context.font = this.adjustFontSize(context);
+        this.font = this.adjustFontSize(context);
+        context.font = this.font;
         context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
 

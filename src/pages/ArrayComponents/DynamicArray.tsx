@@ -11,8 +11,13 @@ export class DynamicArray extends Array {
         super(x, y, cellWidth, cellHeight, contents, opacity);
         this.capacity = Math.max(initialCapacity, contents.length);
         this.cells = [];
-        for (let i = 0; i < this.arraySize; i++) {
+
+        for (let i = 0; i < contents.length; i++) {
             this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity));
+        }
+
+        for (let i = contents.length; i < initialCapacity; i++) {
+            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", this.opacity, false));
         }
     }
 
@@ -87,57 +92,124 @@ export class DynamicArray extends Array {
         return index;
     }
 
+    // FIXME animation is misleading
     // Resize animations when the dynamic array must expand or shrink
-    async resize(context: CanvasRenderingContext2D, newCapacity: number, drawIndex: boolean = true) {
+    private async resize(context: CanvasRenderingContext2D, newCapacity: number, drawIndex: boolean = true) {
         // Do nothing
         if (newCapacity === this.capacity) {
             return;
         }
-        // Expand
-        if (this.capacity < newCapacity) {
-            for (let i = this.capacity; i < newCapacity; i++) {
-                this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", 0, "black", "white", false));
-            }
 
-            const newCells = this.cells.slice(this.capacity);
-            await new Promise<void>((resolve) => {
-                gsap.to(newCells, {
-                    opacity: 1,
-                    duration: 1,
-                    onUpdate: () => {
-                        for (let i = 0; i < newCells.length; i++) {
-                            newCells[i].drawCell(context, drawIndex);
-                        }
-                    },
-                    onComplete: () => {
-                        this.capacity = newCapacity;
-                        resolve();
-                    }
-                });
-            });
-        } 
-        // Shrink
-        else {
-            const cellsToRemove = this.cells.slice(newCapacity);
+        let newArr = new DynamicArray(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], 0, newCapacity);
 
-            await new Promise<void>((resolve) => {
-                gsap.to(cellsToRemove, {
-                    opacity: 0,
-                    duration: 1,
-                    onUpdate: () => {
-                        for (let i = 0; i < cellsToRemove.length; i++) {
-                            cellsToRemove[i].drawCell(context, drawIndex);
-                        }
-                    },
-                    onComplete: () => {
-                        this.cells.splice(newCapacity);
-                        this.capacity = newCapacity;
-                        this.draw(context, drawIndex);
-                        resolve();
-                    }
-                });
+        this.draw(context, drawIndex);
+
+        await new Promise<void>((resolve) => {
+            gsap.to(newArr, {
+                opacity: this.opacity,
+                duration: 1,
+                onUpdate: () => {
+                    newArr.draw(context, drawIndex);
+                },
+                onComplete: () => {
+                    resolve();
+                }
             });
+        });
+
+        const copyElement = (index: number) => new Promise<void>((resolve) => {
+            const source = this.cells[index];
+            const destination = newArr.cells[index];
+            const timeline = gsap.timeline();
+
+            timeline.to(destination, {
+                onStart: () => {
+                    destination.inUse = true;
+                }
+            });
+            
+            timeline.to(source, {
+                outlineColor: "red",
+                fillColor: "yellow",
+                duration: 1,
+                onUpdate: () => {
+                    source.drawCell(context, drawIndex);
+                }
+            });
+
+            timeline.to(destination, {
+                outlineColor: "red",
+                fillColor: "yellow",
+                duration: 1,
+                onUpdate: () => {
+                    destination.drawCell(context, drawIndex);
+                }
+            });
+
+            const heightTracker = {currHeight: source.y + source.cellHeight + 2};
+          
+            timeline.to(heightTracker, {
+                currHeight: destination.y + destination.cellHeight / 2,
+                duration: 1,
+                onStart: () => {
+                    context.save();
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.font = source.font;
+                },
+                onUpdate: () => {
+                    context.clearRect(source.x - 1, source.y + source.cellHeight + 2,  destination.cellWidth + 2, destination.y - (source.y + source.cellHeight + 1));
+                    source.drawCell(context, drawIndex);
+                    destination.drawCell(context, drawIndex);
+                    context.fillText(source.content, source.x + source.cellWidth / 2, heightTracker.currHeight);
+                },
+                onComplete: () => {
+                    context.restore();
+                    source.outlineColor = "black";
+                    source.fillColor = "white";
+                    source.drawCell(context, drawIndex)
+                    destination.outlineColor = "black";
+                    destination.fillColor = "white";
+                    destination.content = source.content;
+                    destination.drawCell(context, drawIndex);
+                    resolve()
+                }
+            });
+        });
+
+        for (let i = 0; i < this.arraySize; i++) {
+            await copyElement(i);
         }
+
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                opacity: 0,
+                duration: 1,
+                onUpdate: () => {
+                    this.draw(context, drawIndex);
+                },
+                onComplete: resolve
+            });
+        });
+
+        await new Promise<void>((resolve) => {
+            gsap.to(newArr.cells, {
+                y: this.y,
+                duration: 1,
+                onUpdate: () => {
+                    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+                    newArr.draw(context, drawIndex);
+                },
+                onComplete: resolve
+            });
+        });
+
+        this.cells = newArr.cells;
+        this.capacity = newCapacity;
+        this.opacity = newArr.opacity;
+
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        this.draw(context,drawIndex);
     }
 
     // Helper method to help with adding to an empty dynamic array
