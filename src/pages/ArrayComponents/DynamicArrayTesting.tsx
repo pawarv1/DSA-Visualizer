@@ -82,25 +82,13 @@ function DynamicArrayTestCases() {
       });
     }
 
-    // Resize test cases
-    const step4 = async() => {
-      setIsAnimating(true);
-      const header = new Text(70, 40, "DynamicArray: resize()");
-      const array = new DynamicArray(100, 100, 60, 50, []);
-      header.draw(mainContext);
-      await array.resize(mainContext, 4);
-      await array.resize(mainContext, 8);
-      await array.resize(mainContext, 2);
-      setIsAnimating(false);
-    }
-
     // Appending test cases
     // For better visualization resizing delays will be added, but this will usually be 0
-    const step5 = async() => {
+    const step4 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: append()");
       const array = new DynamicArray(100, 100, 60, 50, []);
-      header.draw(mainContext);
+      header.draw(staticContext);
       array.draw(mainContext);
       
       await array.append(mainContext, "A"); // Append into empty dynamic array
@@ -112,11 +100,11 @@ function DynamicArrayTestCases() {
 
     // Inserting test cases
     // For better visualization resizing delays will be added, but this will ussually be 0
-    const step6 = async() => {
+    const step5 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: insertAt()");
       const array = new DynamicArray(100, 100, 60, 50, []);
-      header.draw(mainContext);
+      header.draw(staticContext);
       array.draw(mainContext);
 
       await array.insertAt(mainContext, 0, "B");  // Insert into empty dynamic array
@@ -128,11 +116,11 @@ function DynamicArrayTestCases() {
     }
 
     // Removing test cases
-    const step7 = async() => {
+    const step6 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: removeAt()");
       const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
-      header.draw(mainContext);
+      header.draw(staticContext);
       array.draw(mainContext);
 
       await array.removeAt(mainContext, 2); // Remove middle (C)
@@ -143,44 +131,44 @@ function DynamicArrayTestCases() {
     }
 
     // Pop test cases
-    const step8 = async() => {
+    const step7 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: pop()");
       const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
-      const text1 = new Text (100, 200, "array.pop() =", 1, "16px Arial");
-      const text2 = new Text (100, 300, "array.pop() =", 1, "16px Arial");
+      const text1 = new Text (100, 300, "array.pop() =", 1, "16px Arial");
+      const text2 = new Text (100, 350, "array.pop() =", 1, "16px Arial");
       const text3 = new Text (100, 400, "array.pop() =", 1, "16px Arial");
-      const text4 = new Text (100, 500, "array.pop() =", 1, "16px Arial");
-      const text5 = new Text (210,200, "", 1);
-      const text6 = new Text (210,300, "", 1);
+      const text4 = new Text (100, 450, "array.pop() =", 1, "16px Arial");
+      const text5 = new Text (210,300, "", 1);
+      const text6 = new Text (210,350, "", 1);
       const text7 = new Text (210,400, "", 1);
-      const text8 = new Text (210,500, "", 1);
-      header.draw(mainContext);
+      const text8 = new Text (210,450, "", 1);
+      header.draw(staticContext);
       array.draw(mainContext);
 
       text5.setContent(await array.pop(mainContext))
-      text1.draw(mainContext);
-      text5.draw(mainContext);
+      text1.draw(staticContext);
+      text5.draw(staticContext);
       text6.setContent(await array.pop(mainContext))
-      text2.draw(mainContext);
-      text6.draw(mainContext);
+      text2.draw(staticContext);
+      text6.draw(staticContext);
       text7.setContent(await array.pop(mainContext))
-      text3.draw(mainContext);
-      text7.draw(mainContext);
+      text3.draw(staticContext);
+      text7.draw(staticContext);
       text8.setContent(await array.pop(mainContext))  // Should trigger a resize
-      text4.draw(mainContext);
-      text8.draw(mainContext);
+      text4.draw(staticContext);
+      text8.draw(staticContext);
       setIsAnimating(false);
     }
 
     // Popping from empty array test case
-    const step9 = async() => {
+    const step8 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "Popping from empty array");
       const array = new DynamicArray(100, 100, 60, 50, []);
       const text1 = new Text (100, 100, "array.pop() =", 1, "16px Arial");
       const text2 = new Text (210, 100, "", 1);
-      header.draw(mainContext);
+      header.draw(staticContext);
       array.draw(mainContext);
 
       //Should give a console error
@@ -191,11 +179,11 @@ function DynamicArrayTestCases() {
     }
 
     // shrinkToFit test cases
-    const step10 = async () => {
+    const step9 = async () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: shrinkToFit()");
       const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
-      header.draw(mainContext);
+      header.draw(staticContext);
       array.draw(mainContext);
       await array.pop(mainContext)
       await array.pop(mainContext)
@@ -205,7 +193,7 @@ function DynamicArrayTestCases() {
     }
 
     // clearAll elements test case
-    const step11 = () => {
+    const step10 = () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: clearAll()");
       const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
@@ -218,7 +206,7 @@ function DynamicArrayTestCases() {
     }
 
     // isEmpty test cases
-    const step12 = async () => {
+    const step11 = async () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: isEmpty()");
       const array = new DynamicArray(100, 100, 60, 50, []);
@@ -239,7 +227,7 @@ function DynamicArrayTestCases() {
     }
     
     // Search test cases
-    const step13 = async () => {
+    const step12 = async () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: search()");
       const array = new DynamicArray(100, 100, 60, 50, ["A", "B", "C", "D", "E"]);
@@ -301,15 +289,12 @@ function DynamicArrayTestCases() {
       case 12:
         step12();
         break;
-      case 13:
-        step13();
-        break;
       default:
         break
     }
   }
 
-  return <StepPlayer totalSteps={13} runStep={runDynamicArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={12} runStep={runDynamicArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default DynamicArrayTestCases;
