@@ -92,7 +92,6 @@ export class DynamicArray extends Array {
         return index;
     }
 
-    // FIXME animation is misleading
     // Resize animations when the dynamic array must expand or shrink
     private async resize(context: CanvasRenderingContext2D, newCapacity: number, drawIndex: boolean = true) {
         // Do nothing
@@ -104,6 +103,7 @@ export class DynamicArray extends Array {
 
         this.draw(context, drawIndex);
 
+        // Fade in the new array
         await new Promise<void>((resolve) => {
             gsap.to(newArr, {
                 opacity: this.opacity,
@@ -122,12 +122,14 @@ export class DynamicArray extends Array {
             const destination = newArr.cells[index];
             const timeline = gsap.timeline();
 
+            // Set destination cell inUse, so that it can hightlight properly
             timeline.to(destination, {
                 onStart: () => {
                     destination.inUse = true;
                 }
             });
             
+            // Highlight source cell
             timeline.to(source, {
                 outlineColor: "red",
                 fillColor: "yellow",
@@ -137,6 +139,7 @@ export class DynamicArray extends Array {
                 }
             });
 
+            // Highlight destination cell
             timeline.to(destination, {
                 outlineColor: "red",
                 fillColor: "yellow",
@@ -146,8 +149,10 @@ export class DynamicArray extends Array {
                 }
             });
 
+            // Object to help with moving the element between array cells
             const heightTracker = {currHeight: source.y + source.cellHeight + 2};
           
+            // Slide the element from the source to the destination cell
             timeline.to(heightTracker, {
                 currHeight: destination.y + destination.cellHeight / 2,
                 duration: 1,
@@ -177,10 +182,12 @@ export class DynamicArray extends Array {
             });
         });
 
+        // Copy all the elemnts
         for (let i = 0; i < this.arraySize; i++) {
             await copyElement(i);
         }
 
+        // Fade out the old array
         await new Promise<void>((resolve) => {
             gsap.to(this, {
                 opacity: 0,
@@ -192,6 +199,7 @@ export class DynamicArray extends Array {
             });
         });
 
+        // Move the new array to the old location
         await new Promise<void>((resolve) => {
             gsap.to(newArr.cells, {
                 y: this.y,
@@ -204,12 +212,10 @@ export class DynamicArray extends Array {
             });
         });
 
+        // Make the old array the same as the new array
         this.cells = newArr.cells;
         this.capacity = newCapacity;
         this.opacity = newArr.opacity;
-
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-        this.draw(context,drawIndex);
     }
 
     // Helper method to help with adding to an empty dynamic array
