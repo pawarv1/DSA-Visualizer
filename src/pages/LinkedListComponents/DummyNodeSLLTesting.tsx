@@ -44,10 +44,10 @@ function DummyNodeSLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Linked list prepend");
             testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
-            await ll.prepend(mainContext, 'd', canvasWidth, canvasHeight, 1);
-            await ll.prepend(mainContext, 'c', canvasWidth, canvasHeight, 1);
-            await ll.prepend(mainContext, 'b', canvasWidth, canvasHeight, 1);
-            await ll.prepend(mainContext, 'a', canvasWidth, canvasHeight, 1);
+            await ll.prepend(mainContext, 'd', 1);
+            await ll.prepend(mainContext, 'c', 1);
+            await ll.prepend(mainContext, 'b', 1);
+            await ll.prepend(mainContext, 'a', 1);
             setIsAnimating(false);
         }
 
@@ -58,9 +58,9 @@ function DummyNodeSLLTestCases() {
             testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(20, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['b', 'c', 'e', 'f']);
-            await ll.insertAt(mainContext, 2, 'd', canvasWidth, canvasHeight);
-            await ll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
-            await ll.insertAt(mainContext, 6, 'g', canvasWidth, canvasHeight);
+            await ll.insertAt(mainContext, 2, 'd');
+            await ll.insertAt(mainContext, 0, 'a');
+            await ll.insertAt(mainContext, 6, 'g');
             setIsAnimating(false);
         }
 
@@ -70,9 +70,9 @@ function DummyNodeSLLTestCases() {
             testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(80, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c']);
-            await ll.shift(mainContext, canvasWidth, canvasHeight);
-            await ll.shift(mainContext, canvasWidth, canvasHeight);
-            await ll.shift(mainContext, canvasWidth, canvasHeight);
+            await ll.shift(mainContext);
+            await ll.shift(mainContext);
+            await ll.shift(mainContext);
             setIsAnimating(false);
         }
 
@@ -95,9 +95,9 @@ function DummyNodeSLLTestCases() {
             testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(80, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await ll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
-            await ll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
-            await ll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
+            await ll.removeAt(mainContext, 2);
+            await ll.removeAt(mainContext, 0);
+            await ll.removeAt(mainContext, 3);
             setIsAnimating(false);
         }
 

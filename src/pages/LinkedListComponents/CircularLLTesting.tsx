@@ -85,8 +85,8 @@ function CircularLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, []);
-            await cll.prepend(mainContext, 'b', canvasWidth, canvasHeight);
-            await cll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
+            await cll.prepend(mainContext, 'b');
+            await cll.prepend(mainContext, 'a');
             setIsAnimating(false);
         }
 
@@ -97,9 +97,9 @@ function CircularLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(80, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['b', 'c', 'e', 'f']);
-            await cll.insertAt(mainContext, 2, 'd', canvasWidth, canvasHeight);
-            await cll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
-            await cll.insertAt(mainContext, 6, 'g', canvasWidth, canvasHeight);
+            await cll.insertAt(mainContext, 2, 'd');
+            await cll.insertAt(mainContext, 0, 'a');
+            await cll.insertAt(mainContext, 6, 'g');
             setIsAnimating(false);
         }
 
@@ -110,9 +110,9 @@ function CircularLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c']);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
-            await cll.shift(mainContext, canvasWidth, canvasHeight);
+            await cll.shift(mainContext);
+            await cll.shift(mainContext);
+            await cll.shift(mainContext);
             setIsAnimating(false);
         }
 
@@ -136,9 +136,9 @@ function CircularLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(80, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            await cll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
-            await cll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
-            await cll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
+            await cll.removeAt(mainContext, 2);
+            await cll.removeAt(mainContext, 0);
+            await cll.removeAt(mainContext, 3);
             setIsAnimating(false);
         }
 

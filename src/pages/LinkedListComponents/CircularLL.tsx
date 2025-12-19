@@ -160,7 +160,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Insert to the head of the CLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
 
         const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
@@ -181,7 +181,7 @@ export class CircularLinkedList extends LinkedList {
 
             // Animate the movement of the following nodes
             const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
             newNode.next = this.headPtr;    // Set newNode.next to the head node
             this.tailPtr!.next = newNode;   // Set tail node next to newNode
@@ -207,7 +207,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
         // Error if the insertion index is not valid
         if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -215,7 +215,7 @@ export class CircularLinkedList extends LinkedList {
         }
         // Insertions at the head can be taken care of with prepend
         else if (index === 0) {
-            await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
+            await this.prepend(context, newData, fadeIntime);
         }
         else {
             let currNode = this.headPtr!;
@@ -249,7 +249,7 @@ export class CircularLinkedList extends LinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
                 // Animate the node creation and pointer change sequence using timeline
                 await new Promise<void>((resolve) => {
@@ -320,7 +320,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Remove the head node, and return its data
-    async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
+    async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if CLL is empty
         if (!this.headPtr) {
             console.error("Linked List is empty, cannot remove first element");
@@ -404,7 +404,7 @@ export class CircularLinkedList extends LinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
 
             this.numElements--; // Decrement number of elements
@@ -509,7 +509,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -517,7 +517,7 @@ export class CircularLinkedList extends LinkedList {
         }
         // Deletions at the head are taken care of using shift
         else if (index === 0) {
-            await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
+            await this.shift(context, fadeOutTime);
         }
         else {
             let currNode = this.headPtr!;
@@ -589,7 +589,7 @@ export class CircularLinkedList extends LinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
             // Deletions from the end of the CLL
             else {
@@ -658,7 +658,7 @@ export class CircularLinkedList extends LinkedList {
         else if (this.headPtr.data === data) {
             await this.highlightNode(context, this.headPtr);
             await this.highlightNode(context, this.headPtr, 500, "black", "lightgreen");
-            await this.shift(context, context.canvas.width, context.canvas.height, fadeOutTime);
+            await this.shift(context, fadeOutTime);
         }
         else {
             let currNode = this.headPtr;
@@ -743,7 +743,7 @@ export class CircularLinkedList extends LinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
             // Deletions from the end of the CLL
             else {
