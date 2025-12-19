@@ -100,8 +100,23 @@ function DummyNodeSLLTestCases() {
             await ll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
-        
+
+        // Delete test cases
         const step9 = async () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "Linked list delete");
+            testCaseHeader.draw(staticContext);
+            const ll = new DummyNodeSLL(80, 100, 50, 30);
+            ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            await ll.delete(mainContext, 'c');
+            await ll.delete(mainContext, 'a');
+            await ll.delete(mainContext, 'f');
+            await ll.delete(mainContext, 'h');
+            setIsAnimating(false);
+        }
+        
+        // Clear all test case
+        const step10 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list clearAll");
             testCaseHeader.draw(mainContext);
@@ -111,7 +126,8 @@ function DummyNodeSLLTestCases() {
             setIsAnimating(false);
         }
 
-        const step10 = async () => {
+        // Traverse test case
+        const step11 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list traverse");
             testCaseHeader.draw(mainContext);
@@ -153,12 +169,15 @@ function DummyNodeSLLTestCases() {
             case 10:
                 step10();
                 break;
+            case 11:
+                step11();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={10} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={11} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default DummyNodeSLLTestCases;

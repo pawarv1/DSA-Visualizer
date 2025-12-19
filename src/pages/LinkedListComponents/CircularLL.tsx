@@ -650,6 +650,160 @@ export class CircularLinkedList extends LinkedList {
         return true;    // Deletion was successful
     }
 
+    // Remove at the given index
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+        if (this.headPtr === null) {
+            return false;
+        }
+        else if (this.headPtr.data === data) {
+            await this.highlightNode(context, this.headPtr);
+            await this.highlightNode(context, this.headPtr, 500, "black", "lightgreen");
+            await this.shift(context, context.canvas.width, context.canvas.height, fadeOutTime);
+        }
+        else {
+            let currNode = this.headPtr;
+
+            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            while(currNode.next != this.headPtr) {
+                if (currNode.next!.data === data) {
+                    if (iterationAnimation) {
+                        await this.highlightNode(context, currNode);
+                    }
+                    await this.highlightNode(context, currNode.next!);
+                    await this.highlightNode(context, currNode.next!, 500, "black", "lightgreen");
+                    break;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, currNode);
+                }
+                currNode = currNode.next!;
+
+            }
+
+            if (currNode.next === this.headPtr) {
+                if (iterationAnimation) {
+                    await this.highlightNode(context, currNode);
+                }
+                return false;
+            }
+
+            const deleteNode = currNode.next!;
+
+            // Deletions in the middle of the CLL
+            if (deleteNode.next != this.headPtr) {
+                let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
+
+                // Animate node removal and pointer change sequence using timeline
+                await new Promise<void>((resolve) => {
+                    const timeline = gsap.timeline({onComplete: () => resolve()});
+
+                    // Fade out currNode next pointer
+                    timeline.to(currNode, {
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            currNode.drawNode(context);
+                        }
+                    });
+
+                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
+                    timeline.to(currNode, {
+                        pointerOpacity: 1,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            currNode.next = tempPtr;
+                        },
+                        onUpdate: () => {
+                            currNode.drawNode(context);
+                        }
+                    });
+
+                    // Fade out the deleted node, after setting its next pointer to null
+                    timeline.to(deleteNode, {
+                        nodeOpacity : 0,
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            deleteNode.next = null;
+                        },
+                        onUpdate: () => {
+                            deleteNode.drawNode(context);
+                            currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
+                        }
+                    });
+                });
+
+                const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
+
+                // Add the nodes to movingNodes
+                while (tempPtr != this.headPtr) {
+                    movingNodes.push(tempPtr);
+                    tempPtr = tempPtr.next!;
+                }
+
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
+                await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+            }
+            // Deletions from the end of the CLL
+            else {
+                this.tailPtr = currNode;    // Update the tail pointer
+
+                // Animate the node removal and pointer change sequence using timeline
+                await new Promise<void>((resolve) => {
+                    const timeline = gsap.timeline({onComplete: () => resolve()});
+
+                    // Fade out the tail node next pointer than set it to the head
+                    timeline.to(this.tailPtr, {
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            this.tailPtr!.drawNode(context);
+                        },
+                        onComplete: () => {
+                            this.tailPtr!.next = this.headPtr;
+                        }
+                    });
+
+                    // Fade the tail node next pointer back in
+                    timeline.to(this.tailPtr, {
+                        pointerOpacity: 1,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            this.tailPtr!.drawNode(context);
+                        }
+                    });
+
+                    // Fade out deleteNode next pointer arrow
+                    timeline.to(deleteNode, {
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            deleteNode.drawNode(context);
+                            this.tailPtr!.drawNode(context);
+                        }
+                    });
+
+                    // Fade out deleteNode node after setting its next pointer to null
+                    timeline.to(deleteNode, {
+                        nodeOpacity: 0,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            deleteNode.next = null;
+                        },
+                        onUpdate: () => {
+                            deleteNode.drawNode(context, false);
+                        }
+                    });
+                });
+            }
+
+            this.numElements--; // Decrement the number of elements
+        }
+
+        return true;    // Deletion was successful
+    }
+
     // Clear the CLL and set head and tail to null
     // Also set each next pointer to null
     async clearAll(context: CanvasRenderingContext2D) {

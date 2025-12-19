@@ -231,23 +231,15 @@ export class DummyNodeSLL extends LinkedList {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
-        // Insertions right after the dummy head node can be taken care of with prepend
-        else if (index === 0) {
-            await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
-        }
         else {
-            // Traversal starts at the node after the head
-            let currNode = this.headPtr.next!;
+            let currNode = this.headPtr;
 
-            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
-            for (let i = 0; i < index - 1; i++){
+            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            for (let i = -1; i < index - 1; i++) {
+                currNode = currNode.next!;
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode);
                 }
-                currNode = currNode.next!;
-            }
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
             }
 
             // Insertions in the middle of the SLL
@@ -454,22 +446,15 @@ export class DummyNodeSLL extends LinkedList {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
-        // Deletions right after the dummy head node are taken care of using shift
-        else if (index === 0) {
-            await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
-        }
         else {
-            let currNode = this.headPtr.next!;
+            let currNode = this.headPtr;
 
             // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
-            for (let i = 0; i < index - 1; i++) {
+            for (let i = -1; i < index - 1; i++) {
+                currNode = currNode.next!;
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode);
                 }
-                currNode = currNode.next!;
-            }
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
             }
 
             const deleteNode = currNode.next!;
@@ -529,6 +514,116 @@ export class DummyNodeSLL extends LinkedList {
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
                 await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            }
+            // Deletions from the end of the SLL
+            else {
+                currNode.next = null;   // Set currNode.next to null then redraw
+                currNode.drawNode(context);
+                this.tailPtr = currNode;    // Update the tail pointer
+                
+                // Fade out the deleted node
+                await new Promise<void>((resolve) => {
+                    gsap.to(deleteNode, {
+                        nodeOpacity : 0,
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            deleteNode.drawNode(context);
+                        },
+                        onComplete: () => resolve()
+                    });
+                });
+            }
+
+            this.numElements--; // Decrement the number of elements
+        }
+
+        return true;    // Deletion was successful
+    }
+
+    // Deletes based on the element value, as opposed to index like removeAt
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+        if (this.headPtr.next === null) {
+            return false;
+        }
+        else {
+            let currNode = this.headPtr;
+
+            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            while(currNode.next != null) {
+                if (currNode.next.data === data) {
+                    await this.highlightNode(context, currNode.next);
+                    await this.highlightNode(context, currNode.next, 500, "black", "lightgreen");
+                    break;
+                }
+                currNode = currNode.next;
+
+                if (iterationAnimation) {
+                    await this.highlightNode(context, currNode);
+                }
+            }
+
+            if (currNode.next === null) {
+                return false;
+            }
+
+            const deleteNode = currNode.next;
+
+            // Deletions in the middle of the SLL
+            if (deleteNode.next) {
+                let tempPtr: LinkedListNode | null = deleteNode.next;  // This pointer will be used to move the nodes following the removed node back
+
+                // Animate the node removal and pointer change sequence with timeline
+                await new Promise<void>((resolve) => {
+                    const timeline = gsap.timeline({onComplete: () => resolve()});
+
+                    // Fade out currNode next pointer
+                    timeline.to(currNode, {
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            currNode.drawNode(context);
+                        }
+                    });
+
+                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
+                    timeline.to(currNode, {
+                        pointerOpacity: 1,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            currNode.next = tempPtr;
+                        },
+                        onUpdate: () => {
+                            currNode.drawNode(context);
+                        }
+                    });
+
+                    // Fade out the deleted node, after setting its next pointer to null
+                    timeline.to(deleteNode, {
+                        nodeOpacity : 0,
+                        pointerOpacity: 0,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            deleteNode.next = null;
+                        },
+                        onUpdate: () => {
+                            deleteNode.drawNode(context);
+                            currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
+                        }
+                    });
+                });
+
+                const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
+
+                // Add the nodes to movingNodes
+                while (tempPtr) {
+                    movingNodes.push(tempPtr);
+                    tempPtr = tempPtr.next;
+                }
+
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
+                await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
             }
             // Deletions from the end of the SLL
             else {

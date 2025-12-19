@@ -142,8 +142,22 @@ function CircularLLTestCases() {
             setIsAnimating(false);
         }
 
-        // Clear test case
+        // Delete test cases
         const step12 = async () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "delete");
+            testCaseHeader.draw(staticContext);
+            const cll = new CircularLinkedList(80, 100, 50, 30);
+            cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            await cll.delete(mainContext, 'c');
+            await cll.delete(mainContext, 'a');
+            await cll.delete(mainContext, 'f');
+            await cll.delete(mainContext, 'h');
+            setIsAnimating(false);
+        }
+
+        // Clear test case
+        const step13 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
@@ -191,12 +205,15 @@ function CircularLLTestCases() {
             case 12:
                 step12();
                 break;
+            case 13:
+                step13();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={12} runStep={runCircularLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={13} runStep={runCircularLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default CircularLLTestCases;

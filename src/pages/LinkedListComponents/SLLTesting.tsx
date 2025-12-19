@@ -137,8 +137,22 @@ function LinkedListTestCases() {
             setIsAnimating(false);
         }
 
-        // Get at test cases
+        // Delete test cases
         const step12 = async () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "Linked list delete");
+            testCaseHeader.draw(staticContext);
+            const ll = new LinkedList(80, 100, 50, 30);
+            ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            await ll.delete(mainContext, 'c');
+            await ll.delete(mainContext, 'a');
+            await ll.delete(mainContext, 'f');
+            await ll.delete(mainContext, 'h');
+            setIsAnimating(false);
+        }
+
+        // Get at test cases
+        const step13 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list get at");
             testCaseHeader.draw(staticContext);
@@ -150,8 +164,8 @@ function LinkedListTestCases() {
             setIsAnimating(false);
         }
 
-        // Find test casses
-        const step13 = async () => {
+        // Find test cases
+        const step14 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list find");
             testCaseHeader.draw(staticContext);
@@ -170,7 +184,7 @@ function LinkedListTestCases() {
         }
 
         // Reverse test cases
-        const step14 = async () => {
+        const step15 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list reverse");
             testCaseHeader.draw(staticContext);
@@ -181,7 +195,7 @@ function LinkedListTestCases() {
         }
 
         // Traverse test cases
-        const step15 = async () => {
+        const step16 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list traverse");
             testCaseHeader.draw(staticContext);
@@ -238,12 +252,15 @@ function LinkedListTestCases() {
             case 15:
                 step15();
                 break;
+            case 16:
+                step16();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={15} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={16} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default LinkedListTestCases;
