@@ -36,6 +36,7 @@ export class DynamicArray extends Array {
     }
 
     // Ensure that it can insert at the given index, allowing for insertions at the end of the array
+    // TODO May make access of this method protected after testing
     checkInsertIndex(index: number) {
         if (index < 0 || index > this.arraySize) {
             console.error(`Insert index ${index} is out of bounds (valid range: 0 to ${this.arraySize})`);

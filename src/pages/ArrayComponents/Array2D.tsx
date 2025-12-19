@@ -67,6 +67,7 @@ export class Array2D {
     }
 
     // Throws RangeError if either index is out of bounds
+    // TODO May make access of this method protected after testing
     checkIndexValidity(rowIndex: number, columnIndex: number) {
         if ((rowIndex < 0 || rowIndex >= this.rows) || (columnIndex < 0 || columnIndex >= this.columns)) {
             console.error(`[${rowIndex}, ${columnIndex}] is out of bounds`);
