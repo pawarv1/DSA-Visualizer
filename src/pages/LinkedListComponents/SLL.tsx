@@ -67,7 +67,7 @@ export class LinkedList {
 
     // Method to higlight a specific node for a short duration then set it back to normal afterwards
     // This is usually used to portray traversals, and can be disabled if needed using the iterationAnimation parameter
-    async highlightNode(context: CanvasRenderingContext2D, node: LinkedListNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
+    protected async highlightNode(context: CanvasRenderingContext2D, node: LinkedListNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
         return new Promise<void>((resolve) => {
             node.outlineColor = outlineColor
             node.fillColor = fillColor;
@@ -98,7 +98,7 @@ export class LinkedList {
 
     // Helper method which genealizes the central draw loop pattern
     // Improves efficiency for large movement animations
-    async runWithCentralDrawLoop(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
+    protected async runWithCentralDrawLoop(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
         let animating = true;
 
         const drawLoop = () => {
