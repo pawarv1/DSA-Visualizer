@@ -89,14 +89,14 @@ export class DoublyLinkedList {
 
     // Helper method which genealizes the central draw loop pattern
     // Improves efficiency for large movement animations
-    protected async runWithCentralDrawLoop(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
+    protected async runWithCentralDrawLoop(context: CanvasRenderingContext2D, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
         let animating = true;
 
         const drawLoop = () => {
             if (!animating) {
                 return;
             }
-            context.clearRect(0, 0, canvasWidth, canvasHeight);
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
             drawFn(context);
         };
 
@@ -247,7 +247,7 @@ export class DoublyLinkedList {
     }
 
     // Insert to the head of the DLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
         const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
         let tempPtr = this.headPtr;    // This pointer will be used to help move the DLL forward
         
@@ -259,7 +259,7 @@ export class DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
         const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         newNode.next = this.headPtr;    // Set newNode.next to the head node
@@ -293,7 +293,7 @@ export class DoublyLinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -307,7 +307,7 @@ export class DoublyLinkedList {
         if (index <= Math.floor(this.numElements / 2)) {
             // Inserting to the head can be taken care of with prepend
             if (index === 0) {
-                await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
+                await this.prepend(context, newData, fadeIntime);
                 return true;    // Insertion was successful
             }
             else {
@@ -368,7 +368,7 @@ export class DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         // Animate the creation of the new node and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
@@ -454,7 +454,7 @@ export class DoublyLinkedList {
     }
 
     // Remove the head node, and return its data
-    async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
+    async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if DLL is empty
         if (this.headPtr === null) {
             console.error("DLL is empty, cannot remove first element");
@@ -483,9 +483,7 @@ export class DoublyLinkedList {
                     onUpdate: () => {
                         firstNode.drawNode(context);
                     },
-                    onComplete: () => {
-                        resolve();
-                    }
+                    onComplete: () => resolve()
                 });
             });
 
@@ -500,7 +498,7 @@ export class DoublyLinkedList {
 
             // Animate the movement of the following nodes
             const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
             this.numElements--; // Decrement the number of elements
 
@@ -557,7 +555,7 @@ export class DoublyLinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -691,7 +689,7 @@ export class DoublyLinkedList {
 
             // Animate the movement of the following nodes
             const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
             this.numElements--; // Decrement the number of elements
             return true;    // Deletion was successful
@@ -816,7 +814,7 @@ export class DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-        await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
         this.numElements--; // Decrement the number of elements
         return true;    // Deletion was successful

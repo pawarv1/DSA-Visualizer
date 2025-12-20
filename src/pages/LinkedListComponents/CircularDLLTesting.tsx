@@ -86,9 +86,9 @@ function CircularDLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, []);
-            await cdll.prepend(mainContext, 'c', canvasWidth, canvasHeight);
-            await cdll.prepend(mainContext, 'b', canvasWidth, canvasHeight);
-            await cdll.prepend(mainContext, 'a', canvasWidth, canvasHeight);
+            await cdll.prepend(mainContext, 'c');
+            await cdll.prepend(mainContext, 'b');
+            await cdll.prepend(mainContext, 'a');
             setIsAnimating(false);
         }
 
@@ -98,11 +98,11 @@ function CircularDLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
             cdll.loadDLL(mainContext, ['b', 'f']);
-            await cdll.insertAt(mainContext, 1, 'd', canvasWidth, canvasHeight);
-            await cdll.insertAt(mainContext, 0, 'a', canvasWidth, canvasHeight);
-            await cdll.insertAt(mainContext, 4, 'g', canvasWidth, canvasHeight);
-            await cdll.insertAt(mainContext, 2, 'c', canvasWidth, canvasHeight);
-            await cdll.insertAt(mainContext, 4, 'e', canvasWidth, canvasHeight);
+            await cdll.insertAt(mainContext, 1, 'd');
+            await cdll.insertAt(mainContext, 0, 'a');
+            await cdll.insertAt(mainContext, 4, 'g');
+            await cdll.insertAt(mainContext, 2, 'c');
+            await cdll.insertAt(mainContext, 4, 'e');
             setIsAnimating(false);
         }
 
@@ -112,7 +112,7 @@ function CircularDLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
-            await cdll.shift(mainContext, canvasWidth, canvasHeight);
+            await cdll.shift(mainContext);
             setIsAnimating(false);
         }
 
@@ -135,11 +135,11 @@ function CircularDLLTestCases() {
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
-            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
-            await cdll.removeAt(mainContext, 3, canvasWidth, canvasHeight);
-            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
-            await cdll.removeAt(mainContext, 0, canvasWidth, canvasHeight);
-            await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
+            await cdll.removeAt(mainContext, 2);
+            await cdll.removeAt(mainContext, 3);
+            await cdll.removeAt(mainContext, 2);
+            await cdll.removeAt(mainContext, 0);
+            await cdll.removeAt(mainContext, 2);
             setIsAnimating(false);
         }
 

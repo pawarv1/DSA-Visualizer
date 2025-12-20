@@ -254,7 +254,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Insert right after sentinel head node
-    async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {    
+    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {    
         const movingNodes: DLLNode[] = [];   // This array is used to store the nodes which will be moving
         let tempPtr = this.headPtr.next;   // This pointer will be used to help move the DLL forward
         
@@ -266,7 +266,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
         const nextNode = this.headPtr.next!;  // Save the next node after the head node using this pointer
@@ -358,7 +358,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -371,7 +371,7 @@ export class SentinelDLL extends DoublyLinkedList {
         // Traversal is more / as efficient from head than tail
         if (index <= Math.floor(this.numElements / 2)) {
             if (index === 0) {
-                await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
+                await this.prepend(context, newData, fadeIntime);
                 return true;    // Insertion was successful
             }
             else {
@@ -431,7 +431,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         // Animate the creation of the new node and pointer change sequence using timeline
         await new Promise<void>((resolve) => {
@@ -517,7 +517,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Remove the first node after the dummy head node, and return its data
-    async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
+    async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // No such node to remove so return early
         if (this.headPtr.next === this.tailPtr) {
             return;
@@ -601,7 +601,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         this.numElements--; // Decrement number of elements
 
@@ -702,7 +702,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -823,7 +823,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
             // Animate the movement of the following nodes
             const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             
             this.numElements--; // Decrement the number of elements
             return true;    // Deletion was successful
@@ -935,7 +935,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-        await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         this.numElements--; // Decrement the number of elements
         return true;    // Deletion was successful

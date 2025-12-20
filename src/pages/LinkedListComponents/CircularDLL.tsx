@@ -190,7 +190,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Insert to the head of the CDLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
 
         const newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
@@ -211,7 +211,7 @@ export class CircularDLL extends DoublyLinkedList {
 
             // Animate the movement of the following nodes
             const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-            await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
             // Set newNode next pointer to the head, and prev to the tail
             newNode.next = this.headPtr;
@@ -242,7 +242,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, canvasWidth: number, canvasHeight: number, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -255,7 +255,7 @@ export class CircularDLL extends DoublyLinkedList {
         // Traversal is more / as efficient from head than tail
         if (index <= Math.floor(this.numElements / 2)) {
             if (index === 0) {
-                await this.prepend(context, newData, canvasWidth, canvasHeight, fadeIntime);
+                await this.prepend(context, newData, fadeIntime);
                 return true;    // Insertion was successful
             }
             else {
@@ -315,7 +315,7 @@ export class CircularDLL extends DoublyLinkedList {
 
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
         
         // Animate the creation of the new node and pointer change sequence with timeline
         await new Promise<void>((resolve) => {
@@ -402,7 +402,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Remove the head node, and return its data
-    async shift(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1) {
+    async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if CDLL is empty
         if (!this.headPtr) {
             console.error("Linked List is empty, cannot remove first element");
@@ -510,7 +510,7 @@ export class CircularDLL extends DoublyLinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
 
             this.numElements--; // Decrement number of elements
@@ -623,7 +623,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, canvasWidth: number, canvasHeight: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -671,7 +671,7 @@ export class CircularDLL extends DoublyLinkedList {
 
             // Handle head deletions with shift
             if (this.headPtr === deleteNode) {
-                await this.shift(context, canvasWidth, canvasHeight, fadeOutTime);
+                await this.shift(context, fadeOutTime);
                 return true;    // Deletion was successful
             }
             // Handle tail deletions with pop
@@ -762,7 +762,7 @@ export class CircularDLL extends DoublyLinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, canvasWidth, canvasHeight, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
 
             this.numElements--; // Decrement the number of elements
@@ -804,7 +804,7 @@ export class CircularDLL extends DoublyLinkedList {
 
             // Handle head deletions with shift
             if (this.headPtr === deleteNode) {
-                await this.shift(context, context.canvas.width, context.canvas.height, fadeOutTime);
+                await this.shift(context, fadeOutTime);
                 return true;    // Deletion was successful
             }
             // Handle tail deletions with pop
@@ -895,7 +895,7 @@ export class CircularDLL extends DoublyLinkedList {
 
                 // Animate the movement of the following nodes
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
             }
 
             this.numElements--; // Decrement the number of elements
