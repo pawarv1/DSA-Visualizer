@@ -131,6 +131,19 @@ function DoublyLLTestCases() {
 
         const step11 = async () => {
             setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "delete");
+            testCaseHeader.draw(staticContext);
+            const dll = new DoublyLinkedList(80, 100, 50, 30);
+            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            await dll.delete(mainContext, 'c');
+            await dll.delete(mainContext, 'a');
+            await dll.delete(mainContext, 'f');
+            await dll.delete(mainContext, 'h');
+            setIsAnimating(false);
+        }
+
+        const step12 = async () => {
+            setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(80, 100, 50, 30);
@@ -175,12 +188,15 @@ function DoublyLLTestCases() {
             case 11:
                 step11();
                 break;
+            case 12:
+                step12();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={11} runStep={runDoublyLLSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={12} runStep={runDoublyLLSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default DoublyLLTestCases;

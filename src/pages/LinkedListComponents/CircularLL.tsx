@@ -650,7 +650,7 @@ export class CircularLinkedList extends LinkedList {
         return true;    // Deletion was successful
     }
 
-    // Remove at the given index
+    // Deletes based on the element value, as opposed to index like removeAt
     async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
         if (this.headPtr === null) {
             return false;
@@ -680,6 +680,7 @@ export class CircularLinkedList extends LinkedList {
 
             }
 
+            // Data was not found
             if (currNode.next === this.headPtr) {
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode);

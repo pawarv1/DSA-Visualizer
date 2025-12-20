@@ -830,6 +830,117 @@ export class SentinelDLL extends DoublyLinkedList {
         }
     }
 
+    // Deletes based on the element value, as opposed to index like removeAt
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+        // Pointer for the node that will be deleted, initialized to the node after the head
+        let deleteNode = this.headPtr.next!;
+
+        while (deleteNode.data != null) {
+            if (deleteNode.data === data) {
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
+                }
+                await this.highlightNode(context, deleteNode, 500, "black", "lightgreen");
+                break;
+            }
+
+            if (iterationAnimation) {
+                await this.highlightNode(context, deleteNode);
+            }
+
+            deleteNode = deleteNode.next!;
+        }
+
+        // Data was not found
+        if (deleteNode.data === null) {
+            return false;
+        }
+
+        // Save the nodes before and after deleteNode
+        const prevNode = deleteNode.prev!;
+        const nextNode = deleteNode.next!;
+
+        // Animate the node removal and pointer change sequence using timeline
+        await new Promise<void>((resolve) => {
+            const timeline = gsap.timeline({onComplete: () => resolve()});
+
+            // Fade out prevNode next pointer
+            timeline.to(prevNode, {
+                pointerOpacityNext: 0,
+                duration: fadeOutTime,
+                onUpdate: () => {
+                    prevNode.drawNode(context);
+                }
+            });
+
+            // Set prevNode next pointer to nextNode then fade it back in
+            timeline.to(prevNode, {
+                pointerOpacityNext: 1,
+                duration: fadeOutTime,
+                onStart: () => {
+                    prevNode.next = nextNode;
+                },
+                onUpdate: () => {
+                    prevNode.drawNode(context);
+                }
+            });
+
+            // Fade out nextNode prev pointer
+            timeline.to(nextNode, {
+                pointerOpacityPrev: 0,
+                duration: fadeOutTime,
+                onUpdate: () => {
+                    nextNode.drawNode(context);
+                }
+            });
+
+            // Set nextNode prev pointer to prevNode then fade it back in
+            timeline.to(nextNode, {
+                pointerOpacityPrev: 1,
+                duration: fadeOutTime,
+                onStart: () => {
+                    nextNode.prev = prevNode;
+                },
+                onUpdate: () => {
+                    nextNode.drawNode(context);
+                }
+            });
+
+            // Set deleteNode next and prev pointers to null then fade it out
+            timeline.to(deleteNode, {
+                nodeOpacity : 0,
+                pointerOpacityNext: 0,
+                pointerOpacityPrev: 0,
+                duration: fadeOutTime,
+                onStart: () => {
+                    deleteNode.prev = null;
+                    deleteNode.next = null;
+                },
+                onUpdate: () => {
+                    deleteNode.drawNode(context);
+                    prevNode.drawNode(context);    // Draw prevNode so its pointers are not cleared
+                    nextNode.drawNode(context);    // Draw nextNode so its pointers are not cleared
+                }
+            });
+        });
+
+        const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
+        let tempPtr: DLLNode | null = nextNode; // This pointer will be used to move the nodes following the removed node back
+
+        // Add the nodes to movingNodes
+        while (tempPtr) {
+            movingNodes.push(tempPtr);
+            tempPtr = tempPtr.next;
+        }
+
+        // Animate the movement of the following nodes
+        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
+        await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+        
+        this.numElements--; // Decrement the number of elements
+        return true;    // Deletion was successful
+    }
+
     // Clear all but the sentinel head and tail nodes, and also set each non sentinel nodes pointers to null
     async clearAll(context: CanvasRenderingContext2D) {
         let currNode = this.headPtr.next;

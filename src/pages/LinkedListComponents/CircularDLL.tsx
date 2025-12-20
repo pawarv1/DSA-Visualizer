@@ -769,6 +769,140 @@ export class CircularDLL extends DoublyLinkedList {
             return true;    // Deletion was successful
         }
     }
+
+    // Deletes based on the element value, as opposed to index like removeAt
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+        if (this.headPtr === null) {
+            return false;
+        }
+        else {
+            let deleteNode = this.headPtr;
+
+            do {
+                if (deleteNode.data === data) {
+                    if (iterationAnimation) {
+                        await this.highlightNode(context, deleteNode);
+                    }
+                    await this.highlightNode(context, deleteNode, 500, "black", "lightgreen");
+                    break;
+                }
+                if (iterationAnimation) {
+                    await this.highlightNode(context, deleteNode);
+                }
+                deleteNode = deleteNode.next!;
+
+            } while (deleteNode != this.headPtr);
+
+            // Data was not found
+            if (deleteNode === this.headPtr && deleteNode.data != data) {
+                return false;
+            }
+
+            // Save the nodes before and after deleteNode if they exist (or null if they don't)
+            const prevNode = deleteNode.prev;
+            const nextNode = deleteNode.next;
+
+            // Handle head deletions with shift
+            if (this.headPtr === deleteNode) {
+                await this.shift(context, context.canvas.width, context.canvas.height, fadeOutTime);
+                return true;    // Deletion was successful
+            }
+            // Handle tail deletions with pop
+            if (this.tailPtr === deleteNode) {
+                await this.pop(context, fadeOutTime);
+                return true;    // Deletion was successful
+            }
+
+            // Middle of the CDLL removals
+            // Animate the node removal and pointer change sequence using timeline
+            await new Promise<void>(async (resolve) => {
+                const timeline = gsap.timeline({onComplete: () => resolve()});
+
+                if (prevNode) {
+                    // Fade out prevNode next pointer
+                    timeline.to(prevNode, {
+                        pointerOpacityNext: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            prevNode.drawNode(context);
+                        }
+                    });
+
+                    // Set prevNode next pointer to nextNode then fade it back in
+                    timeline.to(prevNode, {
+                        pointerOpacityNext: 1,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            prevNode.next = nextNode;
+                        },
+                        onUpdate: () => {
+                            prevNode.drawNode(context);
+                        }
+                    });
+                }
+                
+                if (nextNode) {
+                    // Fade out nextNode prev pointer
+                    timeline.to(nextNode, {
+                        pointerOpacityPrev: 0,
+                        duration: fadeOutTime,
+                        onUpdate: () => {
+                            nextNode.drawNode(context);
+                        }
+                    });
+
+                    // Set nextNode prev pointer to prevNode then fade it back in
+                    timeline.to(nextNode, {
+                        pointerOpacityPrev: 1,
+                        duration: fadeOutTime,
+                        onStart: () => {
+                            nextNode.prev = prevNode;
+                        },
+                        onUpdate: () => {
+                            nextNode.drawNode(context);
+                        }
+                    });
+                }
+                
+                // Set deleteNode next and prev pointers to null then fade it out
+                timeline.to(deleteNode, {
+                    nodeOpacity : 0,
+                    pointerOpacityNext: 0,
+                    pointerOpacityPrev: 0,
+                    duration: fadeOutTime,
+                    onStart: () => {
+                        deleteNode.prev = null;
+                        deleteNode.next = null;
+                    },
+                    onUpdate: () => {
+                        deleteNode.drawNode(context);
+                        prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
+                        nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
+                    }
+                });
+            });
+
+            // Skip movement if list is now empty
+            if (nextNode) {
+                const movingNodes: CircularDLLNode[] = [];  // This array is used to store the nodes which will be moving
+                let tempPtr = nextNode; // This pointer will be used to move the nodes following the removed node back
+
+                // Add the nodes to movingNodes
+                while (tempPtr != this.headPtr) {
+                    movingNodes.push(tempPtr);
+                    tempPtr = tempPtr.next!;
+                }
+
+                // Animate the movement of the following nodes
+                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
+                await this.runWithCentralDrawLoop(context, context.canvas.width, context.canvas.height, this.draw.bind(this), animationPromises);
+            }
+
+            this.numElements--; // Decrement the number of elements
+        }
+
+        return true;    // Deletion was successful
+    }
     
     // Clear the CDLL and set head and tail to null
     // Also set each next and prev pointer to null

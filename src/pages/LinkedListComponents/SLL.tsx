@@ -624,6 +624,7 @@ export class LinkedList {
                 currNode = currNode.next;
             }
 
+            // Data was not found
             if (currNode.next === null) {
                 if (iterationAnimation) {
                     await this.highlightNode(context, currNode);

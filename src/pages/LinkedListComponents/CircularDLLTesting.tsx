@@ -142,8 +142,21 @@ function CircularDLLTestCases() {
             await cdll.removeAt(mainContext, 2, canvasWidth, canvasHeight);
             setIsAnimating(false);
         }
-        
+
         const step12 = async () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "delete");
+            testCaseHeader.draw(staticContext);
+            const dll = new CircularDLL(80, 100, 50, 30);
+            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+            await dll.delete(mainContext, 'c');
+            await dll.delete(mainContext, 'a');
+            await dll.delete(mainContext, 'f');
+            await dll.delete(mainContext, 'h');
+            setIsAnimating(false);
+        }
+        
+        const step13 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
@@ -191,12 +204,15 @@ function CircularDLLTestCases() {
             case 12:
                 step12();
                 break;
+            case 13:
+                step13();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={12} runStep={runCircularDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={13} runStep={runCircularDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default CircularDLLTestCases;

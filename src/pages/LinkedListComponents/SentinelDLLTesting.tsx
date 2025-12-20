@@ -148,6 +148,19 @@ function SentinelDLLTestCases() {
         }
 
         const step13 = async () => {
+                setIsAnimating(true);
+                const testCaseHeader = new Text (70, 40, "delete");
+                testCaseHeader.draw(staticContext);
+                const dll = new SentinelDLL(80, 100, 50, 30);
+                dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
+                await dll.delete(mainContext, 'c');
+                await dll.delete(mainContext, 'a');
+                await dll.delete(mainContext, 'f');
+                await dll.delete(mainContext, 'h');
+                setIsAnimating(false);
+            }
+
+        const step14 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "clearAll");
             testCaseHeader.draw(staticContext);
@@ -199,12 +212,15 @@ function SentinelDLLTestCases() {
             case 13:
                 step13();
                 break;
+            case 14:
+                step14();
+                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={13} runStep={runSentinelDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={14} runStep={runSentinelDLLsteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default SentinelDLLTestCases;

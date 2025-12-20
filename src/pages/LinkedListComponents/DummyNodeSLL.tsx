@@ -563,6 +563,7 @@ export class DummyNodeSLL extends LinkedList {
                 }
             }
 
+            // Data was not found
             if (currNode.next === null) {
                 return false;
             }
