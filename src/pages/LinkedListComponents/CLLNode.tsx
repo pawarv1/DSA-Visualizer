@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import { Arrow, Line, Rectangle } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual CLL nodes
@@ -15,7 +16,7 @@ export class CircularLLNode {
     private clearAreaCoordinates: Rectangle[];  // Covers the region where the node and the next pointer is drawn
 
     // By default a node next pointer points to itself
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, next: CircularLLNode = this, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -23,7 +24,7 @@ export class CircularLLNode {
         this.data = data;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacity = pointerOpacity;
-        this.next = next;
+        this.next = this;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
         this.clearAreaCoordinates = [];
@@ -98,6 +99,32 @@ export class CircularLLNode {
         }
     }
 
+    async fadeInPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacity: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacity: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
     drawNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true, redrawPointer: boolean = true) {
         this.clearNode(context, useAreaCoordinates);
         context.save();
@@ -131,5 +158,33 @@ export class CircularLLNode {
         else {
             context.clearRect(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2);
         }
+    }
+
+    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 1,
+                pointerOpacity: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNode(context: CanvasRenderingContext2D, fadeOutTime: number, updateFunction = () => this.drawNode(context, false)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 0,
+                pointerOpacity: 0,
+                duration: fadeOutTime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
     }
 }

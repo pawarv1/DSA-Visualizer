@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual SLL nodes
@@ -14,7 +15,7 @@ export class LinkedListNode {
     fillColor: string;
 
     // Constructor sets next to null by default
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, next: LinkedListNode | null = null, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -22,7 +23,7 @@ export class LinkedListNode {
         this.data = data;
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacity = pointerOpacity;
-        this.next = next;
+        this.next = null;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -56,6 +57,32 @@ export class LinkedListNode {
         }
     }
 
+    async fadeInPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacity: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacity: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
         this.clearNode(context);    // Clear the node and pointer space first
         context.save();
@@ -80,5 +107,33 @@ export class LinkedListNode {
     clearNode(context: CanvasRenderingContext2D) { 
         // Clear both the node and the pointer space
         context.clearRect(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2);
+    }
+
+    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 1,
+                pointerOpacity: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNode(context: CanvasRenderingContext2D, fadeOutTime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 0,
+                pointerOpacity: 0,
+                duration: fadeOutTime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
     }
 }

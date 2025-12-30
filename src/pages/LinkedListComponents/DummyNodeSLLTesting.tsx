@@ -33,9 +33,9 @@ function DummyNodeSLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Linked list append");
             testCaseHeader.draw(mainContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
-            await ll.append(mainContext, 'a', 1, false);
-            await ll.append(mainContext, 'b', 1, false);
-            await ll.append(mainContext, 'c', 1, false);
+            await ll.append(mainContext, 'a', 1);
+            await ll.append(mainContext, 'b', 1);
+            await ll.append(mainContext, 'c', 1);
             setIsAnimating(false);
         }
 

@@ -72,9 +72,9 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Search through the CLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
+    async find(context: CanvasRenderingContext2D, data: any) {
         // Return early if the list is empty
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             return -1;
         }
 
@@ -83,10 +83,8 @@ export class CircularLinkedList extends LinkedList {
 
         // Use do while loop to traverse CLL
         do {
-            // Highlight nodes to show traversal if iterationAnimation is true
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
-            }
+            // Highlight nodes to show traversal
+            await this.highlightNode(context, currNode);
             
             // Data was found
             if (currNode.data === data) {
@@ -105,7 +103,7 @@ export class CircularLinkedList extends LinkedList {
     // Traverse through CLL and print the nodes index and data
     async traverse(context: CanvasRenderingContext2D) {
         // Return early if the list is empty
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             return;
         }
 
@@ -128,7 +126,7 @@ export class CircularLinkedList extends LinkedList {
         let newNode: CircularLLNode;
 
         // Empty CLL case
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             // newNode next pointer points to itself by default, as defined in CircularLLNode constructor
             newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
@@ -143,19 +141,7 @@ export class CircularLinkedList extends LinkedList {
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
-        // Fade in the new node
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                nodeOpacity: 1,
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    newNode.drawNode(context);
-                },
-                onComplete: () => resolve()
-            });
-        });
-
+        await newNode.fadeInNode(context, fadeIntime);  // Fade in the new node
         this.numElements++; // Increment number of elements
     }
 
@@ -165,7 +151,7 @@ export class CircularLinkedList extends LinkedList {
         const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
         // If the CLL was previously empty, tailPtr will also point to the newNode
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             this.tailPtr = newNode;
         }
         else {
@@ -189,25 +175,12 @@ export class CircularLinkedList extends LinkedList {
         }
 
         this.headPtr = newNode; // Update the head to point to the new node
-
-        // Fade in the new node
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                nodeOpacity: 1,
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    newNode.drawNode(context);
-                },
-                onComplete: () => resolve()
-            });
-        });
-
+        await newNode.fadeInNode(context, fadeIntime); // Fade in the new node
         this.numElements++; // Increment the number of elements
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -220,16 +193,12 @@ export class CircularLinkedList extends LinkedList {
         else {
             let currNode = this.headPtr!;
 
-            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
+            // Highlight nodes to show traversal, stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
                 currNode = currNode.next!;
             }
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
-            }
+            await this.highlightNode(context, currNode);
 
             // Insertions in the middle of the CLL
             if (currNode.next != this.headPtr) {
@@ -251,51 +220,26 @@ export class CircularLinkedList extends LinkedList {
                 const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
                 await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
 
-                // Animate the node creation and pointer change sequence using timeline
+                await newNode.fadeInNode(context, fadeIntime); // Fade in the new node
+                
+                // Fade out curr nodes next pointer, than set it to the new node
+                await currNode.fadeOutPointer(context, fadeIntime, () => {
+                    // Clear the area between the current node and the following node
+                    context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight);
+                    newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
+                    currNode.drawNode(context);
+                });
+                currNode.next = newNode;
+
+                // Redraw nextNode to regain some of the arrow cleared in previous code.
+                // The area in question may be insignificant enough to remove this line
+                newNode.drawNode(context);
+
+                await currNode.fadeInPointer(context, fadeIntime);
+
+                // Move the new node to the same height as the other nodes
                 await new Promise<void>((resolve) => {
-                    const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                    // Fade in the new node
-                    timeline.to(newNode, {
-                        nodeOpacity : 1,
-                        pointerOpacity: 1,
-                        duration: fadeIntime,
-                        onUpdate: () => {
-                            newNode.drawNode(context);
-                        }
-                    });
-
-                    // Fade out curr nodes next pointer, than set it to the new node
-                    timeline.to(currNode, {
-                        pointerOpacity: 0,
-                        duration: fadeIntime,
-                        onUpdate: () => {
-                            // Clear the area between the current node and the following node
-                            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight);
-                            newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
-                            currNode.drawNode(context);
-                        },
-                        onComplete: () => {
-                            currNode.next = newNode;
-                        }
-                    });
-
-                    // Fade in current nodes next pointer, which now points to the new node
-                    timeline.to(currNode, {
-                        pointerOpacity: 1,
-                        duration: fadeIntime,
-                        onStart: () => {
-                            // Redraw nextNode to regain some of the arrow cleared in previous code.
-                            // The area in question may be insignificant enough to remove this part
-                            newNode.drawNode(context);
-                        },
-                        onUpdate: () => {
-                            currNode.drawNode(context);
-                        }
-                    });
-
-                    // Move the new node to the same height as the other nodes
-                    timeline.to(newNode, {
+                    gsap.to(newNode, {
                         y: this.y,
                         duration: fadeIntime,
                         onUpdate: () => {
@@ -304,7 +248,8 @@ export class CircularLinkedList extends LinkedList {
                             this.tailPtr!.drawNode(context);    // Redraw tail node so part of its next pointer does not get cleared
                             newNode.drawNode(context, false);   // Redraw newNode to show its position at current frame
                             currNode.drawNode(context); // Redraw currNode to show updated next pointer position
-                        }
+                        },
+                        onComplete: resolve
                     });
                 });
 
@@ -322,7 +267,7 @@ export class CircularLinkedList extends LinkedList {
     // Remove the head node, and return its data
     async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if CLL is empty
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             console.error("Linked List is empty, cannot remove first element");
             return null;
         }
@@ -339,56 +284,23 @@ export class CircularLinkedList extends LinkedList {
                 this.headPtr = firstNode.next;  // Update the head to the node after firstNode next
             }
 
-            // Animate the node removal and pointer change sequence using timeline
-            await new Promise<void>((resolve) => {
-                const timeline = gsap.timeline({onComplete: () => resolve()});
+            // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head (and tail) would be null
+            if (this.headPtr) {
+                // Fade out the tail node next pointer than set it to the new head
+                await this.tailPtr!.fadeOutPointer(context, fadeOutTime);
+                this.tailPtr!.next = this.headPtr;
+                await this.tailPtr!.fadeInPointer(context, fadeOutTime);    // Fade the tail node next pointer back in
+            }
 
-                // This branch should execute as long as there is at least one node remaining after the deletion, otherwise tail would be null
-                if (this.tailPtr) {
-                    // Fade out the tail node next pointer than set it to the new head
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        },
-                        onComplete: () => {
-                            this.tailPtr!.next = this.headPtr;
-                        }
-                    });
-
-                    // Fade the tail node next pointer back in
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-                }
-
-                // Fade out the first node next pointer
-                timeline.to(firstNode, {
-                    pointerOpacity: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        firstNode.drawNode(context);
-                        this.tailPtr?.drawNode(context);    // Draw the tail node if it exists so part of its pointer does not get cut off
-                    }
-                });
-
-                // Fade out the first node, after setting its next pointer to null
-                timeline.to(firstNode, {
-                    nodeOpacity: 0,
-                    duration: fadeOutTime,
-                    onStart: () => {
-                        firstNode.next = null;
-                    },
-                    onUpdate: () => {
-                        firstNode.drawNode(context, false);
-                    }
-                });
+            // Fade out the first node next pointer
+            await firstNode.fadeOutPointer(context, fadeOutTime, () => {
+                firstNode.drawNode(context);
+                this.tailPtr?.drawNode(context);    // Draw the tail node if it exists so part of its pointer does not get cut off
             });
+
+            // Fade out the first node, after setting its next pointer to null
+            firstNode.next = null;
+            await firstNode.fadeOutNode(context, fadeOutTime);
 
             // Only need to move nodes if there are nodes to move
             if (this.headPtr) {
@@ -415,7 +327,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Remove from the end of the CLL and return its data
-    async pop(context: CanvasRenderingContext2D, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async pop(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // Error if linked list is empty
         if (!this.headPtr) {
             console.error("Linked List is empty, cannot pop from it");
@@ -434,72 +346,35 @@ export class CircularLinkedList extends LinkedList {
             else {
                 let currNode = this.headPtr;
 
-                // Highlight nodes to show traversal, if iterationAnimation is true
+                // Highlight nodes to show traversal
                 // Iteration stops right before the last node
                 while (currNode.next != this.tailPtr) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
+                    await this.highlightNode(context, currNode);
                     currNode = currNode.next!;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
 
                 lastNode = currNode.next!;
                 this.tailPtr = currNode;    // Update the tail pointer
             }
 
-            // Animate the node removal and pointer change sequence using timeline
-            await new Promise<void>((resolve) => {
-                const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                // This branch should execute as long as there is at least one node remaining after the deletion, otherwise tail would be null
-                if (this.tailPtr) {
-                    // Fade out the tail node next pointer than set it to the head
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        },
-                        onComplete: () => {
-                            this.tailPtr!.next = this.headPtr;
-                        }
-                    });
-
-                    // Fade the tail node next pointer back in
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-                }
-                
-                // Fade out the last node next pointer arrow
-                timeline.to(lastNode, {
-                    pointerOpacity: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        lastNode.drawNode(context);
-                        this.tailPtr!.drawNode(context);
-                    }
-                });
-
-                // Fade out the last node after setting its next pointer to null
-                timeline.to(lastNode, {
-                    nodeOpacity: 0,
-                    duration: fadeOutTime,
-                    onStart: () => {
-                        lastNode.next = null;
-                    },
-                    onUpdate: () => {
-                        lastNode.drawNode(context, false);
-                    }
-                });
+            // This branch should execute as long as there is at least one node remaining after the deletion, otherwise tail would be null
+            if (this.headPtr != null) {
+                // Fade out the tail node next pointer than set it to the head
+                await this.tailPtr!.fadeOutPointer(context, fadeOutTime);
+                this.tailPtr!.next = this.headPtr;
+                await this.tailPtr!.fadeInPointer(context, fadeOutTime);    // Fade the tail node next pointer back in
+            }
+            
+            // Fade out the last node next pointer arrow
+            await lastNode.fadeOutPointer(context, fadeOutTime, () => {
+                lastNode.drawNode(context);
+                this.tailPtr?.drawNode(context);
             });
+
+            // Fade out the last node after setting its next pointer to null
+            lastNode.next = null;
+            await lastNode.fadeOutNode(context, fadeOutTime);
 
             this.numElements--; // Decrement the number of elements
 
@@ -509,7 +384,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -522,16 +397,12 @@ export class CircularLinkedList extends LinkedList {
         else {
             let currNode = this.headPtr!;
 
-            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            // Highlight nodes to show traversal, stop right before the index of deletion
             for (let i = 0; i < index - 1; i++) {
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
                 currNode = currNode.next!;
             }
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
-            }
+            await this.highlightNode(context, currNode);
 
             const deleteNode = currNode.next!;
 
@@ -539,44 +410,16 @@ export class CircularLinkedList extends LinkedList {
             if (deleteNode.next != this.headPtr) {
                 let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
 
-                // Animate node removal and pointer change sequence using timeline
-                await new Promise<void>((resolve) => {
-                    const timeline = gsap.timeline({onComplete: () => resolve()});
+                // Fade out currNode next pointer then set it to tempPtr (the node after deleteNode)
+                await currNode.fadeOutPointer(context, fadeOutTime);
+                currNode.next = tempPtr;
+                await currNode.fadeInPointer(context, fadeOutTime); // Fade currNode next pointer back in
 
-                    // Fade out currNode next pointer
-                    timeline.to(currNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            currNode.drawNode(context);
-                        }
-                    });
-
-                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
-                    timeline.to(currNode, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            currNode.next = tempPtr;
-                        },
-                        onUpdate: () => {
-                            currNode.drawNode(context);
-                        }
-                    });
-
-                    // Fade out the deleted node, after setting its next pointer to null
-                    timeline.to(deleteNode, {
-                        nodeOpacity : 0,
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            deleteNode.next = null;
-                        },
-                        onUpdate: () => {
-                            deleteNode.drawNode(context);
-                            currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
-                        }
-                    });
+                // Fade out the deleted node, after setting its next pointer to null
+                deleteNode.next = null;
+                await deleteNode.fadeOutNode(context, fadeOutTime, () => {
+                    deleteNode.drawNode(context);
+                    currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
                 });
 
                 const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
@@ -595,53 +438,20 @@ export class CircularLinkedList extends LinkedList {
             else {
                 this.tailPtr = currNode;    // Update the tail pointer
 
-                // Animate the node removal and pointer change sequence using timeline
-                await new Promise<void>((resolve) => {
-                    const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                    // Fade out the tail node next pointer than set it to the head
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        },
-                        onComplete: () => {
-                            this.tailPtr!.next = this.headPtr;
-                        }
-                    });
-
-                    // Fade the tail node next pointer back in
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-
-                    // Fade out deleteNode next pointer arrow
-                    timeline.to(deleteNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            deleteNode.drawNode(context);
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-
-                    // Fade out deleteNode node after setting its next pointer to null
-                    timeline.to(deleteNode, {
-                        nodeOpacity: 0,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            deleteNode.next = null;
-                        },
-                        onUpdate: () => {
-                            deleteNode.drawNode(context, false);
-                        }
-                    });
+                // Fade out the tail node next pointer than set it to the head
+                await this.tailPtr.fadeOutPointer(context, fadeOutTime);
+                this.tailPtr.next = this.headPtr;
+                await this.tailPtr.fadeInPointer(context, fadeOutTime); // Fade tail node next pointer back in
+                
+                // Fade out deletenode next pointer arrow
+                await deleteNode.fadeOutPointer(context, fadeOutTime, () => {
+                    deleteNode.drawNode(context);
+                    this.tailPtr!.drawNode(context);
                 });
+
+                // Fade out deleteNode node after setting its next pointer to null
+                deleteNode.next = null;
+                await deleteNode.fadeOutNode(context, fadeOutTime);
             }
 
             this.numElements--; // Decrement the number of elements
@@ -651,40 +461,31 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
         if (this.headPtr === null) {
             return false;
         }
         else if (this.headPtr.data === data) {
-            await this.highlightNode(context, this.headPtr);
             await this.highlightNode(context, this.headPtr, 500, "black", "lightgreen");
             await this.shift(context, fadeOutTime);
         }
         else {
             let currNode = this.headPtr;
 
-            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            // Highlight nodes to show traversal, stop right before the index of deletion
             while(currNode.next != this.headPtr) {
                 if (currNode.next!.data === data) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
-                    await this.highlightNode(context, currNode.next!);
+                    await this.highlightNode(context, currNode);
                     await this.highlightNode(context, currNode.next!, 500, "black", "lightgreen");
                     break;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
                 currNode = currNode.next!;
-
             }
 
             // Data was not found
             if (currNode.next === this.headPtr) {
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
                 return false;
             }
 
@@ -694,44 +495,16 @@ export class CircularLinkedList extends LinkedList {
             if (deleteNode.next != this.headPtr) {
                 let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
 
-                // Animate node removal and pointer change sequence using timeline
-                await new Promise<void>((resolve) => {
-                    const timeline = gsap.timeline({onComplete: () => resolve()});
+                // Fade out currNode next pointer, then set it to tempPtr (the node after deleteNode)
+                await currNode.fadeOutPointer(context, fadeOutTime);
+                currNode.next = tempPtr;
+                await currNode.fadeInPointer(context, fadeOutTime); // Fade currNode next pointer back in
 
-                    // Fade out currNode next pointer
-                    timeline.to(currNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            currNode.drawNode(context);
-                        }
-                    });
-
-                    // Set the currNode next pointer to tempPtr (the node after deleteNode) then fade it back in
-                    timeline.to(currNode, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            currNode.next = tempPtr;
-                        },
-                        onUpdate: () => {
-                            currNode.drawNode(context);
-                        }
-                    });
-
-                    // Fade out the deleted node, after setting its next pointer to null
-                    timeline.to(deleteNode, {
-                        nodeOpacity : 0,
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            deleteNode.next = null;
-                        },
-                        onUpdate: () => {
-                            deleteNode.drawNode(context);
-                            currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
-                        }
-                    });
+                // Fade out the deleted node, after setting its next pointer to null
+                deleteNode.next = null;
+                await deleteNode.fadeOutNode(context, fadeOutTime, () => {
+                    deleteNode.drawNode(context);
+                    currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
                 });
 
                 const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
@@ -750,53 +523,20 @@ export class CircularLinkedList extends LinkedList {
             else {
                 this.tailPtr = currNode;    // Update the tail pointer
 
-                // Animate the node removal and pointer change sequence using timeline
-                await new Promise<void>((resolve) => {
-                    const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                    // Fade out the tail node next pointer than set it to the head
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        },
-                        onComplete: () => {
-                            this.tailPtr!.next = this.headPtr;
-                        }
-                    });
-
-                    // Fade the tail node next pointer back in
-                    timeline.to(this.tailPtr, {
-                        pointerOpacity: 1,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-
-                    // Fade out deleteNode next pointer arrow
-                    timeline.to(deleteNode, {
-                        pointerOpacity: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            deleteNode.drawNode(context);
-                            this.tailPtr!.drawNode(context);
-                        }
-                    });
-
-                    // Fade out deleteNode node after setting its next pointer to null
-                    timeline.to(deleteNode, {
-                        nodeOpacity: 0,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            deleteNode.next = null;
-                        },
-                        onUpdate: () => {
-                            deleteNode.drawNode(context, false);
-                        }
-                    });
+                // Fade out the tail node next pointer than set it to the head
+                await this.tailPtr.fadeOutPointer(context, fadeOutTime);
+                this.tailPtr.next = this.headPtr;
+                await this.tailPtr.fadeInPointer(context, fadeOutTime); // Fade tail node next pointer back in
+                
+                // Fade out deletenode next pointer arrow
+                await deleteNode.fadeOutPointer(context, fadeOutTime, () => {
+                    deleteNode.drawNode(context);
+                    this.tailPtr!.drawNode(context);
                 });
+
+                // Fade out deleteNode node after setting its next pointer to null
+                deleteNode.next = null;
+                await deleteNode.fadeOutNode(context, fadeOutTime);
             }
 
             this.numElements--; // Decrement the number of elements
@@ -822,16 +562,11 @@ export class CircularLinkedList extends LinkedList {
             currNode = currNode.next!;
             node.next = null;
 
-            const promise = new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    nodeOpacity: 0,
-                    pointerOpacity: 0,
-                    duration: 1,
-                    onUpdate: () => {
-                        node.drawNode(context);
-                    },
-                    onComplete: resolve
+            const promise = new Promise<void>(async (resolve) => {
+                await node.fadeOutNode(context, 1, () => {
+                    node.drawNode(context);
                 });
+                resolve();
             });
 
             promises.push(promise);
