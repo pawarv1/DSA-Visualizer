@@ -318,20 +318,13 @@ export class CircularDLL extends DoublyLinkedList {
         });
 
         // Move the new node to the same height as the other nodes
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                y: this.y,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear area between currNode and nextNode, with enough height to clear new node
-                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
-                    this.headPtr!.drawNode(context);    // Redraw head node so part of its prev pointer does not get cleared
-                    currNode.drawNode(context); // draw prev node after clearing and pointer movement
-                    nextNode.drawNode(context); // draw next node after clearing and pointer movement
-                    newNode.drawNode(context, false);  // draw new node after clearing
-                },
-                onComplete: resolve
-            }); 
+        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+            // Clear area between currNode and nextNode, with enough height to clear new node
+            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
+            this.headPtr!.drawNode(context);    // Redraw head node so part of its prev pointer does not get cleared
+            currNode.drawNode(context); // draw prev node after clearing and pointer movement
+            nextNode.drawNode(context); // draw next node after clearing and pointer movement
+            newNode.drawNode(context, false);  // draw new node after clearing
         });
 
         this.numElements++; // Increment number of elements   

@@ -146,19 +146,12 @@ export class SentinelDLL extends DoublyLinkedList {
         newNode.next = this.tailPtr;    // Set newNode.next to the sentinel tail node
         newNode.prev = prevNode;    // Set newNode.prev to prevNode
 
-        // Move the sentinel tail up to make space for the new node
-        await new Promise<void>((resolve) => {
-            gsap.to(this.tailPtr, {
-                x: this.tailPtr.x + this.nodeWidth * 2,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear the area between prevNode and the tail node
-                    context.clearRect(prevNode.x + this.nodeWidth, this.y - 1, this.tailPtr.x - (prevNode.x + this.nodeWidth), this.nodeHeight + 2);
-                    prevNode.drawNode(context); // Redraw prevNode to show updated next pointer arrow
-                    this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
-                },
-                onComplete: resolve
-            });
+        // Move the sentinel tail to make space for the new node
+        await this.tailPtr.moveNode(context, this.tailPtr.x + this.nodeWidth * 2, this.tailPtr.y, fadeIntime, () => {
+            // Clear the area between prevNode and the tail node
+            context.clearRect(prevNode.x + this.nodeWidth, this.y - 1, this.tailPtr.x - (prevNode.x + this.nodeWidth), this.nodeHeight + 2);
+            prevNode.drawNode(context); // Redraw prevNode to show updated next pointer arrow
+            this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
         });
 
         await newNode.fadeInNode(context, fadeIntime);  // Fade in the new node
@@ -192,20 +185,13 @@ export class SentinelDLL extends DoublyLinkedList {
         });
 
         // Move the new node to the same height as the other nodes
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                y: this.y,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear area between prevNode and tail node, with enough height to clear new node
-                    context.clearRect(prevNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
-                    newNode.drawNode(context);  // draw new node after clearing
-                    prevNode.drawNode(context); // draw prev node after clearing and pointer movement
-                    this.tailPtr.drawNode(context); // draw tail node after clearing and pointer movement
-                    newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                },
-                onComplete: resolve
-            }); 
+        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+            // Clear area between prevNode and tail node, with enough height to clear new node
+            context.clearRect(prevNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
+            newNode.drawNode(context);  // draw new node after clearing
+            prevNode.drawNode(context); // draw prev node after clearing and pointer movement
+            this.tailPtr.drawNode(context); // draw tail node after clearing and pointer movement
+            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
         });
 
         this.numElements++; // Increment number of elements
@@ -265,20 +251,13 @@ export class SentinelDLL extends DoublyLinkedList {
         });
 
         // Move the new node to the same height as the other nodes
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                y: this.y,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear the area affected by the movement
-                    context.clearRect(this.headPtr.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
-                    newNode.drawNode(context);  // draw new node after clearing
-                    this.headPtr.drawNode(context); // draw prev node after clearing and pointer movement
-                    nextNode.drawNode(context); // draw tail node after clearing and pointer movement
-                    newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                },
-                onComplete: resolve
-            }); 
+        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+            // Clear the area affected by the movement
+            context.clearRect(this.headPtr.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
+            newNode.drawNode(context);  // draw new node after clearing
+            this.headPtr.drawNode(context); // draw prev node after clearing and pointer movement
+            nextNode.drawNode(context); // draw tail node after clearing and pointer movement
+            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
         });
 
         this.numElements++; // Increment the number or elements
@@ -384,20 +363,13 @@ export class SentinelDLL extends DoublyLinkedList {
         });
 
         // Move the new node to the same height as the other nodes
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                y: this.y,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear area between prevNode and nextNode, with enough height to clear new node
-                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
-                    newNode.drawNode(context);  // draw new node after clearing
-                    currNode.drawNode(context); // draw prev node after clearing and pointer movement
-                    nextNode.drawNode(context); // draw tail node after clearing and pointer movement
-                    newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                },
-                onComplete: resolve
-            }); 
+        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+            // Clear area between prevNode and nextNode, with enough height to clear new node
+            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
+            newNode.drawNode(context);  // draw new node after clearing
+            currNode.drawNode(context); // draw prev node after clearing and pointer movement
+            nextNode.drawNode(context); // draw tail node after clearing and pointer movement
+            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
         });
 
         this.numElements++; // Increment number of elements
@@ -492,18 +464,11 @@ export class SentinelDLL extends DoublyLinkedList {
         });
 
         // Move the sentinel tail node back
-        await new Promise<void>((resolve) => {
-            gsap.to(this.tailPtr, {
-                x: prevNode.x + this.nodeWidth * 2,
-                duration: fadeOutTime,
-                onUpdate: () => {
-                    // Clear the area affected by the movement
-                    context.clearRect(prevNode.x + this.nodeWidth, this.y - 1, this.nodeWidth * 4 + 1, this.nodeHeight + 2);
-                    prevNode.drawNode(context); // Redraw prevNode to show updated next pointer arrow
-                    this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
-                },
-                onComplete: resolve
-            }); 
+        await this.tailPtr.moveNode(context, prevNode.x + this.nodeWidth * 2, this.tailPtr.y, fadeOutTime, () => {
+            // Clear the area affected by the movement
+            context.clearRect(prevNode.x + this.nodeWidth, this.y - 1, this.nodeWidth * 4 + 1, this.nodeHeight + 2);
+            prevNode.drawNode(context); // Redraw prevNode to show updated next pointer arrow
+            this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
         });
 
         this.numElements--; // Decrement the number of elements
@@ -695,18 +660,11 @@ export class SentinelDLL extends DoublyLinkedList {
         await Promise.all(promises);
 
         // Move the tail pointer back
-        await new Promise<void>((resolve) => {
-            gsap.to(this.tailPtr, {
-                x: this.headPtr.x + this.nodeWidth * 2,
-                duration: 1,
-                onUpdate: () => {
-                    // Clear the area affected by the movement
-                    context.clearRect(this.headPtr.x + this.nodeWidth, this.y - 1, (this.tailPtr.x + this.nodeWidth * 2) - (this.headPtr.x + this.nodeWidth), this.nodeHeight + 2);
-                    this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
-                    this.headPtr.drawNode(context); // Redraw head node to show updated next pointer arrow
-                },
-                onComplete: () => resolve()
-            });
+        await this.tailPtr.moveNode(context, this.headPtr.x + this.nodeWidth * 2, this.tailPtr.y, 1, () => {
+            // Clear the area affected by the movement
+            context.clearRect(this.headPtr.x + this.nodeWidth, this.y - 1, (this.tailPtr.x + this.nodeWidth * 2) - (this.headPtr.x + this.nodeWidth), this.nodeHeight + 2);
+            this.tailPtr.drawNode(context); // Redraw tail node to show its position at current frame
+            this.headPtr.drawNode(context); // Redraw head node to show updated next pointer arrow
         });
     }   
 }

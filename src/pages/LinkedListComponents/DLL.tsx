@@ -353,20 +353,13 @@ export class DoublyLinkedList {
         });
 
         // Move the new node to the same height as the other nodes
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                y: this.y,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear area between currNode and nextNode, with enough height to clear new node
-                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
-                    newNode.drawNode(context);  // draw new node after clearing
-                    currNode.drawNode(context); // draw prev node after clearing and pointer movement
-                    nextNode.drawNode(context); // draw tail node after clearing and pointer movement
-                    newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                },
-                onComplete: resolve
-            });
+        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+            // Clear area between currNode and nextNode, with enough height to clear new node
+            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
+            newNode.drawNode(context);  // draw new node after clearing
+            currNode.drawNode(context); // draw prev node after clearing and pointer movement
+            nextNode.drawNode(context); // draw tail node after clearing and pointer movement
+            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
         });
 
         this.numElements++; // Increment number of elements   

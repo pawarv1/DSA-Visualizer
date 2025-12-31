@@ -182,5 +182,17 @@ export class DLLNode {
         });
     }
 
-    // TODO Add move node method
+    async moveNode(context: CanvasRenderingContext2D, x: number, y: number, moveTime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                x: x,
+                y: y,
+                duration: moveTime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
 }
