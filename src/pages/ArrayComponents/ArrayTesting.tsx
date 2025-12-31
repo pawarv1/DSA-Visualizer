@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
-import { Array, VerticalArray } from './Array';
+import { Array } from './Array';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap, { context } from 'gsap';
 
@@ -201,66 +201,7 @@ function ArrayTestCases() {
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       setIsAnimating(false);
-    }
-
-    // ==== VERTICAL ARRAYS ====
-
-    // General vertical array initialization test case
-    const step14 = () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "General vertical array");
-      testCaseHeader.draw(mainContext);
-      const array = new VerticalArray(100, 100, 80, 50, [0, 1, 2, 3]);
-      array.draw(mainContext);
-      setIsAnimating(false);
-    }
-
-    // Clearing a vertical array test case
-    const step15 = () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Clearing a vertical array");
-      const array = new VerticalArray (100, 100, 80, 50, [2,4,6,8]);
-      testCaseHeader.draw(mainContext);
-      array.draw(mainContext);
-      setTimeout(() => {
-        array.clear(mainContext);
-        setIsAnimating(false);
-      }, 2000);
-    }
-
-    // Swapping in a vertical array test case
-    const step16 = async () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Swapping two elements of the vertical array");
-      const array = new VerticalArray (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
-      testCaseHeader.draw(mainContext);
-      array.draw(mainContext);
-      await array.swapElements(mainContext, 0, 4);
-      setIsAnimating(false);
-    }
-
-    // Printing in a vertical array test case
-    const step17 = async () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Printing elements of the vertical array");
-      const array = new VerticalArray (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
-      testCaseHeader.draw(mainContext);
-      array.draw(mainContext);
-      await array.print(mainContext)
-      setIsAnimating(false);
-    }
-
-    // Set fill color for a single cell test case
-    const step18 = () => {
-      setIsAnimating(true);
-      const testCaseHeader = new Text (70, 40, "Changing fill color for a single cell");
-      const array1 = new VerticalArray(100, 100, 80, 50, [10, 20, 30, 40, 50]);
-      testCaseHeader.draw(mainContext);
-      array1.draw(mainContext);
-      array1.setFillColor(mainContext, 3, "yellow");
-      setIsAnimating(false);
-    }
-    
+    }    
 
     // Switch statement which runs the associated step method for the given step
     switch(step) {
@@ -303,27 +244,12 @@ function ArrayTestCases() {
       case 13:
         step13();
         break;
-      case 14:
-        step14();
-        break;
-      case 15:
-        step15();
-        break;
-      case 16:
-        step16();
-        break;
-      case 17:
-        step17();
-        break;
-      case 18:
-        step18();
-        break;
       default:
         break
     }
   }
 
-  return <StepPlayer totalSteps={18} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={13} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default ArrayTestCases;
