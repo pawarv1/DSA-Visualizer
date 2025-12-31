@@ -282,18 +282,11 @@ export class LinkedList {
                 await currNode.fadeInPointer(context, fadeIntime);  // Fade in current nodes next pointer, which now points to the new node
 
                 // Move the new node to the same height as the other nodes
-                await new Promise<void>((resolve) => {
-                    gsap.to(newNode, {
-                        y: this.y,
-                        duration: fadeIntime,
-                        onUpdate: () => {
-                            // Clear the area affected by the movement
-                            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
-                            newNode.drawNode(context);  // Redraw newNode to show its position at current frame
-                            currNode.drawNode(context); // Redraw currNode so it pointer is drawn to the right location at that frame
-                        },
-                        onComplete: resolve
-                    });
+                await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+                    // Clear the area affected by the movement
+                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
+                    newNode.drawNode(context);  // Redraw newNode to show its position at current frame
+                    currNode.drawNode(context); // Redraw currNode so it pointer is drawn to the right location at that frame
                 });
 
                 this.numElements++; // Increment number of elements

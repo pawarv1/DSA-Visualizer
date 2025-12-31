@@ -147,18 +147,11 @@ export class DummyNodeSLL extends LinkedList {
             await this.headPtr.fadeInPointer(context, fadeIntime);
 
             // Move the new node to the same height as the other nodes
-            await new Promise<void>((resolve) => {
-                gsap.to(newNode, {
-                    y: this.y,
-                    duration: fadeIntime,
-                    onUpdate: () => {
-                        // Clear the area affected by the movement
-                        context.clearRect(this.headPtr.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
-                        newNode.drawNode(context);  // Redraw newNode to show its position at current frame
-                        this.headPtr.drawNode(context); // Redraw head node to show updated next pointer position
-                    },
-                    onComplete: resolve
-                });
+            await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+                // Clear the area affected by the movement
+                context.clearRect(this.headPtr.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
+                newNode.drawNode(context);  // Redraw newNode to show its position at current frame
+                this.headPtr.drawNode(context); // Redraw head node to show updated next pointer position
             });
 
             this.numElements++; // Increment the number or elements
@@ -221,18 +214,11 @@ export class DummyNodeSLL extends LinkedList {
                 await currNode.fadeInPointer(context, fadeIntime);
 
                 // Move the new node to the same height as the other nodes
-                await new Promise<void>((resolve) => {
-                    gsap.to(newNode, {
-                        y: this.y,
-                        duration: fadeIntime,
-                        onUpdate: () => {
-                            // Clear the area affected by the movement
-                            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
-                            newNode.drawNode(context);  // Redraw newNode to show its position at current frame
-                            currNode.drawNode(context); // Redraw currNode to show updated next pointer position
-                        },
-                        onComplete: resolve
-                    });
+                await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
+                    // Clear the area affected by the movement
+                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
+                    newNode.drawNode(context);  // Redraw newNode to show its position at current frame
+                    currNode.drawNode(context); // Redraw currNode to show updated next pointer position
                 });
 
                 this.numElements++; // Increment number of elements
