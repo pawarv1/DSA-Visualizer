@@ -111,7 +111,9 @@ function CircularDLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Shift");
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
-            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c']);
+            await cdll.shift(mainContext);
+            await cdll.shift(mainContext);
             await cdll.shift(mainContext);
             setIsAnimating(false);
         }
@@ -121,8 +123,7 @@ function CircularDLLTestCases() {
             const testCaseHeader = new Text (70, 40, "Pop");
             testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(80, 100, 50, 30);
-            cdll.loadDLL(mainContext, ['a', 'b', 'c','d']);
-            await cdll.pop(mainContext, 1);
+            cdll.loadDLL(mainContext, ['a', 'b', 'c']);
             await cdll.pop(mainContext, 1);
             await cdll.pop(mainContext, 1);
             await cdll.pop(mainContext, 1);
@@ -152,6 +153,7 @@ function CircularDLLTestCases() {
             await dll.delete(mainContext, 'c');
             await dll.delete(mainContext, 'a');
             await dll.delete(mainContext, 'f');
+            await dll.delete(mainContext, 'd');
             await dll.delete(mainContext, 'h');
             setIsAnimating(false);
         }

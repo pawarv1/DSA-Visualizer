@@ -32,6 +32,7 @@ function SentinelDLLTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
+            testCaseHeader.draw(mainContext);
             const text1 = new Text(100, 200, "");
             const text2 = new Text(100, 300, "");
             const text3 = new Text(100, 400, "");

@@ -57,7 +57,6 @@ export class DoublyLinkedList {
     }
 
     // Method to higlight a specific node for a short duration then set it back to normal afterwards
-    // This is ussually used to portray traversals, and can be disabled if needed using the iterationAnimation parameter
     protected async highlightNode(context: CanvasRenderingContext2D, node: DLLNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
         return new Promise<void>((resolve) => {
             node.outlineColor = outlineColor
@@ -108,49 +107,46 @@ export class DoublyLinkedList {
         gsap.ticker.remove(drawLoop);
     }
 
+    // Return true if the DLL is empty
+    isEmpty() {
+        return this.numElements === 0;
+    }
+
+    // Return the size of the DLL
+    getSize() {
+        return this.numElements;
+    }
+
     // Return the data at the given index
-    async getAt(context: CanvasRenderingContext2D, index: number, iterationAnimation: boolean = true) {
+    async getAt(context: CanvasRenderingContext2D, index: number) {
         // Error if the index is not valid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
         else {
-            // Initialize currNode to the head
             let currNode = this.headPtr!;
 
             // Traversal is more / as efficient from the head than tail
             if (index <= Math.floor((this.numElements - 1) / 2)) {
-                // currNode is already set to the head
-                
-                // Highlight nodes to show traversal if iterationAnimation is true
+
+                // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode!);
-                    }
+                    await this.highlightNode(context, currNode!);
                     currNode = currNode.next!;
                 }
-
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
             }
             // Traversal is more efficient from the tail than head
             else {
-                // Set currNode to the tail
                 currNode = this.tailPtr!;
 
-                // Highlight nodes to show traversal if iterationAnimation is true, before the index of insertion
+                // Highlight nodes to show traversal
                 for (let i = this.numElements - 1; i > index; i--){
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
+                    await this.highlightNode(context, currNode);
                     currNode = currNode.prev!;
                 }
-
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
             }
 
             return currNode.data;
@@ -158,15 +154,13 @@ export class DoublyLinkedList {
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any, iterationAnimation: boolean = true) {
+    async find(context: CanvasRenderingContext2D, data: any) {
         let currNode = this.headPtr;
         let index = 0;
 
         while (currNode) {
-            // Highlight nodes to show traversal if iterationAnimation is true
-            if (iterationAnimation) {
-                await this.highlightNode(context, currNode);
-            }
+            // Highlight nodes to show traversal
+            await this.highlightNode(context, currNode);
             
             // Data was found
             if (currNode.data === data) {
@@ -198,7 +192,6 @@ export class DoublyLinkedList {
 
     // Traverse backwards from tail to head and print nodes index and data
     async traverseBackward(context: CanvasRenderingContext2D) {
-        
         let currNode = this.tailPtr;
         let index = this.numElements - 1;
 
@@ -229,20 +222,7 @@ export class DoublyLinkedList {
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
-        // Fade in the new node
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                nodeOpacity: 1,
-                pointerOpacityNext: 1,
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    newNode.drawNode(context);
-                },
-                onComplete: () => resolve()
-            });
-        });
-
+        await newNode.fadeInNode(context, fadeIntime);  // Fade in the new node
         this.numElements++; // Increment number of elements
     }
 
@@ -265,7 +245,7 @@ export class DoublyLinkedList {
         newNode.next = this.headPtr;    // Set newNode.next to the head node
 
         // If the DLL was previously empty, tail pointer will also point to the new node 
-        if (!this.headPtr) {
+        if (this.headPtr === null) {
             this.tailPtr = newNode;
         }
         else {
@@ -274,33 +254,18 @@ export class DoublyLinkedList {
             this.headPtr.drawNode(context);
         }
         this.headPtr = newNode; // Update head pointer to the new node
-
-        // Fade in new node
-        await new Promise<void>((resolve) => {
-            gsap.to(newNode, {
-                nodeOpacity: 1,
-                pointerOpacityNext: 1,
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    newNode.drawNode(context);
-                },
-                onComplete: () => resolve()
-            });
-        });
-
+        await newNode.fadeInNode(context, fadeIntime);  // Fade in new node
         this.numElements++; // Increment the number of elements
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1, iterationAnimation: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
 
-        // Initially set currNode to the head
         let currNode = this.headPtr!;
 
         // Traversal is more / as efficient from head than tail
@@ -311,18 +276,12 @@ export class DoublyLinkedList {
                 return true;    // Insertion was successful
             }
             else {
-                // currNode is already set to the head
-
-                // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of insertion
+                // Highlight nodes to show traversal, stop right before the index of insertion
                 for (let i = 0; i < index - 1; i++){
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
+                    await this.highlightNode(context, currNode);
                     currNode = currNode.next!;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
             }
         }
         // Traversal is more efficient from tail than head
@@ -333,26 +292,19 @@ export class DoublyLinkedList {
                 return true;    // Insertion was successful
             }
             else {
-                // Set currNode to the tail
                 currNode = this.tailPtr!;
 
-                // Highlight nodes to show traversal if iterationAnimation is true, before the index of insertion
+                // Highlight nodes to show traversal, stop right before the index of insertion
                 for (let i = this.numElements - 1; i > index - 1; i--){
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, currNode);
-                    }
+                    await this.highlightNode(context, currNode);
                     currNode = currNode.prev!;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, currNode);
-                }
+                await this.highlightNode(context, currNode);
             }
         }
 
-        // Insertions in the middle of the DLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-
         const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         newNode.next = nextNode;    // Set newNode.next to nextNode
         newNode.prev = currNode;    // Set newNode.prev to currNode
@@ -369,73 +321,40 @@ export class DoublyLinkedList {
         // Animate the movement of the following nodes
         const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
         await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
-        
-        // Animate the creation of the new node and pointer change sequence using timeline
+
+        await newNode.fadeInNode(context, fadeIntime); // Fade in the new node
+
+        // Fade out the curr nodes next pointer, than set it to the new node
+        await currNode.fadeOutNext(context, fadeIntime, () => {
+            // Clear the area between the current node and nextNode (to fade out currNode next pointer)
+            context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight / 2);
+            newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
+            currNode.drawNode(context);
+        });
+        currNode.next = newNode;
+
+        // Fade in the current nodes next pointer, which now points to the new node
+        await currNode.fadeInNext(context, fadeIntime);
+
+        // Fade out the next nodes prev pointer, than set it to the new node
+        await nextNode.fadeOutPrev(context, fadeIntime, () => {
+            // Clear the area between the current node and nextNode (to fade out nextNode prev pointer)
+            context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y + this.nodeHeight / 2, this.nodeWidth * 3, this.nodeHeight / 2);
+            nextNode.drawNode(context); // Order is flipped here to prevent arrow clearing bugs
+            newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above clear statement
+            currNode.drawNode(context); // Redraw currNode as some of its next pointer gets cleared by the fade out
+        });
+        nextNode.prev = newNode
+
+        // Fade in the next nodes prev pointer, which now points to the new node
+        await nextNode.fadeInPrev(context, fadeIntime, () => {
+            nextNode.drawNode(context);
+            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
+        });
+
+        // Move the new node to the same height as the other nodes
         await new Promise<void>((resolve) => {
-            const timeline = gsap.timeline({onComplete: () => resolve()});
-
-            // Fade in the new node
-            timeline.to(newNode, {
-                nodeOpacity : 1,
-                pointerOpacityNext: 1,
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    newNode.drawNode(context);
-                }
-            });
-
-            // Fade out the curr nodes next pointer, than set it to the new node
-            timeline.to(currNode, {
-                pointerOpacityNext: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear the area between the current node and nextNode (to fade out currNode next pointer)
-                    context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight / 2);
-                    newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
-                    currNode.drawNode(context);
-                },
-                onComplete: () => {
-                    currNode.next = newNode;
-                }
-            });
-            
-            // Fade out the next nodes prev pointer, than set it to the new node
-            timeline.to(nextNode, {
-                pointerOpacityPrev: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    // Clear the area between the current node and nextNode (to fade out nextNode prev pointer)
-                    context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y + this.nodeHeight / 2, this.nodeWidth * 3, this.nodeHeight / 2);
-                    nextNode.drawNode(context); // Order is flipped here to prevent arrow clearing bugs
-                    newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above clear statement
-                },
-                onComplete: () => {
-                    nextNode.prev = newNode;
-                }
-            });
-
-            // Fade in the current nodes next pointer, which now points to the new node
-            timeline.to(currNode, {
-                pointerOpacityNext: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    currNode.drawNode(context);
-                }
-            });
-
-            // Fade in the next nodes prev pointer, which now points to the new node
-            timeline.to(nextNode, {
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    nextNode.drawNode(context);
-                    newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                }
-            });
-
-            // Move the new node to the same height as the other nodes
-            timeline.to(newNode, {
+            gsap.to(newNode, {
                 y: this.y,
                 duration: fadeIntime,
                 onUpdate: () => {
@@ -445,7 +364,8 @@ export class DoublyLinkedList {
                     currNode.drawNode(context); // draw prev node after clearing and pointer movement
                     nextNode.drawNode(context); // draw tail node after clearing and pointer movement
                     newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-                }
+                },
+                onComplete: resolve
             });
         });
 
@@ -467,7 +387,7 @@ export class DoublyLinkedList {
 
             // If head became null, this means that the linked list will be empty after the removal
             // Tail must be set to null as well
-            if (!this.headPtr) {
+            if (this.headPtr === null) {
                 this.tailPtr = null;
             }
             else {
@@ -475,17 +395,7 @@ export class DoublyLinkedList {
                 this.headPtr.drawNode(context);
             }
 
-            // Fade out the removed first node
-            await new Promise<void>((resolve) => {
-                gsap.to(firstNode, {
-                    nodeOpacity: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        firstNode.drawNode(context);
-                    },
-                    onComplete: () => resolve()
-                });
-            });
+            await firstNode.fadeOutNode(context, fadeOutTime); // Fade out the removed first node
 
             const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
             let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
@@ -534,19 +444,7 @@ export class DoublyLinkedList {
             // Redraw the new last node if it exists
             this.tailPtr?.drawNode(context);
 
-            // Fade out the removed last node
-            await new Promise<void>((resolve) => {
-                gsap.to(lastNode, {
-                    nodeOpacity : 0,
-                    pointerOpacityPrev: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        lastNode!.drawNode(context);
-                    },
-                    onComplete: () => resolve()
-                });
-            });
-
+            await lastNode!.fadeOutNode(context, fadeOutTime);  // Fade out the removed last node
             this.numElements--; // Decrement the number of elements
 
             // Return the removed nodes data
@@ -555,46 +453,35 @@ export class DoublyLinkedList {
     }
 
     // Remove at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number, fadeOutTime: number = 1) {
         // Error if index of deletion is invalid
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds`);
             return false;
         }
         else {
-            // Pointer for the node that will be deleted, initialized to the head
             let deleteNode = this.headPtr!;
 
             // Traversal is more / as efficient from head than tail
             if (index <= Math.floor((this.numElements - 1) / 2)) {
-                // deleteNode is already set to the head
 
-                // Highlight nodes to show traversal if iterationAnimation is true
+                // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, deleteNode);
-                    }
+                    await this.highlightNode(context, deleteNode);
                     deleteNode = deleteNode.next!;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, deleteNode);
-                }
+                await this.highlightNode(context, deleteNode);
             }
             // Traversal is more efficient from tail than head
             else {
-                // Set deleteNode to the tail
                 deleteNode = this.tailPtr!;
 
-                // Highlight nodes to show traversal if iterationAnimation is true
+                // Highlight nodes to show traversal
                 for (let i = this.numElements - 1; i > index; i--) {
-                    if (iterationAnimation) {
-                        await this.highlightNode(context, deleteNode);
-                    }
+                    await this.highlightNode(context, deleteNode);
                     deleteNode = deleteNode.prev!;
                 }
-                if (iterationAnimation) {
-                    await this.highlightNode(context, deleteNode);
-                }
+                await this.highlightNode(context, deleteNode);
             }
 
             // Save the nodes before and after deleteNode if they exist (or null if they don't)
@@ -610,72 +497,28 @@ export class DoublyLinkedList {
                 this.tailPtr = prevNode;
             }
 
-            // Animate the node removal and pointer change sequence using timeline
-            await new Promise<void>((resolve) => {
-                const timeline = gsap.timeline({onComplete: () => resolve()});
+            if (prevNode != null) {
+                // Fade out prevNode next pointer, then set it to nextNode
+                await prevNode.fadeOutNext(context, fadeOutTime);
+                prevNode.next = nextNode;
+                await prevNode.fadeInNext(context, fadeOutTime);    // Fade prevNode next pointer back in
+            }
 
-                if (prevNode) {
-                    // Fade out prevNode next pointer
-                    timeline.to(prevNode, {
-                        pointerOpacityNext: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            prevNode.drawNode(context);
-                        }
-                    });
+            if (nextNode != null) {
+                // Fade out nextNode prev pointer than set it to prevNode
+                await nextNode.fadeOutPrev(context, fadeOutTime);
+                nextNode.prev = prevNode;
+                await nextNode.fadeInPrev(context, fadeOutTime);    // Fade nextNode prev pointer back in
+            }
 
-                    // Set prevNode next pointer to nextNode then fade it back in
-                    timeline.to(prevNode, {
-                        pointerOpacityNext: 1,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            prevNode.next = nextNode;
-                        },
-                        onUpdate: () => {
-                            prevNode.drawNode(context);
-                        }
-                    });
-                }
+            // Set deleteNode next and prev pointers to null then fade it out
+            deleteNode.prev = null;
+            deleteNode.next = null;
 
-                if (nextNode) {
-                    // Fade out nextNode prev pointer
-                    timeline.to(nextNode, {
-                        pointerOpacityPrev: 0,
-                        duration: fadeOutTime,
-                        onUpdate: () => {
-                            nextNode.drawNode(context);
-                        }
-                    });
-
-                    // Set nextNode prev pointer to prevNode then fade it back in
-                    timeline.to(nextNode, {
-                        pointerOpacityPrev: 1,
-                        duration: fadeOutTime,
-                        onStart: () => {
-                            nextNode.prev = prevNode;
-                        },
-                        onUpdate: () => {
-                            nextNode.drawNode(context);
-                        }
-                    });
-                }
-
-                // Set deleteNode next and prev pointers to null then fade it out
-                timeline.to(deleteNode, {
-                    nodeOpacity : 0,
-                    pointerOpacityNext: 0,
-                    pointerOpacityPrev: 0,
-                    duration: fadeOutTime,
-                    onStart: () => {
-                        deleteNode.prev = null;
-                        deleteNode.next = null;
-                    },
-                    onUpdate: () => {
-                        deleteNode.drawNode(context);
-                        prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
-                        nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
-                    }
-                });
+            await deleteNode.fadeOutNode(context, fadeOutTime, () => {
+                deleteNode.drawNode(context);
+                prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
+                nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
             });
 
             const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
@@ -697,23 +540,17 @@ export class DoublyLinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1, iterationAnimation: boolean = true) {
+    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
         // Pointer for the node that will be deleted, initialized to the head
         let deleteNode = this.headPtr;
 
         while (deleteNode != null) {
             if (deleteNode.data === data) {
-                if (iterationAnimation) {
-                    await this.highlightNode(context, deleteNode);
-                }
+                await this.highlightNode(context, deleteNode);
                 await this.highlightNode(context, deleteNode, 500, "black", "lightgreen");
                 break;
             }
-
-            if (iterationAnimation) {
-                await this.highlightNode(context, deleteNode);
-            }
-
+            await this.highlightNode(context, deleteNode);
             deleteNode = deleteNode.next;
         }
 
@@ -735,72 +572,28 @@ export class DoublyLinkedList {
             this.tailPtr = prevNode;
         }
 
-        // Animate the node removal and pointer change sequence using timeline
-        await new Promise<void>((resolve) => {
-            const timeline = gsap.timeline({onComplete: () => resolve()});
+        if (prevNode != null) {
+            // Fade out prevNode next pointer, then set it to nextNode
+            await prevNode.fadeOutNext(context, fadeOutTime);
+            prevNode.next = nextNode;
+            await prevNode.fadeInNext(context, fadeOutTime);    // Fade prevNode next pointer back in
+        }
 
-            if (prevNode) {
-                // Fade out prevNode next pointer
-                timeline.to(prevNode, {
-                    pointerOpacityNext: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        prevNode.drawNode(context);
-                    }
-                });
+        if (nextNode != null) {
+            // Fade out nextNode prev pointer than set it to prevNode
+            await nextNode.fadeOutPrev(context, fadeOutTime);
+            nextNode.prev = prevNode;
+            await nextNode.fadeInPrev(context, fadeOutTime);    // Fade nextNode prev pointer back in
+        }
 
-                // Set prevNode next pointer to nextNode then fade it back in
-                timeline.to(prevNode, {
-                    pointerOpacityNext: 1,
-                    duration: fadeOutTime,
-                    onStart: () => {
-                        prevNode.next = nextNode;
-                    },
-                    onUpdate: () => {
-                        prevNode.drawNode(context);
-                    }
-                });
-            }
+        // Set deleteNode next and prev pointers to null then fade it out
+        deleteNode.prev = null;
+        deleteNode.next = null;
 
-            if (nextNode) {
-                // Fade out nextNode prev pointer
-                timeline.to(nextNode, {
-                    pointerOpacityPrev: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        nextNode.drawNode(context);
-                    }
-                });
-
-                // Set nextNode prev pointer to prevNode then fade it back in
-                timeline.to(nextNode, {
-                    pointerOpacityPrev: 1,
-                    duration: fadeOutTime,
-                    onStart: () => {
-                        nextNode.prev = prevNode;
-                    },
-                    onUpdate: () => {
-                        nextNode.drawNode(context);
-                    }
-                });
-            }
-
-            // Set deleteNode next and prev pointers to null then fade it out
-            timeline.to(deleteNode, {
-                nodeOpacity : 0,
-                pointerOpacityNext: 0,
-                pointerOpacityPrev: 0,
-                duration: fadeOutTime,
-                onStart: () => {
-                    deleteNode.prev = null;
-                    deleteNode.next = null;
-                },
-                onUpdate: () => {
-                    deleteNode.drawNode(context);
-                    prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
-                    nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
-                }
-            });
+        await deleteNode.fadeOutNode(context, fadeOutTime, () => {
+            deleteNode.drawNode(context);
+            prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
+            nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
         });
 
         const movingNodes: DLLNode[] = [];  // This array is used to store the nodes which will be moving
@@ -833,17 +626,9 @@ export class DoublyLinkedList {
             node.prev = null;   // Set each prev pointer to null
             node.next = null;   // Set each next pointer to null
 
-            const promise = new Promise<void>((resolve) => {
-                gsap.to(node, {
-                    nodeOpacity: 0,
-                    pointerOpacityNext: 0,
-                    pointerOpacityPrev: 0,
-                    duration: 1,
-                    onUpdate: () => {
-                        node.drawNode(context);
-                    },
-                    onComplete: () => resolve()
-                });
+            const promise = new Promise<void>(async (resolve) => {
+                await node.fadeOutNode(context, 1);
+                resolve();
             });
 
             promises.push(promise);

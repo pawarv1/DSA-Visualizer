@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import { Arrow, Line, Rectangle } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual CDLL nodes
@@ -18,7 +19,7 @@ export class CircularDLLNode {
     private clearAreaCoordinates2: Rectangle[]; // Covers the region where prev pointer is drawn
 
     // By default a node next and prev pointers points to itself
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, next: CircularDLLNode = this, prev: CircularDLLNode = this, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -27,8 +28,8 @@ export class CircularDLLNode {
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacityNext = pointerOpacityNext;
         this.pointerOpacityPrev = pointerOpacityPrev;
-        this.next = next;
-        this.prev = prev;
+        this.next = this;
+        this.prev = this;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
         this.clearAreaCoordinates1 = [];
@@ -126,7 +127,7 @@ export class CircularDLLNode {
                     // This clears the region with Line 7
                     new Rectangle(this.x - this.nodeWidth * 3/4 + 8, this.y + this.nodeHeight + 1, (this.prev.x + this.nodeWidth * 3/2 + 1) - (this.x - this.nodeWidth/2) + 4, this.nodeHeight / 2),
                     // This clears the region with Line 8 and Arrow 2
-                    new Rectangle(this.prev.x + this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, (this.prev.x + this.nodeWidth * 3/2) - (this.prev.x + this.nodeWidth) + 1, this.nodeHeight / 2)
+                    new Rectangle(this.prev.x + this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, (this.prev.x + this.nodeWidth * 3/2) - (this.prev.x + this.nodeWidth) + 1, this.nodeHeight)
                 ];
             }
             else {
@@ -145,6 +146,58 @@ export class CircularDLLNode {
             const nullSlash = new Line(this.x, this.y, this.x + this.nodeWidth / 4, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
         }
+    }
+
+    async fadeInNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityNext: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityNext: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeInPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityPrev: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityPrev: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
     }
 
     drawNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true, redrawPointer: boolean = true) {
@@ -181,5 +234,35 @@ export class CircularDLLNode {
 
         // Clear the node
         context.clearRect(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2);
+    }
+
+    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 1,
+                pointerOpacityNext: 1,
+                pointerOpacityPrev: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context, false)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 0,
+                pointerOpacityNext: 0,
+                pointerOpacityPrev: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
     }
 }

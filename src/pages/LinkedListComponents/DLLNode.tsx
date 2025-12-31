@@ -1,3 +1,4 @@
+import gsap from "gsap";
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual DLL nodes
@@ -15,7 +16,7 @@ export class DLLNode {
     outlineColor: string;
     fillColor: string;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, next: DLLNode | null = null, prev: DLLNode | null = null, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -24,8 +25,8 @@ export class DLLNode {
         this.nodeOpacity = nodeOpacity;
         this.pointerOpacityNext = pointerOpacityNext;
         this.pointerOpacityPrev = pointerOpacityPrev;
-        this.next = next;
-        this.prev = prev;
+        this.next = null;
+        this.prev = null;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -68,6 +69,58 @@ export class DLLNode {
         }
     }
 
+    async fadeInNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityNext: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityNext: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeInPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityPrev: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                pointerOpacityPrev: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
         this.clearNode(context);
         context.save();
@@ -98,4 +151,36 @@ export class DLLNode {
         // Clear the node
         context.clearRect(this.x - 2, this.y - 2, this.nodeWidth + 3, this.nodeHeight + 3);
     }
+
+    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 1,
+                pointerOpacityNext: 1,
+                pointerOpacityPrev: 1,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    async fadeOutNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                nodeOpacity: 0,
+                pointerOpacityNext: 0,
+                pointerOpacityPrev: 0,
+                duration: fadeIntime,
+                onUpdate: () => {
+                    updateFunction();
+                },
+                onComplete: () => resolve()
+            });
+        });
+    }
+
+    // TODO Add move node method
 }
