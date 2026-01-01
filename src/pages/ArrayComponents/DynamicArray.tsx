@@ -270,9 +270,7 @@ export class DynamicArray extends Array {
                 this.cells[i].drawCell(context, drawIndex);
                 shiftHappened = true;
                 // Add delay into the animation, may add in a variable for time
-                await new Promise<void>((resolve) => {
-                    setTimeout((resolve), 1000);
-                });
+                await new Promise<void>((resolve) => setTimeout(resolve, 1000));
             }
 
             this.arraySize++;

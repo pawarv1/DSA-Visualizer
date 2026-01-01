@@ -22,17 +22,25 @@ export class ArrayCell {
 
     // Adjust font size to fit within the cell
     protected adjustFontSize(context: CanvasRenderingContext2D) {
-        let fontSize = 16; // Initial font size
-        let font = `${fontSize}px Arial`;
-        let textWidth = context.measureText(this.content).width;
+        let fontSize = 16;
 
-        // Reduce the font size until the text fits within the cell width, with some padding
-        while (textWidth > this.cellWidth - 10 && fontSize > 1) {
+        context.save();
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+
+        while (fontSize > 1) {
+            const font = `${fontSize}px Arial`;
+            context.font = font;
+            const textWidth = context.measureText(String(this.content)).width;
+            if (textWidth <= this.cellWidth - 10) {
+                context.restore();
+                return font;
+            }
             fontSize--;
-            font = `${fontSize}px Arial`;
-            textWidth = context.measureText(this.content).width;
         }
-        return font;
+
+        context.restore();
+        return `1px Arial`;
     }
 
     // Draw the cell
