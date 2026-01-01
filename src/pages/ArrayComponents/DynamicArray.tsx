@@ -4,6 +4,7 @@ import { Array } from './Array';
 
 // Dynamic Array Class, inherits from array class
 export class DynamicArray extends Array {
+    protected arraySize: number;
     protected capacity: number;
     protected cells: DynamicArrayCell[];
 
@@ -11,7 +12,7 @@ export class DynamicArray extends Array {
         super(x, y, cellWidth, cellHeight, contents, opacity);
         this.capacity = Math.max(initialCapacity, contents.length);
         this.cells = [];
-
+        this.arraySize = contents.length;
         for (let i = 0; i < contents.length; i++) {
             this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity));
         }

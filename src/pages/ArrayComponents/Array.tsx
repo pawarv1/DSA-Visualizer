@@ -3,7 +3,7 @@ import { ArrayCell } from './ArrayCell';
 
 // Array Class
 export class Array {
-    protected arraySize: number;
+    protected readonly arraySize: number;
     protected cells: ArrayCell[];
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], protected opacity: number = 1) {
