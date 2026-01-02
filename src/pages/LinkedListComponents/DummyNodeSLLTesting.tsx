@@ -13,7 +13,7 @@ function DummyNodeSLLTestCases() {
         const step1 = async() => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Creating a dummy node linked list");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.draw(mainContext);
             setIsAnimating(false);
@@ -22,7 +22,7 @@ function DummyNodeSLLTestCases() {
         const step2 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list loaded in");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
@@ -31,7 +31,7 @@ function DummyNodeSLLTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list append");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             await ll.append(mainContext, 'a', 1);
             await ll.append(mainContext, 'b', 1);
@@ -119,7 +119,7 @@ function DummyNodeSLLTestCases() {
         const step10 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list clearAll");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             await ll.clearAll(mainContext);
@@ -130,7 +130,7 @@ function DummyNodeSLLTestCases() {
         const step11 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list traverse");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             await ll.traverse(mainContext);

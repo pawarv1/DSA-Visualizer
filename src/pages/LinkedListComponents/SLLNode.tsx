@@ -13,6 +13,7 @@ export class LinkedListNode {
     next: LinkedListNode | null;
     outlineColor: string;
     fillColor: string;
+    renderNextOverride: LinkedListNode | null = null;
 
     // Constructor sets next to null by default
     constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
@@ -32,7 +33,8 @@ export class LinkedListNode {
     adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
         context.font = `${fontSize}px Arial`;
-        let textWidth = context.measureText(this.data).width;
+        const text = String(this.data);
+        let textWidth = context.measureText(text).width;
 
         // Reduce the font size until the text fits within the node width
         while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
@@ -45,9 +47,11 @@ export class LinkedListNode {
 
     // Function for drawing the next pointer
     drawPointer(context: CanvasRenderingContext2D) {
-        if (this.next) {
+        const target = this.renderNextOverride ?? this.next;
+
+        if (target) {
             // Represent the next pointer with an arrow
-            const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
+            const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, target.x - 2, target.y + target.nodeHeight/2, this.pointerOpacity);
             pointerArrow.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
@@ -57,34 +61,25 @@ export class LinkedListNode {
         }
     }
 
-    async fadeInPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
+    fadeToNodeOpacity(opacity: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { nodeOpacity: opacity, duration, onComplete: resolve });
         });
     }
 
-    async fadeOutPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacity: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
+    fadeToPointerOpacity(opacity: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { pointerOpacity: opacity, duration, onComplete: resolve });
+        });
+    }
+
+    moveTo(x: number, y: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { x, y, duration, onComplete: resolve });
         });
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
-        this.clearNode(context);    // Clear the node and pointer space first
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -102,52 +97,5 @@ export class LinkedListNode {
             this.drawPointer(context);
         }
         context.restore();
-    }
-
-    clearNode(context: CanvasRenderingContext2D) { 
-        // Clear both the node and the pointer space
-        context.clearRect(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2);
-    }
-
-    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 1,
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNode(context: CanvasRenderingContext2D, fadeOutTime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 0,
-                pointerOpacity: 0,
-                duration: fadeOutTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async moveNode(context: CanvasRenderingContext2D, x: number, y: number, moveTime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                x: x,
-                y: y,
-                duration: moveTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
     }
 }

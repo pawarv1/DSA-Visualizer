@@ -6,6 +6,7 @@ export class LinkedList {
     protected headPtr: LinkedListNode | null;
     protected tailPtr: LinkedListNode | null;
     protected numElements: number;
+    protected staging: LinkedListNode[] = [];
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         this.x = x;
@@ -27,82 +28,92 @@ export class LinkedList {
             // Loading in the first node
             if (currNode === null) {
                 this.headPtr = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
-                this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             // Loading in the following nodes
             else {
                 const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 currNode.next = newNode;    // Set currNode next to newNode then redraw
-                currNode.drawNode(context);
-                newNode.drawNode(context);
                 currNode = currNode.next;
             }
 
             this.tailPtr = currNode;    // Update the tail pointer to the last node
             this.numElements++; // Increment number of elements
         }
+
+        this.render(context);
     }
 
     // Draw the SLL
     draw(context: CanvasRenderingContext2D) {
-        let currNode = this.headPtr;
+        const nodes: LinkedListNode[] = [];
+        let curr = this.headPtr;
+        while (curr) { nodes.push(curr); curr = curr.next; }
 
-        while(currNode) {
-            currNode.drawNode(context);
-            currNode = currNode.next;
-        }
+        // Draw nodes
+        for (const n of nodes) n.drawNode(context, false);
+        for (const s of this.staging) s.drawNode(context, false);
+
+        // Draw pointers
+        for (const n of nodes) n.drawPointer(context);
+        for (const s of this.staging) s.drawPointer(context);
     }
 
-    // Method to higlight a specific node for a short duration then set it back to normal afterwards
-    protected async highlightNode(context: CanvasRenderingContext2D, node: LinkedListNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
-        return new Promise<void>((resolve) => {
-            node.outlineColor = outlineColor
-            node.fillColor = fillColor;
-            node.drawNode(context);
-
-            setTimeout(() => {
-                // Reset to orignal colors
-                node.outlineColor = "black";
-                node.fillColor = "white";
-                node.drawNode(context);
-                resolve();
-            }, duration);
-        });
+    protected render(context: CanvasRenderingContext2D) {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        this.draw(context);
     }
 
-    // Helper method to extract logic animating the movements of nodes
-    protected animateNodeShift(nodes: LinkedListNode[], offsetX: number, duration: number): Promise<void>[] {
+    protected shiftNodes(nodes: LinkedListNode[], dx: number, duration = 1) {
         return nodes.map(node =>
-            new Promise(resolve => {
-                gsap.to(node, {
-                    x: node.x + offsetX,
-                    duration,
-                    onComplete: resolve
-                });
+            new Promise<void>(resolve => {
+                gsap.to(node, { x: node.x + dx, duration, onComplete: resolve });
             })
         );
     }
 
-    // Helper method which genealizes the central draw loop pattern
-    // Improves efficiency for large movement animations
-    protected async runWithCentralDrawLoop(context: CanvasRenderingContext2D, drawFn: (arg0: CanvasRenderingContext2D) => void, animationPromises: Promise<void>[]): Promise<void> {
-        let animating = true;
+    // Runs promises while gsap.ticker repeatedly calls render()
+    protected async withRenderLoop(context: CanvasRenderingContext2D, promises: Promise<void>[] ) {
+        let active = true;
+        const loop = () => { if (active) this.render(context); };
 
-        const drawLoop = () => {
-            if (!animating) {
-                return;
-            }
-            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-            drawFn(context);
-        };
-
-        gsap.ticker.add(drawLoop);
-        await Promise.all(animationPromises);
-        animating = false;
-        gsap.ticker.remove(drawLoop);
+        gsap.ticker.add(loop);
+        try {
+            await Promise.all(promises);
+        } finally {
+            active = false;
+            gsap.ticker.remove(loop);
+            this.render(context);
+        }
     }
 
+    private timelinePromise(build: (tl: gsap.core.Timeline) => void) {
+        return new Promise<void>((resolve) => {
+            const tl = gsap.timeline({ onComplete: resolve });
+            build(tl);
+        });
+    }
+
+    protected async withRenderTimeline(context: CanvasRenderingContext2D, build: (tl: gsap.core.Timeline) => void) {
+        await this.withRenderLoop(context, [this.timelinePromise(build)]);
+    }
+
+    // Method to higlight a specific node for a short duration then set it back to normal afterwards
+    protected async highlightNode(context: CanvasRenderingContext2D, node: LinkedListNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
+        const oldOutline = node.outlineColor;
+        const oldFill = node.fillColor;
+
+        node.outlineColor = outlineColor;
+        node.fillColor = fillColor;
+        this.render(context);
+        
+        await new Promise<void>(resolve => setTimeout(resolve, duration));
+
+        node.outlineColor = oldOutline;
+        node.fillColor = oldFill;
+        this.render(context);
+    }
+    
     // Return true if the SLL is empty
     isEmpty() {
         return this.numElements === 0;
@@ -181,16 +192,23 @@ export class LinkedList {
             newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
+
+            await this.withRenderLoop(context, [
+                newNode.fadeToNodeOpacity(1, fadeIntime)
+            ]);
         }
         else {
-            let currNode = this.tailPtr!;
-            newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-            currNode.next = newNode;    // Update currNode.next to newNode then redraw
-            currNode.drawNode(context);
+            newNode = new LinkedListNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            this.tailPtr!.next = newNode;    // Update currNode.next to newNode then redraw
+
+            await this.withRenderLoop(context, [
+                this.tailPtr!.fadeToPointerOpacity(1, fadeIntime),
+                newNode.fadeToNodeOpacity(1, fadeIntime)
+            ]);
+
             this.tailPtr = newNode; // Update the tail pointer to the new node
         }
 
-        await newNode.fadeInNode(context, fadeIntime); // Fade in the new node
         this.numElements++; // Increment number of elements
     }
 
@@ -199,26 +217,42 @@ export class LinkedList {
         const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
         let tempPtr = this.headPtr; // This pointer will be used to help move the SLL forward
 
+        if (this.headPtr === null) {
+            const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+
+            this.headPtr = newNode;
+            this.tailPtr = newNode;
+            this.numElements = 1;
+
+            await this.withRenderLoop(context, [
+                newNode.fadeToPointerOpacity(1, fadeIntime),
+                newNode.fadeToNodeOpacity(1, fadeIntime)
+            ]);
+
+            this.render(context);
+            return;
+        }
+
         // Add the nodes to movingNodes
         while (tempPtr) {
             movingNodes.push(tempPtr);
             tempPtr = tempPtr.next;
         }
 
-        // Animate the movement of the following nodes
-        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
-
         const newNode = new LinkedListNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         newNode.next = this.headPtr;    // Set newNode.next to the head
-
-        // If the SLL was previously empty, tail pointer will also point to the new node 
-        if (this.headPtr === null) {
-            this.tailPtr = newNode;
-        }
         this.headPtr = newNode; // Update the head to point to the new node
 
-        await newNode.fadeInNode(context, fadeIntime); // Fade in new node
+        await this.withRenderTimeline(context, (tl) => {
+            // Animate the movement of the following nodes
+            for (const n of movingNodes) {
+                tl.to(n, { x: n.x + this.nodeWidth * 2, duration: 1 }, 0); // all shift together
+            }
+
+            tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
+            tl.to(newNode, { pointerOpacity: 1, duration: fadeIntime });
+        });
+
         this.numElements++; // Increment the number of elements
     }
 
@@ -259,36 +293,28 @@ export class LinkedList {
                     tempPtr = tempPtr.next;
                 }
 
-                // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+                this.staging.push(newNode);
 
-                await newNode.fadeInNode(context, fadeIntime); // Fade in the new node
+                await this.withRenderTimeline(context, (tl) => {
+                    // Animate the movement of the following nodes
+                    for (const n of movingNodes) {
+                        tl.to(n, { x: n.x + this.nodeWidth * 2, duration: 1 }, 0); // all shift together
+                    }
 
-                // Fade out curr nodes next pointer, than set it to the new node
-                await currNode.fadeOutPointer(context, fadeIntime, () => {
-                    // Clear the area between the current node and the following node
-                    context.clearRect(currNode.x + this.nodeWidth, currNode.y, this.nodeWidth * 3 - 1, this.nodeHeight);
-                    newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared by the above statement
-                    currNode.drawNode(context);
+                    // fade in new node
+                    tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
+                    tl.to(newNode, { pointerOpacity: 1, duration: fadeIntime }, "<");
+
+                    // Update currNode next pointer to newNode
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeIntime });
+                    tl.call(() => { currNode.next = newNode; });
+                    tl.to(currNode, { pointerOpacity: 1, duration: fadeIntime });
+
+                    // move new node up
+                    tl.to(newNode, { y: this.y, duration: fadeIntime });
                 });
-
-                currNode.next = newNode;
-
-                // Redraw nextNode to regain some of the arrow cleared in previous code.
-                // The area in question may be insignificant enough to remove this line
-                newNode.drawNode(context);
-
-                await currNode.fadeInPointer(context, fadeIntime);  // Fade in current nodes next pointer, which now points to the new node
-
-                // Move the new node to the same height as the other nodes
-                await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
-                    // Clear the area affected by the movement
-                    context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3 - 1, this.nodeHeight * 4);
-                    newNode.drawNode(context);  // Redraw newNode to show its position at current frame
-                    currNode.drawNode(context); // Redraw currNode so it pointer is drawn to the right location at that frame
-                });
-
+                
+                this.staging = this.staging.filter(n => n !== newNode);
                 this.numElements++; // Increment number of elements
             }
             else {
@@ -309,16 +335,14 @@ export class LinkedList {
         }
         else {
             const firstNode = this.headPtr;
+            this.staging.push(firstNode);
             this.headPtr = firstNode.next;  // Update the head to the node after firstNode next (or null if there isn't one)
-            firstNode.next = null;  // Ensure the deleted nodes pointers are set to null as well
 
             // If head became null, this means that the linked list will be empty after the removal
             // Tail must be set to null as well
             if (this.headPtr === null) {
                 this.tailPtr = null;
             }
-
-            await firstNode.fadeOutNode(context, fadeOutTime); // Fade out the removed first node
 
             const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
             let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
@@ -329,9 +353,16 @@ export class LinkedList {
                 tempPtr = tempPtr.next;
             }
 
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(firstNode, { pointerOpacity: 0, duration: fadeOutTime });
+                tl.call(() => {firstNode.next = null})
+                tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
+            });
+
+            this.staging = this.staging.filter(n => n !== firstNode);
+
             // Animate the movement of the following nodes
-            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+            await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
 
             this.numElements--; // Decrement number of elements
             return firstNode.data;  // Return the removed nodes data
@@ -346,14 +377,21 @@ export class LinkedList {
             return null;
         }
         else {
-            let lastNode;
+            let lastNode = this.tailPtr;
 
             // If the linked list becomes empty after this removal, both head and tail pointers should be null
             // This will happen when there is only one node, and that is the one being removed
             if (this.headPtr.next === null) {
-                lastNode = this.headPtr;
+                let lastNode = this.headPtr;
+                this.staging.push(lastNode);
                 this.headPtr = null;
                 this.tailPtr = null;
+
+                await this.withRenderLoop(context, [
+                    lastNode.fadeToNodeOpacity(0, fadeOutTime)
+                ]);
+
+                this.staging = this.staging.filter(n => n !== lastNode);
             }
             else {
                 let currNode = this.headPtr;
@@ -365,13 +403,21 @@ export class LinkedList {
                 }
                 
                 await this.highlightNode(context, currNode);
-                lastNode = this.tailPtr;
-                currNode.next = null;   // Set currNode.next to null then redraw
-                currNode.drawNode(context);
-                this.tailPtr = currNode;    // Update the tail pointer
+                lastNode = this.tailPtr!;
+                this.staging.push(lastNode);
+
+                await this.withRenderTimeline(context, (tl) => {
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.call(() => {
+                        currNode.next = null;   // Set currNode.next to null then redraw
+                        this.tailPtr = currNode;    // Update the tail pointer
+                    })
+                    tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
+                });
+
+                this.staging = this.staging.filter(n => n !== lastNode);
             }
 
-            await lastNode!.fadeOutNode(context, fadeOutTime); // Fade out the removed last node
             this.numElements--; // Decrement the number of elements
             return lastNode!.data;  // Return the removed nodes data
         }
@@ -404,17 +450,20 @@ export class LinkedList {
             // Deletions in the middle of the SLL
             if (deleteNode.next) {
                 let tempPtr: LinkedListNode | null = deleteNode.next;  // This pointer will be used to move the nodes following the removed node back
-                
-                // Fade out currNode next pointer, then set it to tempPtr (the node after deleteNode)
-                await currNode.fadeOutPointer(context, fadeOutTime);
-                currNode.next = tempPtr;
-                await currNode.fadeInPointer(context, fadeOutTime); // Fade currNode next pointer back in
-                
-                // Set the deleted node next pointer to null, then fade the node out
-                deleteNode.next = null;
-                await deleteNode.fadeOutNode(context, fadeOutTime, () => {
-                    deleteNode.drawNode(context);
-                    currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
+
+                await this.withRenderTimeline(context, (tl) => {
+                    // Update currNode next pointer to tempPtr (the node after deleteNode)
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime});
+                    tl.call(() => { currNode.renderNextOverride = tempPtr; });
+                    tl.to(currNode, { pointerOpacity: 1, duration: fadeOutTime});
+
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});
+
+                    tl.call(() => {
+                        currNode.next = tempPtr;
+                        currNode.renderNextOverride = null;
+                        deleteNode.next = null;
+                    });
                 });
 
                 const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
@@ -426,15 +475,20 @@ export class LinkedList {
                 }
 
                 // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+                await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
             }
             // Deletions from the end of the SLL
             else {
-                currNode.next = null;   // Set currNode.next to null then redraw
-                currNode.drawNode(context);
-                this.tailPtr = currNode;    // Update the tail pointer
-                await deleteNode.fadeOutNode(context, fadeOutTime); // Fade out the deleted node
+                this.staging.push(deleteNode);
+                await this.withRenderTimeline(context, (tl) => {
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.call(() => {
+                        currNode.next = null;   // Set currNode.next to null then redraw
+                        this.tailPtr = currNode;    // Update the tail pointer
+                    })
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
+                });
+                this.staging = this.staging.filter(n => n !== deleteNode)
             }
 
             this.numElements--; // Decrement the number of elements
@@ -479,16 +533,19 @@ export class LinkedList {
             if (deleteNode.next) {
                 let tempPtr: LinkedListNode | null = deleteNode.next;  // This pointer will be used to move the nodes following the removed node back
 
-                // Fade out currNode next pointer, then set it to tempPtr (the node after deleteNode)
-                await currNode.fadeOutPointer(context, fadeOutTime);
-                currNode.next = tempPtr;
-                await currNode.fadeInPointer(context, fadeOutTime); // Fade currNode next pointer back in
+                await this.withRenderTimeline(context, (tl) => {
+                    // Update currNode next pointer to tempPtr (the node after deleteNode)
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime});
+                    tl.call(() => { currNode.renderNextOverride = tempPtr; });
+                    tl.to(currNode, { pointerOpacity: 1, duration: fadeOutTime});
 
-                // Set the deleted node next pointer to null, then fade the node out
-                deleteNode.next = null;
-                await deleteNode.fadeOutNode(context, fadeOutTime, () => {
-                    deleteNode.drawNode(context);
-                    currNode.drawNode(context); // Redraw currNode, as part of its next pointer arrow would otherwise be cleared by the fade out
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});
+
+                    tl.call(() => {
+                        currNode.next = tempPtr;
+                        currNode.renderNextOverride = null;
+                        deleteNode.next = null;
+                    });
                 });
 
                 const movingNodes: LinkedListNode[] = [];   // This array is used to store the nodes which will be moving
@@ -500,15 +557,20 @@ export class LinkedList {
                 }
 
                 // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+                await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
             }
             // Deletions from the end of the SLL
             else {
-                currNode.next = null;   // Set currNode.next to null then redraw
-                currNode.drawNode(context);
-                this.tailPtr = currNode;    // Update the tail pointer
-                await deleteNode.fadeOutNode(context, fadeOutTime); // Fade out the deleted node
+                this.staging.push(deleteNode);
+                await this.withRenderTimeline(context, (tl) => {
+                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.call(() => {
+                        currNode.next = null;   // Set currNode.next to null then redraw
+                        this.tailPtr = currNode;    // Update the tail pointer
+                    })
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
+                });
+                this.staging = this.staging.filter(n => n !== deleteNode)
             }
 
             this.numElements--; // Decrement the number of elements
@@ -517,94 +579,41 @@ export class LinkedList {
         return true;    // Deletion was successful
     }
 
-    // This should be changed so its not a class method, since its not a necessary operation for an SLL to support
-    // It may also be outdated compared to the other methods
-    async reverse(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
-        if (!this.headPtr || !this.headPtr.next) {
+    // Clear the SLL and set head and tail to null
+    // Also set each next pointer to null
+    async clearAll(context: CanvasRenderingContext2D, fadeOutTime = 1) {
+        const nodes: LinkedListNode[] = [];
+        let curr = this.headPtr;
+
+        while (curr) {
+            nodes.push(curr);
+            curr = curr.next;
+        }
+
+        if (nodes.length === 0) {
             return;
         }
 
-        let prevNode: LinkedListNode | null = null;
-        let currNode: LinkedListNode | null = this.headPtr;
-
-        while (currNode) {
-            let nextNode: LinkedListNode | null = currNode.next;
-            await this.highlightNode(context, currNode);
-            await new Promise<void>((resolve) => {
-                const timeline = gsap.timeline({onComplete: () => resolve()});
-
-                timeline.to(currNode, {
-                    pointerOpacity: 0,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        currNode?.drawNode(context);
-                    },
-                    onComplete: () => {
-                        currNode!.next = prevNode;
-                    }
-                });
-                timeline.to(currNode, {
-                    pointerOpacity: 0.25,
-                    duration: fadeOutTime,
-                    onUpdate: () => {
-                        prevNode?.drawNode(context, !(prevNode?.next));
-                        currNode?.drawNode(context);
-                    }
-                });
-            });
-            prevNode = currNode;
-            currNode = nextNode;
+        for (const n of nodes){
+            n.renderNextOverride = null;
         }
-
-        this.tailPtr = this.headPtr;
-        this.headPtr = prevNode;
 
         const animations: Promise<void>[] = [];
-        let newX = this.x;
-        let tempPtr = this.headPtr;
-
-        while (tempPtr) {
-            const targetX = newX;
-            animations.push(new Promise<void>((resolve) => {
-                gsap.to(tempPtr, {
-                    x: targetX,
-                    pointerOpacity: 1,
-                    duration: 1,
-                    onComplete: resolve
-                });
-            }));
-
-            newX += this.nodeWidth * 2;
-            tempPtr = tempPtr.next;
+        for (const n of nodes) {
+            animations.push(n.fadeToNodeOpacity(0, fadeOutTime));
+            animations.push(n.fadeToPointerOpacity(0, fadeOutTime));
         }
 
-        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animations);
-    }
+        await this.withRenderLoop(context, animations);
 
-    // Clear the SLL and set head and tail to null
-    // Also set each next pointer to null
-    async clearAll(context: CanvasRenderingContext2D) {
-        let currNode = this.headPtr;
-        const promises: Promise<void>[] = [];
-
-        // Fade out the SLL
-        while (currNode) {
-            const node = currNode;
-            currNode = currNode.next;
-            node.next = null;   // Set each next pointer to null
-
-            const promise = new Promise<void>(async (resolve) => {
-                await node.fadeOutNode(context, 1);
-                resolve();
-            });
-
-            promises.push(promise);
+        for (const n of nodes) {
+            n.next = null;
         }
 
-        await Promise.all(promises);
-        // Set head and tail to null, and number of elements to 0
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
+        this.staging = [];
+        this.render(context);
     }
 }

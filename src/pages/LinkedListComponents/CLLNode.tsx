@@ -13,7 +13,7 @@ export class CircularLLNode {
     next: CircularLLNode | null;
     outlineColor: string;
     fillColor: string;
-    private clearAreaCoordinates: Rectangle[];  // Covers the region where the node and the next pointer is drawn
+    renderNextOverride: CircularLLNode | null = null;
 
     // By default a node next pointer points to itself
     constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
@@ -27,7 +27,6 @@ export class CircularLLNode {
         this.next = this;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
-        this.clearAreaCoordinates = [];
     }
 
     // Adjust font size to fit within the node data section
@@ -47,86 +46,59 @@ export class CircularLLNode {
 
     // May need adjusting
     drawPointer(context: CanvasRenderingContext2D) {
-        if (this.next) {
-            if (this.next.x <= this.x) {
+        const target = this.renderNextOverride ?? this.next;
+
+        if (target) {
+            if (target.x <= this.x) {
                 const pointerSegments = [
                     // Line 1
                     new Line(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight/2, this.pointerOpacity),
                     // Line 2
                     new Line(this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight/2, this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.pointerOpacity),
                     // Line 3
-                    new Line(this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, this.next.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.pointerOpacity),
+                    new Line(this.x + this.nodeWidth * 3/2, this.y + this.nodeHeight * 3/2, target.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.pointerOpacity),
                     // Line 4
-                    new Line(this.next.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, this.next.x - this.nodeWidth / 2, this.y + this.nodeHeight/2, this.pointerOpacity),
+                    new Line(target.x - this.nodeWidth/2, this.y + this.nodeHeight * 3/2, target.x - this.nodeWidth / 2, this.y + this.nodeHeight/2, this.pointerOpacity),
                     // Arrow 1
-                    new Arrow(this.next.x - this.nodeWidth/2, this.y + this.nodeHeight/2, this.next.x - 4, this.y + this.nodeHeight/2, this.pointerOpacity)
+                    new Arrow(target.x - this.nodeWidth/2, this.y + this.nodeHeight/2, target.x - 4, this.y + this.nodeHeight/2, this.pointerOpacity)
                 ];
 
                 // Draw each of the graphics in pointerSegments
                 pointerSegments.forEach(segment => {
                     segment.draw(context);
                 });
-                
-                // May need adjusting
-                this.clearAreaCoordinates = [
-                    // This clears the region with the node, Line 1 and Line 2
-                    new Rectangle(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2),
-                    // This clears the region with Line 3
-                    new Rectangle(this.next.x - this.nodeWidth/2 - 2, this.y + this.nodeHeight + 1, (this.x + this.nodeWidth * 1.5) - (this.next.x - this.nodeWidth/2) + 4, this.nodeHeight),
-                    // This clears the region with Line 4 and Arrow 1
-                    new Rectangle(this.next.x - this.nodeWidth/2 - 4, this.y - 1, this.nodeWidth / 2, this.nodeHeight + 2)
-                ];
             }
             else {
-                const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 4, this.next.y + this.next.nodeHeight/2, this.pointerOpacity);
+                const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, target.x - 4, target.y + target.nodeHeight/2, this.pointerOpacity);
                 pointerArrow.draw(context);
-
-                this.clearAreaCoordinates = [
-                    // This clears the region where the node and pointerArrow are drawn
-                    new Rectangle(this.x - 1, this.y - 1, this.nodeWidth * 2, this.nodeHeight + 2)
-                ];
             }
         }
         else {
             // Represent a null pointer with a slash through the pointer section of the node
             const nullSlash = new Line(this.x + (this.nodeWidth * 2 / 3), this.y, this.x + this.nodeWidth, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
-
-            this.clearAreaCoordinates = [
-                // This clears the region where the node is drawn
-                new Rectangle(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2)
-            ];
         }
     }
 
-    async fadeInPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
+    fadeToNodeOpacity(opacity: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { nodeOpacity: opacity, duration, onComplete: resolve });
         });
     }
 
-    async fadeOutPointer(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacity: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
+    fadeToPointerOpacity(opacity: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { pointerOpacity: opacity, duration, onComplete: resolve });
         });
     }
 
-    drawNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true, redrawPointer: boolean = true) {
-        this.clearNode(context, useAreaCoordinates);
+    moveTo(x: number, y: number, duration: number) {
+        return new Promise<void>(resolve => {
+            gsap.to(this, { x, y, duration, onComplete: resolve });
+        });
+    }
+
+    drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -144,61 +116,5 @@ export class CircularLLNode {
             this.drawPointer(context);
         }
         context.restore();
-    }
-
-    // May need fixing / adjusting
-    clearNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true) {
-        // Clearing the regions where both the node and the pointer is drawn
-        if (useAreaCoordinates) {
-            this.clearAreaCoordinates.forEach(Rectangle => {
-                context.clearRect(Rectangle.getX(), Rectangle.getY(), Rectangle.getWidth(), Rectangle.getHeight());
-            });
-        }
-        // Clear only the node
-        else {
-            context.clearRect(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2);
-        }
-    }
-
-    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 1,
-                pointerOpacity: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNode(context: CanvasRenderingContext2D, fadeOutTime: number, updateFunction = () => this.drawNode(context, false)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 0,
-                pointerOpacity: 0,
-                duration: fadeOutTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async moveNode(context: CanvasRenderingContext2D, x: number, y: number, moveTime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                x: x,
-                y: y,
-                duration: moveTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
     }
 }

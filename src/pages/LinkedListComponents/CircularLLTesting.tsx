@@ -14,7 +14,7 @@ function CircularLLTestCases() {
         const step1 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Creating a single node");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ["a"]);
             setIsAnimating(false);
@@ -24,7 +24,7 @@ function CircularLLTestCases() {
         const step2 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list loaded in");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
@@ -33,7 +33,7 @@ function CircularLLTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const text1 = new Text (100, 200, "");
             const text2 = new Text (100, 300, "");
             const cll = new CircularLinkedList(100, 100, 50, 30);
@@ -48,7 +48,7 @@ function CircularLLTestCases() {
         const step4 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "find");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             await cll.find(mainContext, 'a');
@@ -60,7 +60,7 @@ function CircularLLTestCases() {
         const step5 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Traverse");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             await cll.traverse(mainContext);
@@ -70,7 +70,7 @@ function CircularLLTestCases() {
         const step6 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Appending ");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, []);
             await cll.append(mainContext, 'a');

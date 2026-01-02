@@ -14,7 +14,7 @@ function LinkedListTestCases() {
         const step1 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Creating a single node and clearing");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a']);
             await ll.clearAll(mainContext);
@@ -25,7 +25,7 @@ function LinkedListTestCases() {
         const step2 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list loaded in");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
@@ -35,7 +35,7 @@ function LinkedListTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list clearAll");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
             await ll.clearAll(mainContext);
@@ -46,7 +46,7 @@ function LinkedListTestCases() {
         const step4 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Append linked list node to empty list");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             ll.append(mainContext, "a");
             setIsAnimating(false);
@@ -56,7 +56,7 @@ function LinkedListTestCases() {
         const step5 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list append");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const ll = new LinkedList(100, 100, 50, 30);
             await ll.append(mainContext, 'a', 1);
             await ll.append(mainContext, 'b', 1);
@@ -160,7 +160,7 @@ function LinkedListTestCases() {
             const ll = new LinkedList(80, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
             text1.setContent(await ll.getAt(mainContext, 5));
-            text1.draw(mainContext)
+            text1.draw(staticContext)
             setIsAnimating(false);
         }
 
@@ -174,16 +174,28 @@ function LinkedListTestCases() {
             const text3 = new Text(100, 400, "");
             const ll = new LinkedList(80, 100, 50, 30);
             text1.setContent((await ll.find(mainContext, 'a')).toString());
-            text1.draw(mainContext)
+            text1.draw(staticContext)
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
             text2.setContent((await ll.find(mainContext, 'd')).toString());
-            text2.draw(mainContext)
+            text2.draw(staticContext)
             text3.setContent((await ll.find(mainContext, 'x')).toString());
-            text3.draw(mainContext)
+            text3.draw(staticContext)
+            setIsAnimating(false);
+        }
+
+        // Traverse test cases
+        const step15 = async () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "Linked list traverse");
+            testCaseHeader.draw(staticContext);
+            const ll = new LinkedList(80, 100, 50, 30);
+            ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
+            await ll.traverse(mainContext);
             setIsAnimating(false);
         }
 
         // Reverse test cases
+        /*
         const step15 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list reverse");
@@ -193,17 +205,7 @@ function LinkedListTestCases() {
             await ll.reverse(mainContext);
             setIsAnimating(false);
         }
-
-        // Traverse test cases
-        const step16 = async () => {
-            setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Linked list traverse");
-            testCaseHeader.draw(staticContext);
-            const ll = new LinkedList(80, 100, 50, 30);
-            ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            await ll.traverse(mainContext);
-            setIsAnimating(false);
-        }
+        */
 
         // Switch statement which runs the associated step method for the given step
         switch(step) {
@@ -252,15 +254,12 @@ function LinkedListTestCases() {
             case 15:
                 step15();
                 break;
-            case 16:
-                step16();
-                break;
             default:
                 break;
         }
     }
 
-    return <StepPlayer totalSteps={16} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={15} runStep={runLinkedListSteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default LinkedListTestCases;
