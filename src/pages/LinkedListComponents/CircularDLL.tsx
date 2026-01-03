@@ -4,15 +4,31 @@ import gsap, { context, set, timeline } from "gsap";
 
 // Circular Doubly Linked List class extends DoublyLinkedList
 export class CircularDLL extends DoublyLinkedList {
-    protected headPtr: CircularDLLNode | null;
-    protected tailPtr: CircularDLLNode | null;
-    protected numElements: number;
+    protected headPtr: CircularDLLNode | null = null;
+    protected tailPtr: CircularDLLNode | null = null;
+    protected numElements: number = 0;
+    protected pointersOnTop: boolean = false;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
-        this.headPtr = null;
-        this.tailPtr = null;
-        this.numElements = 0;
+    }
+
+    /*HELPERS*/
+    protected collectNodes(): CircularDLLNode[] {
+        return this.collectToTail(this.headPtr);
+    }
+
+    protected collectToTail(start: CircularDLLNode | null): CircularDLLNode[] {
+        const nodes: CircularDLLNode[] = [];
+        let curr: CircularDLLNode | null = start;
+        const cap = Math.max(this.numElements + 10, 50);
+
+        while (curr && nodes.length < cap) {
+            nodes.push(curr);
+            if (curr === this.tailPtr) break;
+            curr = curr.next;
+        }
+        return nodes;
     }
 
     // Preload the CDLL without gsap animating
@@ -23,7 +39,6 @@ export class CircularDLL extends DoublyLinkedList {
             if (currNode === null) {
                 // headPtr next and prev pointers points to itself by default, as defined in CircularDLLNode constructor
                 this.headPtr = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
-                this.headPtr.drawNode(context);
                 currNode = this.headPtr;
             }
             else {
@@ -32,48 +47,44 @@ export class CircularDLL extends DoublyLinkedList {
                 // Set newNode next pointer to the head node and its prev pointer to currNode
                 newNode.next = this.headPtr;
                 newNode.prev = currNode;
-
-                this.headPtr!.prev = newNode;   // Set head node prev pointer to newNode then redraw
-                this.headPtr!.drawNode(context);
-                currNode.next = newNode;    // Set currNode next pointer to newNode then redraw
-                currNode.drawNode(context);
-
-                newNode.drawNode(context);
+                this.headPtr!.prev = newNode;   // Set head node prev pointer to newNode
+                currNode.next = newNode;    // Set currNode next pointer to newNode
                 currNode = currNode.next;
             }
 
             this.tailPtr = currNode;    // Update tailPtr
             this.numElements++; // Increment number of elements
         }
+
+        this.render(context);
     }
 
     // Draw the CDLL
     draw(context: CanvasRenderingContext2D) {
-        // Return early if list is empty
-        if (!this.headPtr) {
+        const nodes: CircularDLLNode[] = this.collectNodes();
+        const staging: CircularDLLNode[] = this.staging ?? [];
+
+        const all = [...nodes, ...staging];
+
+        if (all.length === 0) return;
+
+        if (!this.pointersOnTop) {
+            for (const n of all) n.drawNode(context);
             return;
         }
 
-        let currNode = this.headPtr;
-        
-        // Use do while loop to traverse CDLL
-        do {
-            currNode.drawNode(context);
-            currNode = currNode.next!;
-        } while (currNode != this.headPtr);
+        for (const n of all) n.drawNode(context, true, false);
+        for (const n of all) n.drawPointers(context);
     }
 
-    // Helper method to extract logic animating the movements of nodes
-    protected animateNodeShift(nodes: CircularDLLNode[], offsetX: number, duration: number): Promise<void>[] {
-        return nodes.map(node =>
-            new Promise(resolve => {
-                gsap.to(node, {
-                    x: node.x + offsetX,
-                    duration,
-                    onComplete: resolve
-                });
-            })
-        );
+    protected drawLayered(context: CanvasRenderingContext2D) {
+        const nodes = this.collectNodes(); // use your safe collector
+        const staging = this.staging ?? [];
+        const all = [...nodes, ...staging];
+
+        for (const n of all) n.drawNode(context, true, false);
+
+        for (const n of all) n.drawPointers(context);
     }
 
     // Search through the CDLL for the given data argument, and return the index where it is found, or if not, -1
@@ -149,29 +160,50 @@ export class CircularDLL extends DoublyLinkedList {
 
     // Insert at the end of the CDLL
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-        let newNode: CircularDLLNode;
 
         // Empty CDLL case
         if (this.headPtr === null) {
             // newNode next and prev pointers point to itself by default as defined in CircularDLLNode constructor
-            newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            let newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
+            await this.withRenderTimeline(context, (tl) => {
+                // fade in new node
+                tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
+            });
         }
         else {
-            newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
-            newNode.next = this.headPtr;    // Set newNode.next to the head node
-            newNode.prev = this.tailPtr;    // Set newNode.prev to the tail node
+            let newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            
+            this.staging.push(newNode);
+            await this.withRenderTimeline(context, (tl) => {
+                // Fade in new node
+                tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime});
 
-            this.headPtr.prev = newNode;    // Set the head node prev pointer to newNode then redraw
-            this.headPtr.drawNode(context);
-            this.tailPtr!.next = newNode;   // Set the tail node next pointer to newNode then redraw
-            this.tailPtr!.drawNode(context);
-            this.tailPtr = newNode; // Update the tail pointer to the new node
+                // Update tailPtr next
+                tl.to(this.tailPtr, { pointerOpacityNext: 0, duration: fadeIntime});
+                tl.call(() => {this.tailPtr!.next = newNode});
+                tl.to(this.tailPtr, { pointerOpacityNext: 1, duration: fadeIntime});
+
+                // Update headPtr prev
+                tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeIntime});
+                tl.call(() => {this.headPtr!.prev = newNode});
+                tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeIntime});
+
+                // Update newNode pointers
+                tl.call(() => {
+                    newNode.next = this.headPtr;
+                    newNode.prev = this.tailPtr;
+                })
+
+                tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime });
+                tl.to(newNode, { pointerOpacityPrev: 1, duration: fadeIntime });
+
+                // Set tailPtr to newNode
+                tl.call(() => {this.tailPtr = newNode});
+            });
+            this.staging = this.staging.filter(n => n !== newNode);
         }
-
-        // Fade in the new node
-        await newNode.fadeInNode(context, fadeIntime);
         this.numElements++; // Increment number of elements
     }
 
@@ -183,35 +215,45 @@ export class CircularDLL extends DoublyLinkedList {
         // If the CDLL was previously empty, tailPtr will also point to the newNode
         if (!this.headPtr) {
             this.tailPtr = newNode;
+            
+            this.staging.push(newNode);
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
+            });
+            this.staging = this.staging.filter(n => n !== newNode);
         }
         else {
-            const movingNodes: CircularDLLNode[] = [];   // This array is used to store the nodes which will be moving
-            let tempPtr = this.headPtr; // This pointer will be used to help move the CDLL forward
+            this.staging.push(newNode);
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectNodes();
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
-            // Add the nodes to movingNodes
-            do {
-                movingNodes.push(tempPtr);
-                tempPtr = tempPtr.next!;
-            }
-            while (tempPtr != this.headPtr);
+                // Fade in new node
+                tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime});
 
-            // Animate the movement of the following nodes
-            const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-            await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+                // Update tailPtr next
+                tl.to(this.tailPtr, { pointerOpacityNext: 0, duration: fadeIntime});
+                tl.call(() => {this.tailPtr!.next = newNode});
+                tl.to(this.tailPtr, { pointerOpacityNext: 1, duration: fadeIntime});
 
-            // Set newNode next pointer to the head, and prev to the tail
-            newNode.next = this.headPtr;
-            newNode.prev = this.tailPtr;
-            this.headPtr.prev = newNode;    // Set the head node prev to newNode then redraw
-            this.headPtr.drawNode(context);
-            this.tailPtr!.next = newNode;   // Set tail node next to newNode then redraw
-            this.tailPtr!.drawNode(context);
+                // Update headPtr prev
+                tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeIntime});
+                tl.call(() => {this.headPtr!.prev = newNode});
+                tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeIntime});
+
+                // Update newNode pointers
+                tl.call(() => {
+                    newNode.next = this.headPtr;
+                    newNode.prev = this.tailPtr;
+                })
+
+                tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime });
+                tl.to(newNode, { pointerOpacityPrev: 1, duration: fadeIntime });
+            });
+            this.staging = this.staging.filter(n => n !== newNode);
         }
 
         this.headPtr = newNode; // Update the headPtr to the new node
-
-        // Fade in the new node
-        await newNode.fadeInNode(context, fadeIntime);
         this.numElements++; // Increment the number of elements
     }
 
@@ -223,43 +265,39 @@ export class CircularDLL extends DoublyLinkedList {
             return false;
         }
 
+        if (index === 0) {
+            await this.prepend(context, newData, fadeIntime);
+            return true;    // Insertion was successful
+        }
+
+        if (index === this.numElements) {
+            await this.append(context, newData, fadeIntime);
+            return true;    // Insertion was successful
+        }
+
         // Initially set currNode to the head
         let currNode = this.headPtr!;
 
         // Traversal is more / as efficient from head than tail
         if (index <= Math.floor(this.numElements / 2)) {
-            if (index === 0) {
-                await this.prepend(context, newData, fadeIntime);
-                return true;    // Insertion was successful
-            }
-            else {
-                // currNode is already set to the head
-
-                // Highlight nodes to show traversal, stop right before the index of insertion
-                for (let i = 0; i < index - 1; i++){
-                    await this.highlightNode(context, currNode);
-                    currNode = currNode.next!;
-                }
+            // Highlight nodes to show traversal, stop right before the index of insertion
+            for (let i = 0; i < index - 1; i++){
                 await this.highlightNode(context, currNode);
+                currNode = currNode.next!;
             }
+            await this.highlightNode(context, currNode);
         }
         // Traversal is more efficient from tail then head
         else {
-            if (index === this.numElements) {
-                await this.append(context, newData, fadeIntime);
-                return true;    // Insertion was successful
-            }
-            else {
-                // Set currNode to the tail
-                currNode = this.tailPtr!;
+            // Set currNode to the tail
+            currNode = this.tailPtr!;
 
-                // Highlight nodes to show traversal, before the index of insertion
-                for (let i = this.numElements - 1; i > index - 1; i--){
-                    await this.highlightNode(context, currNode);
-                    currNode = currNode.prev!;
-                }
+            // Highlight nodes to show traversal, before the index of insertion
+            for (let i = this.numElements - 1; i > index - 1; i--){
                 await this.highlightNode(context, currNode);
+                currNode = currNode.prev!;
             }
+            await this.highlightNode(context, currNode);
         }
 
         // Insertions in the middle of the CDLL
@@ -267,65 +305,35 @@ export class CircularDLL extends DoublyLinkedList {
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
 
         const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
-        newNode.next = nextNode;    // Set newNode.next to nextNode
-        newNode.prev = currNode;    // Set newNode.prev to currNode
 
-        const movingNodes: CircularDLLNode[] = [];   // This array is used to store the nodes which will be moving
-        let tempPtr: CircularDLLNode | null = currNode.next!; // This pointer will be used to help move nodes following the new node forward
+        this.staging.push(newNode);
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectToTail(nextNode);
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
-        // Add the nodes to movingNodes
-        while (tempPtr != this.headPtr) {
-            movingNodes.push(tempPtr);
-            tempPtr = tempPtr.next!;
-        }
+                // Fade in the newNode
+                tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
 
-        // Animate the movement of the following nodes
-        const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * 2, 1);
-        await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
+                // Update newNode pointers
+                tl.call(() => {newNode.next = nextNode});
+                tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime });
+                tl.call(() => {newNode.prev = currNode});
+                tl.to(newNode, { pointerOpacityPrev: 1, duration: fadeIntime });
 
-        // Fade in the new node
-        await newNode.fadeInNode(context, fadeIntime);
+                // Update currNode next
+                tl.to(currNode, { pointerOpacityNext: 0, duration: fadeIntime })
+                tl.call(() => {currNode.next = newNode});
+                tl.to(currNode, { pointerOpacityNext: 1, duration: fadeIntime });
 
-        // Fade out the curr nodes next pointer, than set it to the new node
-        await currNode.fadeOutNext(context, fadeIntime, () => {
-            // Clear the area between the current node and nextNode (to fade out currNode next pointer)
-            context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y, this.nodeWidth * 3 - 2, this.nodeHeight / 2);
-            currNode.drawNode(context);
-            newNode.drawNode(context);  // Redraw newNode as some of its next pointer arrow gets cleared from the above statements
-        });
-        currNode.next = newNode;
+                // Update nextNode prev
+                tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeIntime });
+                tl.call(() => {nextNode.prev = newNode});
+                tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeIntime });
 
-        // Fade in the current nodes next pointer, which now points to the new node
-        await currNode.fadeInNext(context, fadeIntime, () => {
-            currNode.drawNode(context);
-            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-        });
-
-        // Fade out the next nodes prev pointer, than set it to the new node
-        await nextNode.fadeOutPrev(context, fadeIntime, () => {
-            // Clear the area between the current node and nextNode (to fade out nextNode prev pointer)
-            context.clearRect(currNode.x + this.nodeWidth + 1, currNode.y + this.nodeHeight / 2, this.nodeWidth * 3, this.nodeHeight / 2);
-            nextNode.drawNode(context); // Order is flipped here to prevent arrow clearing bugs
-            currNode.drawNode(context); // Redraw currNode as some of its next pointer gets cleared by the fade out
-            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-        });
-        nextNode.prev = newNode;
-
-        // Fade in the next nodes prev pointer, which now points to the new node
-        await nextNode.fadeInPrev(context, fadeIntime, () => {
-            nextNode.drawNode(context);
-            newNode.drawPointers(context);  // Have to call this method to fix partial arrow clearing bug
-        });
-
-        // Move the new node to the same height as the other nodes
-        await newNode.moveNode(context, newNode.x, this.y, fadeIntime, () => {
-            // Clear area between currNode and nextNode, with enough height to clear new node
-            context.clearRect(currNode.x + this.nodeWidth, this.y, this.nodeWidth * 3, this.nodeHeight * 4);
-            this.headPtr!.drawNode(context);    // Redraw head node so part of its prev pointer does not get cleared
-            currNode.drawNode(context); // draw prev node after clearing and pointer movement
-            nextNode.drawNode(context); // draw next node after clearing and pointer movement
-            newNode.drawNode(context, false);  // draw new node after clearing
-        });
+                // Move new node up to the height of the other nodes
+                tl.to(newNode, { y: this.y, duration: fadeIntime });
+            });
+            this.staging = this.staging.filter(n => n !== newNode);
 
         this.numElements++; // Increment number of elements   
         return true;    // Insertion was successful
@@ -351,55 +359,37 @@ export class CircularDLL extends DoublyLinkedList {
                 this.headPtr = firstNode.next;  // Update the head to the node after firstNode next
             }
 
-            // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head would be null
-            if (this.headPtr) {
-                // Fade out the new head node prev pointer than set it to the tail node
-                await this.headPtr.fadeOutPrev(context, fadeOutTime);
-                this.headPtr.prev = this.tailPtr;
-                // Fade the new head node prev pointer back in
-                await this.headPtr.fadeInPrev(context, fadeOutTime);
+            this.staging.push(firstNode);
 
-                // Fade out the tail node next pointer than set it to the new head node
-                await this.tailPtr!.fadeOutNext(context, fadeOutTime);
-                this.tailPtr!.next = this.headPtr;
-                // Fade the tail node next pointer back in
-                await this.tailPtr!.fadeInNext(context, fadeOutTime);
+            if (this.headPtr) {
+                await this.withRenderTimeline(context, (tl) => {
+                    // Update headPtr prev pointer
+                    tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                    tl.call(() => { this.headPtr!.prev = this.tailPtr; });
+                    tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeOutTime });
+                    
+                    // Update tailPtr next pointer
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
+                    tl.call(() => { this.tailPtr!.next = this.headPtr; });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
+                });
             }
 
-            // Fade out firstNode pointers out first so they get cleared properly
-            await firstNode.fadeOutNext(context, fadeOutTime, () => {
-                firstNode.drawNode(context);
-                this.headPtr?.drawNode(context);    // Draw the head node if it exists so part of its pointer does not get cut off
-                this.tailPtr?.drawNode(context); 
+            // Set firstNode pointers to null, fade it out
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(firstNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                tl.call(() => { firstNode.prev = null});
+                tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                tl.call(() => { firstNode.next = null; });
+                tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
+            this.staging = this.staging.filter(n => n !== firstNode);
 
-            await firstNode.fadeOutPrev(context, fadeOutTime, () => {
-                firstNode.drawNode(context);
-                this.headPtr?.drawNode(context);    // Draw the head node if it exists so part of its pointer does not get cut off
-                this.tailPtr?.drawNode(context); 
+            // Move nodes back
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectNodes();
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
-
-            // Fade out the first node, after setting its pointers to null
-            firstNode.next = null;
-            firstNode.prev = null;
-            await firstNode.fadeOutNode(context, fadeOutTime);
-
-            // Only need to move nodes if there are nodes to move
-            if (this.headPtr) {
-                const movingNodes: CircularDLLNode[] = [];   // This array is used to store the nodes which will be moving
-                let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
-                
-                // Add the nodes to movingNodes
-                do {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-                while(tempPtr != this.headPtr);
-
-                // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
-            }
 
             this.numElements--; // Decrement number of elements
             
@@ -428,38 +418,31 @@ export class CircularDLL extends DoublyLinkedList {
                 this.tailPtr = this.tailPtr!.prev;
             }
 
-            // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head would be null
-            if (this.headPtr) {
-                // Fade out the head node prev pointer than set it to the new tail node
-                await this.headPtr.fadeOutPrev(context, fadeOutTime);
-                this.headPtr.prev = this.tailPtr;
-                // Fade the head node prev pointer back in
-                await this.headPtr.fadeInPrev(context, fadeOutTime);
+            this.staging.push(lastNode);
 
-                // Fade out the new tail node next pointer than set it to the head node
-                await this.tailPtr!.fadeOutNext(context, fadeOutTime);
-                this.tailPtr!.next = this.headPtr;
-                // Fade the new tail node next pointer back in
-                await this.tailPtr!.fadeInNext(context, fadeOutTime);
+            if (this.headPtr) {
+                await this.withRenderTimeline(context, (tl) => {
+                    // Update headPtr prev pointer
+                    tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                    tl.call(() => { this.headPtr!.prev = this.tailPtr; });
+                    tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeOutTime });
+                    
+                    // Update tailPtr next pointer
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
+                    tl.call(() => { this.tailPtr!.next = this.headPtr; });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
+                });
             }
 
-            // Fade out lastNode pointers out first so they get cleared properly
-            await lastNode.fadeOutNext(context, fadeOutTime, () => {
-                lastNode.drawNode(context);
-                this.headPtr?.drawNode(context);    // Draw the head node if it exists so part of its pointer does not get cut off
-                this.tailPtr?.drawNode(context); 
+            // Set firstNode pointers to null, fade it out
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(lastNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                tl.call(() => { lastNode.prev = null});
+                tl.to(lastNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                tl.call(() => { lastNode.next = null; });
+                tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
-
-            await lastNode.fadeOutPrev(context, fadeOutTime, () => {
-                lastNode.drawNode(context);
-                this.headPtr?.drawNode(context);    // Draw the head node if it exists so part of its pointer does not get cut off
-                this.tailPtr?.drawNode(context); 
-            });
-
-            // Fade out the last node, after setting its pointers to null
-            lastNode.next = null;
-            lastNode.prev = null;
-            await lastNode.fadeOutNode(context, fadeOutTime);
+            this.staging = this.staging.filter(n => n !== lastNode);
 
             this.numElements--; // Decrement the number of elements
 
@@ -476,7 +459,18 @@ export class CircularDLL extends DoublyLinkedList {
             return false;
         }
         else {
-            // Pointer for the node that will be deleted, initialized to the head
+            // Removing from the head can be taken care of with shift
+            if (index === 0) {
+                await this.shift(context, fadeOutTime);
+                return true;    // Deletion was successful
+            }
+
+            // Removing from the tail can be taken care of with pop
+            if (index === this.numElements - 1) {
+                await this.pop(context, fadeOutTime);
+                return true;    // Deletion was successful
+            }
+
             let deleteNode = this.headPtr!;
 
             // Traversal is more / as efficient from head than tail
@@ -504,8 +498,8 @@ export class CircularDLL extends DoublyLinkedList {
             }
 
             // Save the nodes before and after deleteNode if they exist (or null if they don't)
-            const prevNode = deleteNode.prev;
-            const nextNode = deleteNode.next;
+            const prevNode = deleteNode.prev!;
+            const nextNode = deleteNode.next!;
 
             // Handle head deletions with shift
             if (this.headPtr === deleteNode) {
@@ -518,46 +512,31 @@ export class CircularDLL extends DoublyLinkedList {
                 return true;    // Deletion was successful
             }
 
-            if (prevNode) {
-                // Fade out prevNode next pointer, then set it to nextNode
-                await prevNode.fadeOutNext(context, fadeOutTime);
-                prevNode.next = nextNode;
-                // Fade prevNode next pointer back in
-                await prevNode.fadeInNext(context, fadeOutTime);
-            }
+            this.pointersOnTop = true;
+            this.staging.push(deleteNode);
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
+                tl.call(() => { prevNode.next = nextNode; });
+                tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
 
-            if (nextNode) {
-                // Fade out nextNode prev pointer, then set it to prevNode
-                await nextNode.fadeOutPrev(context, fadeOutTime);
-                nextNode.prev = prevNode;
-                // Fade nextNode prev pointer back in
-                await nextNode.fadeInPrev(context, fadeOutTime);
-            }
+                tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                tl.call(() => { nextNode.prev = prevNode; });
+                tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
 
-            // Set deleteNode next and prev pointers to null then fade it out
-            deleteNode.prev = null;
-            deleteNode.next = null;
-            await deleteNode.fadeOutNode(context, fadeOutTime, () => {
-                deleteNode.drawNode(context);
-                prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
-                nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
+                tl.call(() => {
+                    deleteNode.prev = null;
+                    deleteNode.next = null;
+                });
+
+                tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
+            this.staging = this.staging.filter(n => n !== deleteNode);
+            this.pointersOnTop = false;
 
-            // Skip movement if list is now empty
-            if (nextNode) {
-                const movingNodes: CircularDLLNode[] = [];  // This array is used to store the nodes which will be moving
-                let tempPtr = nextNode; // This pointer will be used to move the nodes following the removed node back
-
-                // Add the nodes to movingNodes
-                while (tempPtr != this.headPtr) {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-
-                // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
-            }
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectToTail(nextNode);
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            });
 
             this.numElements--; // Decrement the number of elements
             return true;    // Deletion was successful
@@ -589,10 +568,6 @@ export class CircularDLL extends DoublyLinkedList {
                 return false;
             }
 
-            // Save the nodes before and after deleteNode if they exist (or null if they don't)
-            const prevNode = deleteNode.prev;
-            const nextNode = deleteNode.next;
-
             // Handle head deletions with shift
             if (this.headPtr === deleteNode) {
                 await this.shift(context, fadeOutTime);
@@ -604,46 +579,34 @@ export class CircularDLL extends DoublyLinkedList {
                 return true;    // Deletion was successful
             }
 
-            if (prevNode) {
-                // Fade out prevNode next pointer, then set it to nextNode
-                await prevNode.fadeOutNext(context, fadeOutTime);
-                prevNode.next = nextNode;
-                // Fade prevNode next pointer back in
-                await prevNode.fadeInNext(context, fadeOutTime);
-            }
+            const prevNode = deleteNode.prev!;
+            const nextNode = deleteNode.next!;
+            
+            this.pointersOnTop = true;
+            this.staging.push(deleteNode);
+            await this.withRenderTimeline(context, (tl) => {
+                tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
+                tl.call(() => { prevNode.next = nextNode; });
+                tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
 
-            if (nextNode) {
-                // Fade out nextNode prev pointer, then set it to prevNode
-                await nextNode.fadeOutPrev(context, fadeOutTime);
-                nextNode.prev = prevNode;
-                // Fade nextNode prev pointer back in
-                await nextNode.fadeInPrev(context, fadeOutTime);
-            }
+                tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
+                tl.call(() => { nextNode.prev = prevNode; });
+                tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
 
-            // Set deleteNode next and prev pointers to null then fade it out
-            deleteNode.prev = null;
-            deleteNode.next = null;
-            await deleteNode.fadeOutNode(context, fadeOutTime, () => {
-                deleteNode.drawNode(context);
-                prevNode?.drawNode(context);    // Draw prevNode if it is not null, so its pointers are not cleared
-                nextNode?.drawNode(context);    // Draw nextNode if it is not null, so its pointers are not cleared
+                tl.call(() => {
+                    deleteNode.prev = null;
+                    deleteNode.next = null;
+                });
+
+                tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
+            this.staging = this.staging.filter(n => n !== deleteNode);
+            this.pointersOnTop = false;
 
-            // Skip movement if list is now empty
-            if (nextNode) {
-                const movingNodes: CircularDLLNode[] = [];  // This array is used to store the nodes which will be moving
-                let tempPtr = nextNode; // This pointer will be used to move the nodes following the removed node back
-
-                // Add the nodes to movingNodes
-                while (tempPtr != this.headPtr) {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-
-                // Animate the movement of the following nodes
-                const animationPromises = this.animateNodeShift(movingNodes, this.nodeWidth * -2, 1);
-                await this.runWithCentralDrawLoop(context, this.draw.bind(this), animationPromises);
-            }
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectToTail(nextNode);
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            });
 
             this.numElements--; // Decrement the number of elements
         }
@@ -653,38 +616,22 @@ export class CircularDLL extends DoublyLinkedList {
     
     // Clear the CDLL and set head and tail to null
     // Also set each next and prev pointer to null
-    async clearAll(context: CanvasRenderingContext2D) {
-        // Return early if the list is empty
-        if (!this.headPtr) {
-            return;
-        }
+    async clearAll(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
+        if (!this.headPtr) return;
 
-        let currNode = this.headPtr;
-        const promises: Promise<void>[] = [];
+        const nodes = this.collectNodes();
 
-        // Fade out the CDLL
-        do {
-            const node = currNode;
-            currNode = currNode.next!;
-            node.next = null;
-            node.prev = null;
+        await this.withRenderTimeline(context, (tl) => {
+            for (const n of nodes) {
+                tl.call(() => { n.next = n; n.prev = n; }, [], 0);
+                tl.to(n, { nodeOpacity: 0, pointerOpacityNext: 0, pointerOpacityPrev: 0, duration: fadeOutTime }, 0);
+            }
 
-            const promise = new Promise<void>(async (resolve) => {
-                await node.fadeOutNode(context, 1, () => {
-                    node.drawNode(context);
-
-                });
-                resolve();
+            tl.call(() => {
+                this.headPtr = null;
+                this.tailPtr = null;
+                this.numElements = 0;
             });
-
-            promises.push(promise);
-        } while(currNode != this.headPtr);
-
-        await Promise.all(promises);
-
-        // Set head and tail to null, and number of elements to 0
-        this.headPtr = null;
-        this.tailPtr = null;
-        this.numElements = 0;
+        });
     }
 }

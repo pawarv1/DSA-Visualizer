@@ -13,10 +13,11 @@ export class DLLNode {
     pointerOpacityPrev: number;
     next: DLLNode | null;
     prev: DLLNode | null;
+    isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false,  outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -27,6 +28,7 @@ export class DLLNode {
         this.pointerOpacityPrev = pointerOpacityPrev;
         this.next = null;
         this.prev = null;
+        this.isSentinel = isSentinel;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -35,21 +37,26 @@ export class DLLNode {
     adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
         context.font = `${fontSize}px Arial`;
-        let textWidth = context.measureText(this.data).width;
+        const text = String(this.data);
+        let textWidth = context.measureText(text).width;
 
         // Reduce the font size until the text fits within the node width
         while (textWidth > (this.nodeWidth * 1/2) - 10 && fontSize > 1) { // Leave some padding
             fontSize--;
             context.font = `${fontSize}px Arial`;
-            textWidth = context.measureText(this.data).width;
+            textWidth = context.measureText(text).width;
         }
         return context.font;
     }
 
     // Draws the next and the prev pointers
     drawPointers(context: CanvasRenderingContext2D) {
+        const clamp01 = (a: number) => Math.max(0, Math.min(1, a));
+        const nextAlpha = clamp01(this.nodeOpacity * this.pointerOpacityNext);
+        const prevAlpha = clamp01(this.nodeOpacity * this.pointerOpacityPrev);
+        
         if (this.next) {
-            const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 2, this.next.y + this.nodeHeight/4, this.pointerOpacityNext);
+            const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 2, this.next.y + this.nodeHeight/4, nextAlpha);
             pointerArrowNext.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
@@ -59,7 +66,7 @@ export class DLLNode {
         }
 
         if (this.prev) {
-            const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 2, this.prev.y + this.nodeHeight * 3 / 4, this.pointerOpacityPrev);
+            const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 2, this.prev.y + this.nodeHeight * 3 / 4, prevAlpha);
             pointerArrowPrev.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
@@ -69,60 +76,7 @@ export class DLLNode {
         }
     }
 
-    async fadeInNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityNext: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityNext: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeInPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityPrev: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
-        this.clearNode(context);
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -140,59 +94,5 @@ export class DLLNode {
             this.drawPointers(context);
         }
         context.restore();
-    }
-
-    // May have to adjust 
-    clearNode(context: CanvasRenderingContext2D) { 
-        // Clear the next pointer area
-        context.clearRect(this.x + this.nodeWidth, this.y, this.nodeWidth - 1, this.nodeHeight / 2 - 1);
-        // Clear the prev pointer area
-        context.clearRect(this.x - this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2);
-        // Clear the node
-        context.clearRect(this.x - 2, this.y - 2, this.nodeWidth + 3, this.nodeHeight + 3);
-    }
-
-    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 1,
-                pointerOpacityNext: 1,
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 0,
-                pointerOpacityNext: 0,
-                pointerOpacityPrev: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async moveNode(context: CanvasRenderingContext2D, x: number, y: number, moveTime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                x: x,
-                y: y,
-                duration: moveTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
     }
 }

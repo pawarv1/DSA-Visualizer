@@ -13,13 +13,12 @@ export class CircularDLLNode {
     pointerOpacityPrev: number;
     next: CircularDLLNode | null;
     prev: CircularDLLNode | null;
+    isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
-    private clearAreaCoordinates1: Rectangle[]; // Covers the region where next pointer is drawn
-    private clearAreaCoordinates2: Rectangle[]; // Covers the region where prev pointer is drawn
 
     // By default a node next and prev pointers points to itself
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -30,23 +29,23 @@ export class CircularDLLNode {
         this.pointerOpacityPrev = pointerOpacityPrev;
         this.next = this;
         this.prev = this;
+        this.isSentinel = isSentinel;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
-        this.clearAreaCoordinates1 = [];
-        this.clearAreaCoordinates2 = [];
     }
 
     // Adjust font size to fit within the node
     adjustFontSize(context: CanvasRenderingContext2D) {
         let fontSize = 16; // Initial font size
         context.font = `${fontSize}px Arial`;
-        let textWidth = context.measureText(this.data).width;
+        const text = String(this.data);
+        let textWidth = context.measureText(text).width;
 
         // Reduce the font size until the text fits within the node width
         while (textWidth > (this.nodeWidth / 2) - 10 && fontSize > 1) { // Leave some padding
             fontSize--;
             context.font = `${fontSize}px Arial`;
-            textWidth = context.measureText(this.data).width;
+            textWidth = context.measureText(text).width;
         }
         return context.font;
     }
@@ -72,26 +71,10 @@ export class CircularDLLNode {
                 pointerSegmentsNext.forEach(segment => {
                     segment.draw(context);
                 });
-
-                // May need adjusting
-                this.clearAreaCoordinates1 = [
-                    // This clears the region with Line 1 and 2
-                    new Rectangle(this.x + this.nodeWidth + 1, this.y - 1, this.nodeWidth - 2, this.nodeHeight / 2),
-                    // This clear the region with Line 3
-                    new Rectangle(this.next.x - this.nodeWidth/2 - 2, this.y - this.nodeHeight, (this.x + this.nodeWidth * 1.5) - (this.next.x - this.nodeWidth/2) + 4, this.nodeHeight - 1),
-                    // This clears the regions with Line 4 and Arrow 1
-                    new Rectangle(this.next.x - this.nodeWidth/2 - 4, this.y - 1, this.nodeWidth / 2, this.nodeHeight / 2)
-                ];
             }
             else {
                 const pointerArrowNext = new Arrow(this.x + this.nodeWidth - 4, this.y + this.nodeHeight/4, this.next.x - 4, this.next.y + this.nodeHeight/4, this.pointerOpacityNext);
                 pointerArrowNext.draw(context);
-
-                // May need adjusting
-                this.clearAreaCoordinates1 = [
-                    // This clears the region with pointerArrowNext
-                    new Rectangle(this.x + this.nodeWidth, this.y, this.nodeWidth - 1, this.nodeHeight / 2 - 1)
-                ];
             }
         }
         else {
@@ -119,26 +102,10 @@ export class CircularDLLNode {
                 pointerSegmentsPrev.forEach(segment => {
                     segment.draw(context);
                 });
-
-                // May need adjusting
-                this.clearAreaCoordinates2 = [
-                    // This clears the region with Line 5 and Line 6
-                    new Rectangle(this.x - this.nodeWidth * 3/4 + 8, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2),
-                    // This clears the region with Line 7
-                    new Rectangle(this.x - this.nodeWidth * 3/4 + 8, this.y + this.nodeHeight + 1, (this.prev.x + this.nodeWidth * 3/2 + 1) - (this.x - this.nodeWidth/2) + 4, this.nodeHeight / 2),
-                    // This clears the region with Line 8 and Arrow 2
-                    new Rectangle(this.prev.x + this.nodeWidth + 1, this.y + this.nodeHeight / 2 + 1, (this.prev.x + this.nodeWidth * 3/2) - (this.prev.x + this.nodeWidth) + 1, this.nodeHeight)
-                ];
             }
             else {
                 const pointerArrowPrev = new Arrow(this.x + 4, this.y + this.nodeHeight * 3 / 4, this.prev.x + this.nodeWidth + 4, this.prev.y + this.nodeHeight * 3 / 4, this.pointerOpacityPrev);
                 pointerArrowPrev.draw(context);
-
-                // May need adjusting
-                this.clearAreaCoordinates2 = [
-                    // This clears the region with pointerArrowPrev
-                    new Rectangle(this.x - this.nodeWidth + 4, this.y + this.nodeHeight / 2 + 1, this.nodeWidth, this.nodeHeight / 2)
-                ];
             }
         }
         else {
@@ -148,60 +115,7 @@ export class CircularDLLNode {
         }
     }
 
-    async fadeInNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityNext: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNext(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityNext: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeInPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutPrev(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                pointerOpacityPrev: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
     drawNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true, redrawPointer: boolean = true) {
-        this.clearNode(context, useAreaCoordinates);
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -219,64 +133,5 @@ export class CircularDLLNode {
             this.drawPointers(context);
         }
         context.restore();
-    }
-
-    clearNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true) {
-        // Clearing the regions where the pointers are drawn
-        if (useAreaCoordinates) {
-            this.clearAreaCoordinates1.forEach(Rectangle => {
-                context.clearRect(Rectangle.getX(), Rectangle.getY(), Rectangle.getWidth(), Rectangle.getHeight());
-            });
-            this.clearAreaCoordinates2.forEach(Rectangle => {
-                context.clearRect(Rectangle.getX(), Rectangle.getY(), Rectangle.getWidth(), Rectangle.getHeight());
-            });
-        }
-
-        // Clear the node
-        context.clearRect(this.x - 1, this.y - 1, this.nodeWidth + 2, this.nodeHeight + 2);
-    }
-
-    async fadeInNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 1,
-                pointerOpacityNext: 1,
-                pointerOpacityPrev: 1,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async fadeOutNode(context: CanvasRenderingContext2D, fadeIntime: number, updateFunction = () => this.drawNode(context, false)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                nodeOpacity: 0,
-                pointerOpacityNext: 0,
-                pointerOpacityPrev: 0,
-                duration: fadeIntime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
-    }
-
-    async moveNode(context: CanvasRenderingContext2D, x: number, y: number, moveTime: number, updateFunction = () => this.drawNode(context)) {
-        await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                x: x,
-                y: y,
-                duration: moveTime,
-                onUpdate: () => {
-                    updateFunction();
-                },
-                onComplete: () => resolve()
-            });
-        });
     }
 }

@@ -15,7 +15,7 @@ function CircularDLLTestCases() {
         const step1 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Creating a single node");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a']);
             setIsAnimating(false);
@@ -25,7 +25,7 @@ function CircularDLLTestCases() {
         const step2 = () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "CDLL loaded in");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
@@ -34,25 +34,25 @@ function CircularDLLTestCases() {
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const text1 = new Text(100, 300, "");
             const text2 = new Text(100, 400, "");
             const text3 = new Text(100, 500, "");
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
             text1.setContent(await cdll.getAt(mainContext, 2));
-            text1.draw(mainContext);
+            text1.draw(staticContext);
             text2.setContent(await cdll.getAt(mainContext, 3));
-            text2.draw(mainContext);
+            text2.draw(staticContext);
             text3.setContent(await cdll.getAt(mainContext, 4));
-            text3.draw(mainContext);
+            text3.draw(staticContext);
             setIsAnimating(false);
         }
 
         const step4 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Traverse forward");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             await cdll.traverseForward(mainContext);
@@ -62,7 +62,7 @@ function CircularDLLTestCases() {
         const step5 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Traverse backward");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             await cdll.traverseBackward(mainContext);
@@ -72,11 +72,10 @@ function CircularDLLTestCases() {
         const step6 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Appending ");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const cdll = new CircularDLL(100, 100, 50, 30);
-            cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
-            await cdll.append(mainContext, 'e', 1);
-            await cdll.append(mainContext, 'f', 1);
+            await cdll.append(mainContext, 'a', 1);
+            await cdll.append(mainContext, 'b', 1);
             setIsAnimating(false);
         }
 

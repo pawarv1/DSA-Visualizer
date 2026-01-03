@@ -13,7 +13,7 @@ function DoublyLLTestCases() {
         const step1 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Doubly linked list loaded in");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             setIsAnimating(false);
@@ -22,25 +22,25 @@ function DoublyLLTestCases() {
         const step2 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "getAt");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const text1 = new Text(100, 200, "");
             const text2 = new Text(100, 300, "");
             const text3 = new Text(100, 400, "");
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
             text1.setContent(await dll.getAt(mainContext, 2));
-            text1.draw(mainContext);
+            text1.draw(staticContext);
             text2.setContent(await dll.getAt(mainContext, 3));
-            text2.draw(mainContext);
+            text2.draw(staticContext);
             text3.setContent(await dll.getAt(mainContext, 4));
-            text3.draw(mainContext);
+            text3.draw(staticContext);
             setIsAnimating(false);
         }
 
         const step3 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Traverse forward");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             await dll.traverseForward(mainContext);
@@ -50,7 +50,7 @@ function DoublyLLTestCases() {
         const step4 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Traverse backward");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
             await dll.traverseBackward(mainContext);
@@ -60,11 +60,12 @@ function DoublyLLTestCases() {
         const step5 = async () => {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Appending ");
-            testCaseHeader.draw(mainContext);
+            testCaseHeader.draw(staticContext);
             const dll = new DoublyLinkedList(100, 100, 50, 30);
-            dll.loadDLL(mainContext, ['a', 'b', 'c', 'd']);
-            await dll.append(mainContext, 'e', 1);
-            await dll.append(mainContext, 'f', 1);
+            dll.loadDLL(mainContext, []);
+            await dll.append(mainContext, 'a', 1);
+            await dll.append(mainContext, 'b', 1);
+            await dll.append(mainContext, 'c', 1);
             setIsAnimating(false);
         }
 
