@@ -15,7 +15,20 @@ export class CircularDLL extends DoublyLinkedList {
 
     /*HELPERS*/
     protected collectNodes(): CircularDLLNode[] {
-        return this.collectToTail(this.headPtr);
+        const nodes: CircularDLLNode[] = [];
+        const start = this.headPtr;
+        if (!start) return nodes;
+
+        const visited = new Set<CircularDLLNode>();
+        const cap = Math.max(this.numElements + 10, 50);
+
+        let curr: CircularDLLNode | null = start;
+        while (curr && !visited.has(curr) && nodes.length < cap) {
+            visited.add(curr);
+            nodes.push(curr);
+            curr = curr.next;
+        }
+        return nodes;
     }
 
     protected collectToTail(start: CircularDLLNode | null): CircularDLLNode[] {
@@ -174,7 +187,8 @@ export class CircularDLL extends DoublyLinkedList {
         }
         else {
             let newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
-            
+            newNode.next = null;
+            newNode.prev = null;
             this.staging.push(newNode);
             await this.withRenderTimeline(context, (tl) => {
                 // Fade in new node
@@ -223,6 +237,8 @@ export class CircularDLL extends DoublyLinkedList {
             this.staging = this.staging.filter(n => n !== newNode);
         }
         else {
+            newNode.next = null;
+            newNode.prev = null;
             this.staging.push(newNode);
             await this.withRenderTimeline(context, (tl) => {
                 const movingNodes = this.collectNodes();
@@ -305,6 +321,8 @@ export class CircularDLL extends DoublyLinkedList {
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
 
         const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        newNode.next = null;
+        newNode.prev = null;
 
         this.staging.push(newNode);
             await this.withRenderTimeline(context, (tl) => {
