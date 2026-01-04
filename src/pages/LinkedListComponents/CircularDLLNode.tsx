@@ -1,5 +1,4 @@
-import gsap from "gsap";
-import { Arrow, Line, Rectangle } from "../GeneralAnimating/GeneralAnimationGraphics";
+import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual CDLL nodes
 export class CircularDLLNode {
@@ -115,7 +114,7 @@ export class CircularDLLNode {
         }
     }
 
-    drawNode(context: CanvasRenderingContext2D, useAreaCoordinates: boolean = true, redrawPointer: boolean = true) {
+    drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -128,7 +127,9 @@ export class CircularDLLNode {
         context.textBaseline = 'middle';
         const font = this.adjustFontSize(context);
         context.font = font;
-        context.fillText(this.data, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
+        if (!this.isSentinel) {
+            context.fillText(this.data, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
+        }
         if (redrawPointer) {
             this.drawPointers(context);
         }

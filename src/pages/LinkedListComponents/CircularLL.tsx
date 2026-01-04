@@ -1,20 +1,51 @@
 import { LinkedList } from "./SLL";
 import { CircularLLNode } from "./CLLNode";
-import gsap, { context, set, timeline } from "gsap";
+import gsap from "gsap";
 
 // Circular linked list class, extends LinkedList
 export class CircularLinkedList extends LinkedList {
-    protected headPtr: CircularLLNode | null;
-    protected tailPtr: CircularLLNode | null;
-    protected numElements: number;
+    protected headPtr: CircularLLNode | null = null;
+    protected tailPtr: CircularLLNode | null = null;
+    protected numElements: number = 0;
     protected staging: CircularLLNode[] = [];
+    protected pointersOnTop: boolean = false;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
-        this.headPtr = null;
-        this.tailPtr = null;
-        this.numElements = 0;
     }
+
+    /*HELPERS*/
+    protected collectNodes(): CircularLLNode[] {
+        const nodes: CircularLLNode[] = [];
+        const start = this.headPtr;
+        if (!start) return nodes;
+
+        const visited = new Set<CircularLLNode>();
+        const cap = Math.max(this.numElements + 10, 50);
+
+        let curr: CircularLLNode | null = start;
+        while (curr && !visited.has(curr) && nodes.length < cap) {
+            visited.add(curr);
+            nodes.push(curr);
+            curr = curr.next;
+        }
+        return nodes;
+    }
+    
+    protected collectToTail(start: CircularLLNode | null): CircularLLNode[] {
+        const nodes: CircularLLNode[] = [];
+        const visited = new Set<CircularLLNode>();
+        let curr = start;
+
+        while (curr && !visited.has(curr)) {
+            visited.add(curr);
+            nodes.push(curr);
+            if (curr === this.tailPtr) break;
+            curr = curr.next;
+        }
+        return nodes;
+    }
+
 
     // Preload the CLL without gsap animating
     loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
@@ -45,38 +76,26 @@ export class CircularLinkedList extends LinkedList {
         this.render(context);
     }
 
-    private collectNodes(): CircularLLNode[] {
-        const nodes: CircularLLNode[] = [];
-        if (!this.headPtr) {
-            return nodes;
-        }
-
-        const seen = new Set<CircularLLNode>();
-        let currNode: CircularLLNode | null = this.headPtr;
-        const cap = this.numElements > 0 ? this.numElements + 10 : 50;
-
-        while (currNode&& !seen.has(currNode) && nodes.length < cap) {
-            nodes.push(currNode);
-            seen.add(currNode);
-
-            const next: CircularLLNode | null = currNode.renderNextOverride ?? currNode.next;
-            currNode = next ?? null;
-        }
-        return nodes;
-    }
-
     // Draw the CLL
     draw(context: CanvasRenderingContext2D) {
         const nodes = this.collectNodes();
-        const staged = this.staging.filter(s => !nodes.includes(s));
+        const staging = this.staging ?? [];
 
-        //Draw nodes
-        for (const n of nodes) n.drawNode(context, false);
-        for (const s of staged) s.drawNode(context, false);
+        const seen = new Set<CircularLLNode>();
+        const all: CircularLLNode[] = [];
+        for (const n of [...nodes, ...staging]) {
+            if (!seen.has(n)) { seen.add(n); all.push(n); }
+        }
 
-        // Draw pointers
-        for (const n of nodes) n.drawPointer(context);
-        for (const s of staged) s.drawPointer(context);
+        if (all.length === 0) return;
+
+        if (this.pointersOnTop) {
+            for (const n of all) n.drawNode(context, false);
+            for (const n of all) n.drawPointers(context);
+        } else {
+            for (const n of all) n.drawPointers(context);
+            for (const n of all) n.drawNode(context, false);
+        }
     }
 
     // Search through the CLL for the given data argument, and return the index where it is found, or if not, -1
@@ -138,35 +157,30 @@ export class CircularLinkedList extends LinkedList {
             // newNode next pointer points to itself by default, as defined in CircularLLNode constructor
             newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
-            this.tailPtr = newNode;
 
-            await this.withRenderLoop(context, [
-                newNode.fadeToPointerOpacity(1, fadeIntime),
-                newNode.fadeToNodeOpacity(1, fadeIntime)
-            ]);
+            await this.withRenderTimeline(context, (tl) => {
+                // fade in new node
+                tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, duration: fadeIntime });
+            });
         }
         else {
             newNode = new CircularLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             
-            newNode.next = this.headPtr;    // Set newNode.next to the head node
             this.staging.push(newNode);
-
             await this.withRenderTimeline(context, (tl) => {
                 // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-                tl.to(newNode, { pointerOpacity: 1, duration: fadeIntime }, "<");
+                tl.call(() => {newNode.next = this.headPtr});
+                tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime }, "<");
 
                 // Update tailPtr next pointer
-                tl.to(this.tailPtr, { pointerOpacity: 0, duration: fadeIntime });
+                tl.to(this.tailPtr, { pointerOpacityNext: 0, duration: fadeIntime });
                 tl.call(() => {this.tailPtr!.next = newNode})
-                tl.to(this.tailPtr, { pointerOpacity: 1, duration: fadeIntime });
-                
-                // Set tailPtr to newNode
-                tl.call(() => {this.tailPtr = newNode});
+                tl.to(this.tailPtr, { pointerOpacityNext: 1, duration: fadeIntime });
             });
             this.staging = this.staging.filter(n => n !== newNode);
         }
-
+        this.tailPtr = newNode;
         this.numElements++; // Increment number of elements
     }
 
@@ -178,37 +192,31 @@ export class CircularLinkedList extends LinkedList {
         // If the CLL was previously empty, tailPtr will also point to the newNode
         if (this.headPtr === null) {
             this.tailPtr = newNode;
-            
             this.staging.push(newNode);
             await this.withRenderTimeline(context, (tl) => {
-                tl.to(newNode, { nodeOpacity: 1, pointerOpacity: 1, duration: fadeIntime }, 0);
+                tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, duration: fadeIntime }, 0);
             });
             this.staging = this.staging.filter(n => n !== newNode);
         }
         else {
-            const movingNodes = this.collectNodes();
-
-            newNode.next = this.headPtr;    // Set newNode.next to the head node
             this.staging.push(newNode);
-            
             await this.withRenderTimeline(context, (tl) => {
                 // Animate the movement of the following nodes
-                for (const n of movingNodes) {
-                    tl.to(n, { x: n.x + this.nodeWidth * 2, duration: 1 }, 0); // all shift together
-                }
-                
+                const movingNodes = this.collectNodes();
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+
                 // Fade in newNode
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime }, 1);
-                tl.to(newNode, { pointerOpacity: 1, duration: fadeIntime }, "<");
+                tl.call(() => {newNode.next = this.headPtr;});
+                tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime }, "<");
 
                 // Update tailPtr next pointer
-                tl.to(this.tailPtr!, { pointerOpacity: 0, duration: fadeIntime });
+                tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeIntime });
                 tl.call(() => { this.tailPtr!.next = newNode; }, [], ">");
-                tl.to(this.tailPtr!, { pointerOpacity: 1, duration: fadeIntime });
+                tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeIntime });
             });
             this.staging = this.staging.filter(n => n !== newNode);
         }
-
         this.headPtr = newNode; // Update the head to point to the new node
         this.numElements++; // Increment the number of elements
     }
@@ -236,36 +244,26 @@ export class CircularLinkedList extends LinkedList {
 
             // Insertions in the middle of the CLL
             if (currNode.next != this.headPtr) {
+                const nextNode = currNode.next;
                 const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-
                 const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-                newNode.next = currNode.next;   // Set newNode.next to currNode.next
-                
-                const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
-                let tempPtr = currNode.next!;  // This pointer will be used to help move nodes following the new node forward
-                
-                // Add the nodes to movingNodes
-                while (tempPtr != this.headPtr) {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
+                newNode.next = null;
 
                 this.staging.push(newNode);
-
                 await this.withRenderTimeline(context, (tl) => {
                     // Animate the movement of the following nodes
-                    for (const n of movingNodes) {
-                        tl.to(n, { x: n.x + this.nodeWidth * 2, duration: 1 }, 0); // all shift together
-                    }
+                    const movingNodes = this.collectToTail(nextNode);
+                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                     // fade in new node
                     tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-                    tl.to(newNode, { pointerOpacity: 1, duration: fadeIntime }, "<");
+                    tl.call(() => { newNode.next = nextNode; });
+                    tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime }, "<");
 
                     // Update currNode next pointer to newNode
-                    tl.to(currNode, { pointerOpacity: 0, duration: fadeIntime });
+                    tl.to(currNode, { pointerOpacityNext: 0, duration: fadeIntime });
                     tl.call(() => { currNode.next = newNode; });
-                    tl.to(currNode, { pointerOpacity: 1, duration: fadeIntime });
+                    tl.to(currNode, { pointerOpacityNext: 1, duration: fadeIntime });
 
                     // move new node up
                     tl.to(newNode, { y: this.y, duration: fadeIntime });
@@ -311,36 +309,26 @@ export class CircularLinkedList extends LinkedList {
             if (this.headPtr) {
                 await this.withRenderTimeline(context, (tl) => {
                     // Update tailPtr next pointer
-                    tl.to(this.tailPtr!, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
-                    tl.to(this.tailPtr!, { pointerOpacity: 1, duration: fadeOutTime });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
                 });
             }
 
             // Fade the removed first node out after settting its next pointer to null
             await this.withRenderTimeline(context, (tl) => {
-                tl.to(firstNode, { pointerOpacity: 0, duration: fadeOutTime });
+                tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                 tl.call(() => { firstNode.next = null }, [], ">");
                 tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
 
             this.staging = this.staging.filter(n => n !== firstNode);
 
-            // Only need to move nodes if there are nodes to move
-            if (this.headPtr) {
-                const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
-                let tempPtr = this.headPtr; // This pointer will be used to help move the remaining nodes back
-                
-                // Add the nodes to movingNodes
-                do {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-                while(tempPtr != this.headPtr);
-
-                // Animate the movement of the following nodes
-                await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
-            }
+            // Move nodes back
+            await this.withRenderTimeline(context, (tl) => {
+                const movingNodes = this.collectNodes();
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            });
 
             this.numElements--; // Decrement number of elements
            
@@ -371,10 +359,14 @@ export class CircularLinkedList extends LinkedList {
 
                 // Highlight nodes to show traversal
                 // Iteration stops right before the last node
-                while (currNode.next != this.tailPtr) {
+                const visited = new Set<CircularLLNode>();
+                while (currNode.next !== this.tailPtr) {
+                    if (visited.has(currNode)) break;
+                    visited.add(currNode);
                     await this.highlightNode(context, currNode);
                     currNode = currNode.next!;
                 }
+
                 await this.highlightNode(context, currNode);
 
                 lastNode = currNode.next!;
@@ -387,19 +379,18 @@ export class CircularLinkedList extends LinkedList {
             if (this.headPtr != null) {
                 await this.withRenderTimeline(context, (tl) => {
                     // Update tailPtr next pointer
-                    tl.to(this.tailPtr!, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
-                    tl.to(this.tailPtr!, { pointerOpacity: 1, duration: fadeOutTime });
+                    tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
                 });
             }
             
             // Fade out removed last node after setting its next pointer to null
             await this.withRenderTimeline(context, (tl) => {
-                tl.to(lastNode, { pointerOpacity: 0, duration: fadeOutTime });
+                tl.to(lastNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                 tl.call(() => { lastNode.next = null }, [], ">");
                 tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
-
             this.staging = this.staging.filter(n => n !== lastNode);
 
             this.numElements--; // Decrement the number of elements
@@ -435,53 +426,41 @@ export class CircularLinkedList extends LinkedList {
 
             // Deletions in the middle of the CLL
             if (deleteNode.next != this.headPtr) {
-                let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
+                const nextNode = deleteNode.next;
 
+                this.pointersOnTop = true;
                 await this.withRenderTimeline(context, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
-                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime});
-                    tl.call(() => { currNode.renderNextOverride = tempPtr; });
-                    tl.to(currNode, { pointerOpacity: 1, duration: fadeOutTime});
+                    tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
+                    tl.call(() => { currNode.next = nextNode; });
+                    tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
 
-                    tl.to(deleteNode, { pointerOpacity: 0, duration: fadeOutTime});
-                    tl.call(() => { deleteNode.next = null; }); 
-                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});
-
-                    tl.call(() => {
-                        currNode.next = tempPtr;
-                        currNode.renderNextOverride = null;
-                    });
+                    tl.call(() => {deleteNode.next = null;});
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
+                this.pointersOnTop = false;
 
-                const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
-
-                // Add the nodes to movingNodes
-                while (tempPtr != this.headPtr) {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-
-                // Animate the movement of the following nodes
-                await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
+                await this.withRenderTimeline(context, (tl) => {
+                    const movingNodes = this.collectToTail(nextNode);
+                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                });
             }
             // Deletions from the end of the CLL
             else {
-                // Update tailPtr
-                this.tailPtr = currNode;
-
                 await this.withRenderTimeline(context, (tl) => {
                     // Update tailPtr next pointer
-                    tl.to(this.tailPtr!, { pointerOpacity: 0, duration: fadeOutTime });
-                    tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
-                    tl.to(this.tailPtr!, { pointerOpacity: 1, duration: fadeOutTime });
+                    tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                    tl.call(() => { currNode.next = this.headPtr; }, [], ">");
+                    tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime });
 
                     // Fade out removed last node after setting its next pointer to null
-                    tl.to(deleteNode, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.to(deleteNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { deleteNode.next = null });
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode)
+                this.tailPtr = currNode;
             }
 
             this.numElements--; // Decrement the number of elements
@@ -524,53 +503,41 @@ export class CircularLinkedList extends LinkedList {
 
             // Deletions in the middle of the CLL
             if (deleteNode.next != this.headPtr) {
-                let tempPtr = deleteNode.next!;  // This pointer will be used to move the nodes following the removed node back
+                const nextNode = deleteNode.next;
+                this.pointersOnTop = true;
 
                 await this.withRenderTimeline(context, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
-                    tl.to(currNode, { pointerOpacity: 0, duration: fadeOutTime});
-                    tl.call(() => { currNode.renderNextOverride = tempPtr; });
-                    tl.to(currNode, { pointerOpacity: 1, duration: fadeOutTime});
+                    tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
+                    tl.call(() => { currNode.next = nextNode; });
+                    tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
 
-                    tl.to(deleteNode, { pointerOpacity: 0, duration: fadeOutTime});
-                    tl.call(() => { deleteNode.next = null; }); 
-                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});
-
-                    tl.call(() => {
-                        currNode.next = tempPtr;
-                        currNode.renderNextOverride = null;
-                    });
+                    tl.call(() => {deleteNode.next = null;});
+                    tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
+                this.pointersOnTop = false;
 
-                const movingNodes: CircularLLNode[] = [];   // This array is used to store the nodes which will be moving
-
-                // Add the nodes to movingNodes
-                while (tempPtr != this.headPtr) {
-                    movingNodes.push(tempPtr);
-                    tempPtr = tempPtr.next!;
-                }
-
-                // Animate the movement of the following nodes
-                await this.withRenderLoop(context, this.shiftNodes(movingNodes, this.nodeWidth * -2, 1));
+                await this.withRenderTimeline(context, (tl) => {
+                    const movingNodes = this.collectToTail(nextNode);
+                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                });
             }
             // Deletions from the end of the CLL
             else {
-                // Update tailPtr
-                this.tailPtr = currNode;
-
                 await this.withRenderTimeline(context, (tl) => {
                     // Update tailPtr next pointer
-                    tl.to(this.tailPtr!, { pointerOpacity: 0, duration: fadeOutTime });
-                    tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
-                    tl.to(this.tailPtr!, { pointerOpacity: 1, duration: fadeOutTime });
+                    tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                    tl.call(() => { currNode.next = this.headPtr; }, [], ">");
+                    tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime });
 
                     // Fade out removed last node after setting its next pointer to null
-                    tl.to(deleteNode, { pointerOpacity: 0, duration: fadeOutTime });
+                    tl.to(deleteNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { deleteNode.next = null });
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode)
+                this.tailPtr = currNode;
             }
 
             this.numElements--; // Decrement the number of elements
@@ -585,33 +552,38 @@ export class CircularLinkedList extends LinkedList {
         if (!this.headPtr) return;
 
         const nodes = this.collectNodes();
-        if (nodes.length === 0) {
-            return;
-        }
+        if (nodes.length === 0) return;
 
-        for (const n of nodes) {
-            n.renderNextOverride = null;
-            this.staging.push(n);
-        }
+        for (const n of nodes) gsap.killTweensOf(n);
 
+        // Detach structure immediately
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
 
-        const animations: Promise<void>[] = [];
+        // Stage nodes so they can still render while fading
+        const stagedSet = new Set(this.staging);
         for (const n of nodes) {
-            animations.push(
-                new Promise<void>(resolve => {
-                    gsap.to(n, { nodeOpacity: 0, pointerOpacity: 0, duration: fadeOutTime, onComplete: resolve });
-                })
-            );
+            if (!stagedSet.has(n)) {
+                this.staging.push(n);
+                stagedSet.add(n);
+            }
         }
 
-        await this.withRenderLoop(context, animations);
+        const fades = nodes.map(
+            (n) =>
+            new Promise<void>((resolve) => {
+                gsap.to(n, {nodeOpacity: 0, pointerOpacityNext: 0, duration: fadeOutTime, onComplete: resolve});
+            })
+        );
+
+        await this.withRenderLoop(context, fades);
 
         for (const n of nodes) n.next = null;
 
-        this.staging = this.staging.filter(n => !nodes.includes(n));
-        this.draw(context);
+        const nodeSet = new Set(nodes);
+        this.staging = this.staging.filter((n) => !nodeSet.has(n));
+
+        this.render(context);
     }
 }

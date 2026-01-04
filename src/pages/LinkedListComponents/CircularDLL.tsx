@@ -86,7 +86,7 @@ export class CircularDLL extends DoublyLinkedList {
             return;
         }
 
-        for (const n of all) n.drawNode(context, true, false);
+        for (const n of all) n.drawNode(context, false);
         for (const n of all) n.drawPointers(context);
     }
 
@@ -95,7 +95,7 @@ export class CircularDLL extends DoublyLinkedList {
         const staging = this.staging ?? [];
         const all = [...nodes, ...staging];
 
-        for (const n of all) n.drawNode(context, true, false);
+        for (const n of all) n.drawNode(context, false);
 
         for (const n of all) n.drawPointers(context);
     }

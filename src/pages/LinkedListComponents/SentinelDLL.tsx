@@ -296,7 +296,6 @@ export class SentinelDLL extends DoublyLinkedList {
         // Insertions in the middle of the DLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-
         const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
         this.staging.push(newNode);

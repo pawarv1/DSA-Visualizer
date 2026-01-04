@@ -56,7 +56,7 @@ function DummyNodeSLLTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Linked list insert at");
             testCaseHeader.draw(staticContext);
-            const ll = new DummyNodeSLL(20, 100, 50, 30);
+            const ll = new DummyNodeSLL(100, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['b', 'c', 'e', 'f']);
             await ll.insertAt(mainContext, 2, 'd');
             await ll.insertAt(mainContext, 0, 'a');

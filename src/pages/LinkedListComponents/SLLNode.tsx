@@ -9,22 +9,23 @@ export class LinkedListNode {
     nodeHeight: number;
     data: any;
     nodeOpacity: number;
-    pointerOpacity: number;
+    pointerOpacityNext: number;
     next: LinkedListNode | null;
+    isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
-    renderNextOverride: LinkedListNode | null = null;
 
     // Constructor sets next to null by default
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
         this.nodeHeight = nodeHeight;
         this.data = data;
         this.nodeOpacity = nodeOpacity;
-        this.pointerOpacity = pointerOpacity;
+        this.pointerOpacityNext = pointerOpacityNext;
         this.next = null;
+        this.isSentinel = isSentinel;
         this.outlineColor = outlineColor;
         this.fillColor = fillColor;
     }
@@ -40,18 +41,16 @@ export class LinkedListNode {
         while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
             fontSize--;
             context.font = `${fontSize}px Arial`;
-            textWidth = context.measureText(this.data).width;
+            textWidth = context.measureText(text).width;
         }
         return context.font;
     }
 
     // Function for drawing the next pointer
-    drawPointer(context: CanvasRenderingContext2D) {
-        const target = this.renderNextOverride ?? this.next;
-
-        if (target) {
+    drawPointers(context: CanvasRenderingContext2D) {
+        if (this.next) {
             // Represent the next pointer with an arrow
-            const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, target.x - 2, target.y + target.nodeHeight/2, this.pointerOpacity);
+            const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacityNext);
             pointerArrow.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
@@ -59,24 +58,6 @@ export class LinkedListNode {
             const nullSlash = new Line(this.x + (this.nodeWidth * 2 / 3), this.y, this.x + this.nodeWidth, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
         }
-    }
-
-    fadeToNodeOpacity(opacity: number, duration: number) {
-        return new Promise<void>(resolve => {
-            gsap.to(this, { nodeOpacity: opacity, duration, onComplete: resolve });
-        });
-    }
-
-    fadeToPointerOpacity(opacity: number, duration: number) {
-        return new Promise<void>(resolve => {
-            gsap.to(this, { pointerOpacity: opacity, duration, onComplete: resolve });
-        });
-    }
-
-    moveTo(x: number, y: number, duration: number) {
-        return new Promise<void>(resolve => {
-            gsap.to(this, { x, y, duration, onComplete: resolve });
-        });
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
@@ -92,9 +73,11 @@ export class LinkedListNode {
         context.textBaseline = 'middle';
         const font = this.adjustFontSize(context);
         context.font = font;
-        context.fillText(this.data, this.x + this.nodeWidth / 3, this.y + this.nodeHeight / 2);
+        if (!this.isSentinel) {
+            context.fillText(this.data, this.x + this.nodeWidth / 3, this.y + this.nodeHeight / 2);
+        }
         if (redrawPointer) {
-            this.drawPointer(context);
+            this.drawPointers(context);
         }
         context.restore();
     }

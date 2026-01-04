@@ -1,4 +1,3 @@
-import gsap from "gsap";
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual DLL nodes
@@ -89,7 +88,9 @@ export class DLLNode {
         context.textBaseline = 'middle';
         const font = this.adjustFontSize(context);
         context.font = font;
-        context.fillText(this.data, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
+        if (!this.isSentinel) {
+            context.fillText(this.data, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
+        }
         if (redrawPointer) {
             this.drawPointers(context);
         }
