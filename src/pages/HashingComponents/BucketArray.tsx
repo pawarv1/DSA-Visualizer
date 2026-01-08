@@ -1,12 +1,17 @@
-import { HashSetSLL } from "./ChainingLLs";
 import { ArrayCell } from "../ArrayComponents/ArrayCell";
 import { Arrow } from "../GeneralAnimating/GeneralAnimationGraphics";
 
-class BucketArrayCell extends ArrayCell{
-    private pointerArrow: Arrow;
-    content: HashSetSLL;
+export interface ChainDrawable {
+  isEmpty(): boolean;
+  draw(ctx: CanvasRenderingContext2D, opacity?: number): void;
+  moveLLTo(x: number, y: number): void;
+}
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: HashSetSLL, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
+class BucketArrayCell<TChain extends ChainDrawable> extends ArrayCell {
+    private pointerArrow: Arrow;
+    content: TChain;
+
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: TChain, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
         super(x, y, cellWidth, cellHeight, content, opacity, outlineColor, fillColor);
         this.pointerArrow = new Arrow(0,0,0,0,opacity);
         this.content = content;
@@ -33,25 +38,21 @@ class BucketArrayCell extends ArrayCell{
     }
 }
 
+export class BucketArray<TChain extends ChainDrawable> {
+    protected cells: BucketArrayCell<TChain>[];
 
-// Bucket Array class, used to help with hashing animations
-export class BucketArray {
-    protected cells: BucketArrayCell[];
-
-    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, protected readonly arraySize: number, protected opacity: number = 1) {
-        this.x = x;
-        this.y = y;
-        this.cellWidth = cellWidth;
-        this.cellHeight = cellHeight;
-        this.arraySize = arraySize;
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, protected readonly arraySize: number, protected opacity: number = 1, private makeChain: (x: number, y: number, w: number, h: number, opacity: number) => TChain) {
         this.cells = [];
+
         for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new BucketArrayCell(this.x, 
-                this.y + i * this.cellHeight, 
-                this.cellWidth, 
-                this.cellHeight, 
-                new HashSetSLL(this.x + this.cellWidth * 7/4, this.y + this.cellHeight * (i + 1/8), this.cellWidth * 3/4, this.cellHeight * 3/4, this.opacity), 
-                this.opacity));
+            const chainX = this.x + (this.cellWidth * 7) / 4;
+            const chainY = this.y + this.cellHeight * (i + 1 / 8);
+
+            const chain = this.makeChain(chainX, chainY, (this.cellWidth * 3) / 4, (this.cellHeight * 3) / 4, this.opacity);
+
+            this.cells.push(
+                new BucketArrayCell<TChain>(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, chain, this.opacity)
+            );
         }
     }
 
@@ -59,27 +60,23 @@ export class BucketArray {
         return this.arraySize;
     }
 
-    // Throws RangeError if index is out of bounds
     protected checkIndexValidity(index: number) {
         if (index < 0 || index >= this.arraySize) {
             throw new RangeError(`Index ${index} out of bounds (0..${this.arraySize - 1})`);
         }
-        return true;
     }
 
-    async highlightCell(renderAll: () => void, index:number, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
+    async highlightCell(renderAll: () => void, index: number, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
         this.checkIndexValidity(index);
         const cell = this.cells[index];
-        
         const oldOutline = cell.outlineColor;
         const oldFill = cell.fillColor;
 
         cell.outlineColor = outlineColor;
         cell.fillColor = fillColor;
         renderAll();
-        
-        await new Promise<void>(resolve => setTimeout(resolve, duration));
 
+        await new Promise<void>((resolve) => setTimeout(resolve, duration));
         cell.outlineColor = oldOutline;
         cell.fillColor = oldFill;
         renderAll();
@@ -114,18 +111,17 @@ export class BucketArray {
         context.restore();
     }
 
-    getChainAt(index: number) {
+    getChainAt(index: number): TChain {
         this.checkIndexValidity(index);
         return this.cells[index].content;
-    }    
+    }
 
-    // Clear the array
     clear(context: CanvasRenderingContext2D) {
         const pad = 8;
         const left = 0;
         const top = this.y - pad;
         const right = context.canvas.width;
-        const height = (this.cellHeight * this.arraySize) + pad * 2 + this.cellWidth * 4; // extra for chains
+        const height = this.cellHeight * this.arraySize + pad * 2 + this.cellWidth * 4; // chain space
         context.clearRect(left, top, right, height);
     }
 

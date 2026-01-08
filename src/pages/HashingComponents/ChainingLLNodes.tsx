@@ -1,7 +1,7 @@
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual SLL nodes
-export class ChainingLinkedListNode {
+export class HSChainingLLNode {
     x: number;
     y: number;
     nodeWidth: number;
@@ -9,7 +9,7 @@ export class ChainingLinkedListNode {
     key: any;
     nodeOpacity: number;
     pointerOpacityNext: number;
-    next: ChainingLinkedListNode | null;
+    next: HSChainingLLNode | null;
     outlineColor: string;
     fillColor: string;
 
@@ -75,5 +75,31 @@ export class ChainingLinkedListNode {
             this.drawPointers(context);
         }
         context.restore();
+    }
+}
+
+export class HMChainingLLNode extends HSChainingLLNode {
+    value: number;
+    declare next: HMChainingLLNode | null;
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, key: any, value: number, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
+        super(x, y, nodeWidth, nodeHeight, key, nodeOpacity, pointerOpacity, outlineColor, fillColor);
+        this.value = value;
+        this.next = null;
+    }
+
+    // Adjust font size to fit within the node data section
+    adjustFontSize(context: CanvasRenderingContext2D) {
+        let fontSize = 16; // Initial font size
+        context.font = `${fontSize}px Arial`;
+        const text = "K: " + String(this.key) + "\nV: " + String(this.value);
+        let textWidth = context.measureText(text).width;
+
+        // Reduce the font size until the text fits within the node width
+        while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
+            fontSize--;
+            context.font = `${fontSize}px Arial`;
+            textWidth = context.measureText(text).width;
+        }
+        return context.font;
     }
 }

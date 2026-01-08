@@ -1,9 +1,10 @@
 import { BucketArray } from "./BucketArray";
-import { HashSetSLL } from "./ChainingLLs";
+import { HashMapSLL } from "./ChainingLLs";
+import { HashSet } from "./HashSet";
 import gsap from "gsap";
 
-export class HashSet {
-    protected buckets: BucketArray<HashSetSLL>;;
+export class HashMap {
+    protected buckets: BucketArray<HashMapSLL>;
     protected size: number = 0;
     protected isRehashing = false;
 
@@ -14,9 +15,9 @@ export class HashSet {
         this.cellHeight = cellHeight;
         this.capacity = capacity;
         this.opacity = opacity;
-        this.buckets = new BucketArray<HashSetSLL>(
+        this.buckets = new BucketArray<HashMapSLL>(
             this.x, this.y, this.cellWidth, this.cellHeight, capacity, this.opacity,
-            (cx, cy, w, h, o) => new HashSetSLL(cx, cy, w, h, o)
+            (cx, cy, w, h, o) => new HashMapSLL(cx, cy, w, h, o)
         );
     }
 
@@ -47,11 +48,10 @@ export class HashSet {
             const oldBucketsLen = oldBuckets.getLength();
 
             this.capacity = newCapacity;
-            this.buckets = new BucketArray<HashSetSLL>(
+            this.buckets = new BucketArray<HashMapSLL>(
                 this.x, this.y + (this.cellHeight * (oldBucketsLen + 1)), this.cellWidth, this.cellHeight, newCapacity, 0,
-                (cx, cy, w, h, o) => new HashSetSLL(cx, cy, w, h, o)
+                (cx, cy, w, h, o) => new HashMapSLL(cx, cy, w, h, o)
             );
-            
             this.size = 0;
 
             await new Promise<void>((resolve) => {
@@ -76,7 +76,7 @@ export class HashSet {
                 while (curr != null) {
                     const index = this.indexFor(curr.key);
                     const chain = this.buckets.getChainAt(index);
-                    chain.prependRaw(curr.key);
+                    chain.prependRawPair(curr.key, curr.value);
                     this.size++;
                     this.renderAll(context);
                     curr = curr.next;
@@ -134,23 +134,22 @@ export class HashSet {
             this.isRehashing = false;
         }
     }
-    
-
-    async add(context: CanvasRenderingContext2D, key: number, fadeTime: number = 1) {
+        
+    async add(context: CanvasRenderingContext2D, key: number, value: number, fadeTime: number = 1) {
         if (!this.isRehashing && this.size / this.capacity >= 0.5) {
             await this.rehash(context, this.capacity * 2, fadeTime);
         }
 
         const renderAll = () => this.renderAll(context);
         const chain = this.buckets.getChainAt(this.indexFor(key));
-         
+            
         if (await chain.search(renderAll, key)) {
             return false;
-         }
+            }
 
-         await chain.prepend(renderAll, key, fadeTime);
-         this.size++;
-         return true;
+            await chain.prependPair(renderAll, key, value, fadeTime);
+            this.size++;
+            return true;
     }
 
     async contains(context: CanvasRenderingContext2D, key: number) {
