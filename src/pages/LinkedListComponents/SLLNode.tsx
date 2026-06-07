@@ -1,8 +1,7 @@
-import gsap from "gsap";
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual SLL nodes
-export class LinkedListNode {
+export class SLLNode {
     x: number;
     y: number;
     nodeWidth: number;
@@ -10,7 +9,7 @@ export class LinkedListNode {
     data: any;
     nodeOpacity: number;
     pointerOpacityNext: number;
-    next: LinkedListNode | null;
+    next: SLLNode | null;
     isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
@@ -32,13 +31,13 @@ export class LinkedListNode {
 
     // Adjust font size to fit within the node data section
     adjustFontSize(context: CanvasRenderingContext2D) {
-        let fontSize = 16; // Initial font size
+        let fontSize = 16;
         context.font = `${fontSize}px Arial`;
         const text = String(this.data);
         let textWidth = context.measureText(text).width;
 
         // Reduce the font size until the text fits within the node width
-        while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
+        while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) {
             fontSize--;
             context.font = `${fontSize}px Arial`;
             textWidth = context.measureText(text).width;
@@ -49,12 +48,11 @@ export class LinkedListNode {
     // Function for drawing the next pointer
     drawPointers(context: CanvasRenderingContext2D) {
         if (this.next) {
-            // Represent the next pointer with an arrow
             const pointerArrow = new Arrow(this.x + this.nodeWidth - 8, this.y + this.nodeHeight/2, this.next.x - 2, this.next.y + this.next.nodeHeight/2, this.pointerOpacityNext);
             pointerArrow.draw(context);
         } else {
             // Represent a null pointer with a slash through the pointer section of the node
-            // To avoid certain bugs, the opacity of the line will be the same as the nodes opacity
+            // To avoid drawing bugs, the opacity of the line will be the same as the nodes opacity
             const nullSlash = new Line(this.x + (this.nodeWidth * 2 / 3), this.y, this.x + this.nodeWidth, this.y + this.nodeHeight, this.nodeOpacity);
             nullSlash.draw(context);
         }

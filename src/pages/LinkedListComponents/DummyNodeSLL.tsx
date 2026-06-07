@@ -1,57 +1,31 @@
-import gsap, { context, set, timeline } from "gsap";
-import { LinkedListNode } from "./SLLNode";
+import gsap  from "gsap";
+import { SLLNode } from "./SLLNode";
 import { LinkedList } from "./SLL";
+import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Singly linked list, but with a dummy head node, inherits from regular Linked List
 export class DummyNodeSLL extends LinkedList {
-    protected headPtr: LinkedListNode
-    protected tailPtr: LinkedListNode
+    protected headPtr: SLLNode
+    protected tailPtr: SLLNode
     protected numElements: number = 0;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
-        this.headPtr = new LinkedListNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity); // Head is set to a dummy node
+        this.headPtr = new SLLNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity); // Head is set to a dummy node
         this.tailPtr = this.headPtr;    // Set tail to the head when initialized
         this.headPtr.isSentinel = true;
     }
-
-    /*HELPERS*/
-    private collectReals(): LinkedListNode[] {
-        const nodes: LinkedListNode[] = [];
-        const seen = new Set<LinkedListNode>();
-        let curr = this.headPtr.next;
-
-        while (curr && !seen.has(curr)) {
-            seen.add(curr);
-            nodes.push(curr);
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
-    private collectFromForShift(start: LinkedListNode): LinkedListNode[] {
-        const nodes: LinkedListNode[] = [];
-        const seen = new Set<LinkedListNode>();
-        let curr: LinkedListNode | null = start;
-
-        while (curr && !seen.has(curr)) {
-            seen.add(curr);
-            nodes.push(curr);
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
+    
     // Preload the SLL without gsap animating
     loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
         let currNode = this.headPtr
 
         for (let i = 0; i < nodeData.length; i++) {
-            const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
+            const newNode = new SLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
             currNode.next = newNode;    // Set currNode.next to newNode then redraw
             currNode = currNode.next;
-            this.tailPtr = currNode; // Update tail pointer to currNode
-            this.numElements++; // Increment number of elements
+            this.tailPtr = currNode;
+            this.numElements++;
         }
 
         this.render(context);
@@ -65,33 +39,30 @@ export class DummyNodeSLL extends LinkedList {
             return false;
         }
         else {
-            // Traversal starts at the node after head
             let currNode = this.headPtr.next;
 
-            // Highlight nodes to show traversal
             for (let i = 0; i < index; i++) {
-                await this.highlightNode(context, currNode!);
+                await highlightNode(context, currNode!, this.render);
                 currNode = currNode!.next;
             }
 
-            await this.highlightNode(context, currNode!);
+            await highlightNode(context, currNode!, this.render);
             return currNode!.data;
         }
     }
 
     // Search through the SLL for the given data argument, and return the index where it is found, or if not, -1
     async find(context: CanvasRenderingContext2D, data: any) {
-        // Traversal starts at the node after head
         let currNode = this.headPtr.next;
         let index = 0;
 
         while (currNode) {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             
             // Data was found
             if (currNode.data === data) {
-                await this.highlightNode(context, currNode, 1000, "black", "lightgreen");
+                await highlightNode(context, currNode, this.render, 1000, "black", "lightgreen");
                 return index;
             }
 
@@ -105,13 +76,12 @@ export class DummyNodeSLL extends LinkedList {
 
     // Traverse through the SLL and print the nodes index and data
     async traverse(context: CanvasRenderingContext2D) {
-        // Traversal starts at the node after head
         let currNode = this.headPtr.next;
         let index = 0;
 
         while (currNode) {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             console.log(`[${index}]: ${currNode.data}`);
             currNode = currNode.next;
             index++;
@@ -120,9 +90,9 @@ export class DummyNodeSLL extends LinkedList {
 
     // Insert at the end of the SLL
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-        const newNode = new LinkedListNode(this.tailPtr.x + this.nodeWidth * 2, this.tailPtr.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+        const newNode = new SLLNode(this.tailPtr.x + this.nodeWidth * 2, this.tailPtr.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         this.staging.push(newNode);
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             // fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
             
@@ -133,25 +103,24 @@ export class DummyNodeSLL extends LinkedList {
         });
         this.staging = this.staging.filter(n => n !== newNode);
         
-        this.tailPtr = newNode; // Update the tail pointer to the new node (regardless of which animation is being used)
-        this.numElements++; // Increment number of elements
+        this.tailPtr = newNode;
+        this.numElements++;
     }
 
     // Insert right after dummy head node
     async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {    
         // Only dummy head node exists
         if (this.headPtr.next === null) {
-            // In this particular case, append can be used to simplify the code
             await this.append(context, newData, fadeIntime);
         }
         else {
             const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-            const newNode = new LinkedListNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
+            const newNode = new SLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
             this.staging.push(newNode);
-            await this.withRenderTimeline(context, (tl) => {
-                const movingNodes = this.collectReals();
-                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+            await withRenderTimeline(context, this.render, (tl) => {
+                const movingNodes = collectNodes(this.headPtr.next);
+                shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                 // Fade in the new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
@@ -167,7 +136,7 @@ export class DummyNodeSLL extends LinkedList {
                 tl.to(newNode, { y: this.y, duration: fadeIntime });
             });
             this.staging = this.staging.filter(n => n !== newNode);
-            this.numElements++; // Increment the number or elements
+            this.numElements++;
         }
     }
 
@@ -183,24 +152,21 @@ export class DummyNodeSLL extends LinkedList {
 
             // Highlight nodes to show traversal, stop right before the index of deletion
             for (let i = -1; i < index - 1; i++) {
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
 
             // Insertions in the middle of the SLL
             if (currNode.next) {
                 const nextNode = currNode.next;
                 const initialY = this.y + this.nodeHeight * 2;    // New nodes will appear below the height of the rest of the linked list, before being moved up
-                const newNode = new LinkedListNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-                
-
+                const newNode = new SLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0);
                 this.staging.push(newNode);
 
-                await this.withRenderTimeline(context, (tl) => {
-                    // Animate the movement of the following nodes
-                    const movingNodes = this.collectFromForShift(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectNodes(nextNode);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                     // fade in new node
                     tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
@@ -219,7 +185,7 @@ export class DummyNodeSLL extends LinkedList {
                 });
                 
                 this.staging = this.staging.filter(n => n !== newNode);
-                this.numElements++; // Increment number of elements
+                this.numElements++;
             }
             else {
                 // Insertions at the end can use the appending animation, using the tail pointer to prevent another full iteration
@@ -246,7 +212,7 @@ export class DummyNodeSLL extends LinkedList {
         }
         
         this.staging.push(firstRealNode);
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             // Update headPtr next pointer
             tl.to(this.headPtr, { pointerOpacityNext: 0, duration: fadeOutTime});
             tl.call(() => {this.headPtr.next = nextNode});
@@ -258,13 +224,13 @@ export class DummyNodeSLL extends LinkedList {
         this.staging = this.staging.filter(n => n !== firstRealNode);
 
         if (nextNode) {
-            await this.withRenderTimeline(context, (tl) => {
-                const movingNodes = this.collectFromForShift(nextNode);
-                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            await withRenderTimeline(context, this.render, (tl) => {
+                const movingNodes = collectNodes(nextNode);
+                shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
         }
         
-        this.numElements--; // Decrement number of elements
+        this.numElements--;
         return firstRealNode.data;
     }
 
@@ -274,18 +240,17 @@ export class DummyNodeSLL extends LinkedList {
 
         let currNode = this.headPtr;
 
-        // Highlight nodes to show traversal
-        // Iteration stops right before the last node
+        // Highlight nodes to show traversal, stop right before last node
         while (currNode.next != this.tailPtr) {
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             currNode = currNode.next!;
         }
-        await this.highlightNode(context, currNode);
+        await highlightNode(context, currNode, this.render);
 
         const lastNode = currNode.next;
         
         this.staging.push(lastNode);
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
             tl.call(() => {
                 currNode.next = null;   // Set currNode.next to null then redraw
@@ -294,7 +259,7 @@ export class DummyNodeSLL extends LinkedList {
             tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
         });
         this.staging = this.staging.filter(n => n !== lastNode);
-        this.numElements--; // Decrement the number of elements
+        this.numElements--;
 
         // Return the removed nodes data
         return lastNode?.data;
@@ -312,10 +277,10 @@ export class DummyNodeSLL extends LinkedList {
 
             // Highlight nodes to show traversal, stop right before the index of deletion
             for (let i = -1; i < index - 1; i++) {
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
 
             const deleteNode = currNode.next!;
 
@@ -324,7 +289,7 @@ export class DummyNodeSLL extends LinkedList {
                 const nextNode = deleteNode.next;
 
                 this.staging.push(deleteNode);
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
@@ -335,15 +300,15 @@ export class DummyNodeSLL extends LinkedList {
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
-                await this.withRenderTimeline(context, (tl) => {
-                    const movingNodes = this.collectFromForShift(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectNodes(nextNode);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
             // Deletions from the end of the SLL
             else {
                 this.staging.push(deleteNode);
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => {currNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
@@ -352,7 +317,7 @@ export class DummyNodeSLL extends LinkedList {
                 this.tailPtr = currNode;
             }
 
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
         }
 
         return true;    // Deletion was successful
@@ -366,21 +331,21 @@ export class DummyNodeSLL extends LinkedList {
         else {
             let currNode = this.headPtr;
 
-            // Highlight nodes to show traversal if iterationAnimation is true, stop right before the index of deletion
+            // Highlight nodes to show traversal, stop right before the index of deletion
             while(currNode.next != null) {
                 if (currNode.next.data === data) {
-                    await this.highlightNode(context, currNode);
-                    await this.highlightNode(context, currNode.next, 500, "black", "lightgreen");
+                    await highlightNode(context, currNode, this.render);
+                    await highlightNode(context, currNode.next, this.render, 500, "black", "lightgreen");
                     break;
                 }
 
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next;                
             }
 
             // Data was not found
             if (currNode.next === null) {
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 return false;
             }
 
@@ -391,7 +356,7 @@ export class DummyNodeSLL extends LinkedList {
                 const nextNode = deleteNode.next;
 
                 this.staging.push(deleteNode);
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
@@ -402,15 +367,15 @@ export class DummyNodeSLL extends LinkedList {
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
-                await this.withRenderTimeline(context, (tl) => {
-                    const movingNodes = this.collectFromForShift(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectNodes(nextNode);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
             // Deletions from the end of the SLL
             else {
                 this.staging.push(deleteNode);
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => {currNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
@@ -419,18 +384,17 @@ export class DummyNodeSLL extends LinkedList {
                 this.tailPtr = currNode;
             }
 
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
         }
 
         return true;    // Deletion was successful
     }
 
     // Clear all but the dummy head node
-    // Also set each next pointer to null
     async clearAll(context: CanvasRenderingContext2D, fadeOutTime = 1) {
         if (!this.headPtr.next) return;
         
-        const nodes = this.collectReals();
+        const nodes = collectNodes(this.headPtr.next);
         if (nodes.length === 0) {
             return;
         }
@@ -460,7 +424,7 @@ export class DummyNodeSLL extends LinkedList {
             })
         );
 
-        await this.withRenderLoop(context, fades);
+        await withRenderLoop(context, this.render, fades);
 
         for (const n of nodes) {
             n.next = null;

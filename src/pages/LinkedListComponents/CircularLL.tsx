@@ -1,6 +1,7 @@
 import { LinkedList } from "./SLL";
 import { CircularLLNode } from "./CLLNode";
 import gsap from "gsap";
+import { collectToTail, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Circular linked list class, extends LinkedList
 export class CircularLinkedList extends LinkedList {
@@ -8,44 +9,11 @@ export class CircularLinkedList extends LinkedList {
     protected tailPtr: CircularLLNode | null = null;
     protected numElements: number = 0;
     protected staging: CircularLLNode[] = [];
-    protected pointersOnTop: boolean = false;
+    protected pointersOnTop: boolean = true;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
     }
-
-    /*HELPERS*/
-    protected collectNodes(): CircularLLNode[] {
-        const nodes: CircularLLNode[] = [];
-        const start = this.headPtr;
-        if (!start) return nodes;
-
-        const visited = new Set<CircularLLNode>();
-        const cap = Math.max(this.numElements + 10, 50);
-
-        let curr: CircularLLNode | null = start;
-        while (curr && !visited.has(curr) && nodes.length < cap) {
-            visited.add(curr);
-            nodes.push(curr);
-            curr = curr.next;
-        }
-        return nodes;
-    }
-    
-    protected collectToTail(start: CircularLLNode | null): CircularLLNode[] {
-        const nodes: CircularLLNode[] = [];
-        const visited = new Set<CircularLLNode>();
-        let curr = start;
-
-        while (curr && !visited.has(curr)) {
-            visited.add(curr);
-            nodes.push(curr);
-            if (curr === this.tailPtr) break;
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
 
     // Preload the CLL without gsap animating
     loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
@@ -56,13 +24,11 @@ export class CircularLinkedList extends LinkedList {
         let currNode = null;
 
         for (let i = 0; i < nodeData.length; i++) {
-            // Loading in the first node
             if (!currNode) {
                 // headPtr next pointer points to itself by default, as defined in CircularLLNode constructor
                 this.headPtr = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 currNode = this.headPtr;
             }
-            // Loading in following nodes
             else {
                 const newNode = new CircularLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
                 newNode.next = this.headPtr;    // Set newNode.next to the head node
@@ -71,14 +37,14 @@ export class CircularLinkedList extends LinkedList {
             }
 
             this.tailPtr = currNode;    // Update the tail pointer to the last node
-            this.numElements++; // Increment number of elements
+            this.numElements++;
         }
         this.render(context);
     }
 
     // Draw the CLL
     draw(context: CanvasRenderingContext2D) {
-        const nodes = this.collectNodes();
+        const nodes = collectToTail(this.headPtr, this.tailPtr);
         const staging = this.staging ?? [];
 
         const seen = new Set<CircularLLNode>();
@@ -108,14 +74,13 @@ export class CircularLinkedList extends LinkedList {
         let currNode = this.headPtr;
         let index = 0;
 
-        // Use do while loop to traverse CLL
         do {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             
             // Data was found
             if (currNode.data === data) {
-                await this.highlightNode(context, currNode, 1000, "black", "lightgreen");
+                await highlightNode(context, currNode, this.render, 1000, "black", "lightgreen");
                 return index;
             }
 
@@ -123,7 +88,6 @@ export class CircularLinkedList extends LinkedList {
             index++;
         } while (currNode != this.headPtr);
 
-        // Data was not found
         return -1;
     }
 
@@ -136,11 +100,10 @@ export class CircularLinkedList extends LinkedList {
 
         let currNode = this.headPtr;
         let index = 0;
-
-        // Use do while loop to traverse CLL
+        
         do {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             console.log(`[${index}]: ${currNode.data}`);
             currNode = currNode.next!;
             index++;
@@ -158,7 +121,7 @@ export class CircularLinkedList extends LinkedList {
             newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
 
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, duration: fadeIntime });
             });
@@ -167,7 +130,7 @@ export class CircularLinkedList extends LinkedList {
             newNode = new CircularLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             
             this.staging.push(newNode);
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
                 tl.call(() => {newNode.next = this.headPtr});
@@ -181,7 +144,7 @@ export class CircularLinkedList extends LinkedList {
             this.staging = this.staging.filter(n => n !== newNode);
         }
         this.tailPtr = newNode;
-        this.numElements++; // Increment number of elements
+        this.numElements++;
     }
 
     // Insert to the head of the CLL
@@ -193,17 +156,16 @@ export class CircularLinkedList extends LinkedList {
         if (this.headPtr === null) {
             this.tailPtr = newNode;
             this.staging.push(newNode);
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, duration: fadeIntime }, 0);
             });
             this.staging = this.staging.filter(n => n !== newNode);
         }
         else {
             this.staging.push(newNode);
-            await this.withRenderTimeline(context, (tl) => {
-                // Animate the movement of the following nodes
-                const movingNodes = this.collectNodes();
-                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+            await withRenderTimeline(context, this.render, (tl) => {
+                const movingNodes = collectToTail(this.headPtr, this.tailPtr);
+                shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                 // Fade in newNode
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime }, 1);
@@ -218,7 +180,7 @@ export class CircularLinkedList extends LinkedList {
             this.staging = this.staging.filter(n => n !== newNode);
         }
         this.headPtr = newNode; // Update the head to point to the new node
-        this.numElements++; // Increment the number of elements
+        this.numElements++;
     }
 
     // Insert at the given index
@@ -237,10 +199,10 @@ export class CircularLinkedList extends LinkedList {
 
             // Highlight nodes to show traversal, stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
 
             // Insertions in the middle of the CLL
             if (currNode.next != this.headPtr) {
@@ -250,10 +212,10 @@ export class CircularLinkedList extends LinkedList {
                 newNode.next = null;
 
                 this.staging.push(newNode);
-                await this.withRenderTimeline(context, (tl) => {
-                    // Animate the movement of the following nodes
-                    const movingNodes = this.collectToTail(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+                this.pointersOnTop = false;
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                     // fade in new node
                     tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
@@ -268,11 +230,11 @@ export class CircularLinkedList extends LinkedList {
                     // move new node up
                     tl.to(newNode, { y: this.y, duration: fadeIntime });
                 });
-                
+                this.pointersOnTop = true;
                 this.staging = this.staging.filter(n => n !== newNode);
 
 
-                this.numElements++; // Increment number of elements
+                this.numElements++;
             }
             else {
                 // Insertions at the end can use the appending animation, using the tail pointer to prevent another full iteration
@@ -293,8 +255,7 @@ export class CircularLinkedList extends LinkedList {
         else {
             const firstNode = this.headPtr;
 
-            // If firstNode points to itself, then it is the only node in the CLL, and the CLL will be empty after it is removed
-            // Head and tail must be set to null
+            // Set head and tail to null if the list will become empty
             if (firstNode.next === firstNode) {
                 this.headPtr = null;
                 this.tailPtr = null;
@@ -307,7 +268,7 @@ export class CircularLinkedList extends LinkedList {
 
             // This branch should execute as long as there is at least one node remaining after the deletion, otherwise head (and tail) would be null
             if (this.headPtr) {
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update tailPtr next pointer
                     tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
@@ -316,7 +277,7 @@ export class CircularLinkedList extends LinkedList {
             }
 
             // Fade the removed first node out after settting its next pointer to null
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                 tl.call(() => { firstNode.next = null }, [], ">");
                 tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
@@ -324,13 +285,12 @@ export class CircularLinkedList extends LinkedList {
 
             this.staging = this.staging.filter(n => n !== firstNode);
 
-            // Move nodes back
-            await this.withRenderTimeline(context, (tl) => {
-                const movingNodes = this.collectNodes();
-                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            await withRenderTimeline(context, this.render, (tl) => {
+                const movingNodes = collectToTail(this.headPtr, this.tailPtr);
+                shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
 
-            this.numElements--; // Decrement number of elements
+            this.numElements--;
            
             // Return the removed nodes data
             return firstNode.data;
@@ -347,8 +307,7 @@ export class CircularLinkedList extends LinkedList {
         else {
             let lastNode;
 
-            // If the linked list becomes empty after this removal, both head and tail pointers should be null
-            // This will happen when there is only one node, and that is the one being removed
+            // Set head and tail to null if the list will become empty
             if (this.headPtr.next === this.headPtr) {
                 lastNode = this.headPtr;
                 this.headPtr = null;
@@ -357,18 +316,16 @@ export class CircularLinkedList extends LinkedList {
             else {
                 let currNode = this.headPtr;
 
-                // Highlight nodes to show traversal
-                // Iteration stops right before the last node
+                // Highlight nodes to show traversal, stop before last node
                 const visited = new Set<CircularLLNode>();
                 while (currNode.next !== this.tailPtr) {
                     if (visited.has(currNode)) break;
                     visited.add(currNode);
-                    await this.highlightNode(context, currNode);
+                    await highlightNode(context, currNode, this.render);
                     currNode = currNode.next!;
                 }
 
-                await this.highlightNode(context, currNode);
-
+                await highlightNode(context, currNode, this.render);
                 lastNode = currNode.next!;
                 this.tailPtr = currNode;    // Update the tail pointer
             }
@@ -377,7 +334,7 @@ export class CircularLinkedList extends LinkedList {
 
             // This branch should execute as long as there is at least one node remaining after the deletion, otherwise tail would be null
             if (this.headPtr != null) {
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update tailPtr next pointer
                     tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; }, [], ">");
@@ -386,14 +343,14 @@ export class CircularLinkedList extends LinkedList {
             }
             
             // Fade out removed last node after setting its next pointer to null
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(lastNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                 tl.call(() => { lastNode.next = null }, [], ">");
                 tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
             this.staging = this.staging.filter(n => n !== lastNode);
 
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
 
             // Return the removed nodes data
             return lastNode.data;
@@ -416,10 +373,10 @@ export class CircularLinkedList extends LinkedList {
 
             // Highlight nodes to show traversal, stop right before the index of deletion
             for (let i = 0; i < index - 1; i++) {
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
 
             const deleteNode = currNode.next!;
             this.staging.push(deleteNode);
@@ -428,8 +385,7 @@ export class CircularLinkedList extends LinkedList {
             if (deleteNode.next != this.headPtr) {
                 const nextNode = deleteNode.next;
 
-                this.pointersOnTop = true;
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
@@ -439,16 +395,15 @@ export class CircularLinkedList extends LinkedList {
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
-                this.pointersOnTop = false;
 
-                await this.withRenderTimeline(context, (tl) => {
-                    const movingNodes = this.collectToTail(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
             // Deletions from the end of the CLL
             else {
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update tailPtr next pointer
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { currNode.next = this.headPtr; }, [], ">");
@@ -463,7 +418,7 @@ export class CircularLinkedList extends LinkedList {
                 this.tailPtr = currNode;
             }
 
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
         }
 
         return true;    // Deletion was successful
@@ -475,7 +430,7 @@ export class CircularLinkedList extends LinkedList {
             return false;
         }
         else if (this.headPtr.data === data) {
-            await this.highlightNode(context, this.headPtr, 500, "black", "lightgreen");
+            await highlightNode(context, this.headPtr, this.render, 500, "black", "lightgreen");
             await this.shift(context, fadeOutTime);
         }
         else {
@@ -484,17 +439,17 @@ export class CircularLinkedList extends LinkedList {
             // Highlight nodes to show traversal, stop right before the index of deletion
             while(currNode.next != this.headPtr) {
                 if (currNode.next!.data === data) {
-                    await this.highlightNode(context, currNode);
-                    await this.highlightNode(context, currNode.next!, 500, "black", "lightgreen");
+                    await highlightNode(context, currNode, this.render);
+                    await highlightNode(context, currNode.next!, this.render, 500, "black", "lightgreen");
                     break;
                 }
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
 
             // Data was not found
             if (currNode.next === this.headPtr) {
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 return false;
             }
 
@@ -504,9 +459,8 @@ export class CircularLinkedList extends LinkedList {
             // Deletions in the middle of the CLL
             if (deleteNode.next != this.headPtr) {
                 const nextNode = deleteNode.next;
-                this.pointersOnTop = true;
 
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
@@ -516,16 +470,15 @@ export class CircularLinkedList extends LinkedList {
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
-                this.pointersOnTop = false;
 
-                await this.withRenderTimeline(context, (tl) => {
-                    const movingNodes = this.collectToTail(nextNode);
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+                await withRenderTimeline(context, this.render, (tl) => {
+                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
             // Deletions from the end of the CLL
             else {
-                await this.withRenderTimeline(context, (tl) => {
+                await withRenderTimeline(context, this.render, (tl) => {
                     // Update tailPtr next pointer
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { currNode.next = this.headPtr; }, [], ">");
@@ -540,23 +493,20 @@ export class CircularLinkedList extends LinkedList {
                 this.tailPtr = currNode;
             }
 
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
         }
 
         return true;    // Deletion was successful
     }
 
     // Clear the CLL and set head and tail to null
-    // Also set each next pointer to null
     async clearAll(context: CanvasRenderingContext2D, fadeOutTime = 1) {
         if (!this.headPtr) return;
 
-        const nodes = this.collectNodes();
+        const nodes = collectToTail(this.headPtr, this.tailPtr);
         if (nodes.length === 0) return;
 
         for (const n of nodes) gsap.killTweensOf(n);
-
-        // Detach structure immediately
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -577,7 +527,7 @@ export class CircularLinkedList extends LinkedList {
             })
         );
 
-        await this.withRenderLoop(context, fades);
+        await withRenderLoop(context, this.render, fades);
 
         for (const n of nodes) n.next = null;
 
