@@ -30,7 +30,7 @@ export class LinkedList {
         this.tailPtr = null;
         this.numElements = 0;
         this.staging = [];
-        let currNode: SLLNode | null = null;
+        let currNode = null;
 
         for (let i = 0; i < nodeData.length; i++) {
             if (currNode === null) {

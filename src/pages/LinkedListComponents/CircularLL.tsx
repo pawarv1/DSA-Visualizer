@@ -1,7 +1,7 @@
 import { LinkedList } from "./SLL";
 import { CircularLLNode } from "./CLLNode";
 import gsap from "gsap";
-import { collectToTail, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
+import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Circular linked list class, extends LinkedList
 export class CircularLinkedList extends LinkedList {
@@ -44,7 +44,7 @@ export class CircularLinkedList extends LinkedList {
 
     // Draw the CLL
     draw(context: CanvasRenderingContext2D) {
-        const nodes = collectToTail(this.headPtr, this.tailPtr);
+        const nodes = collectNodes(this.headPtr, this.tailPtr);
         const staging = this.staging ?? [];
 
         const seen = new Set<CircularLLNode>();
@@ -164,7 +164,7 @@ export class CircularLinkedList extends LinkedList {
         else {
             this.staging.push(newNode);
             await withRenderTimeline(context, this.render, (tl) => {
-                const movingNodes = collectToTail(this.headPtr, this.tailPtr);
+                const movingNodes = collectNodes(this.headPtr, this.tailPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                 // Fade in newNode
@@ -214,7 +214,7 @@ export class CircularLinkedList extends LinkedList {
                 this.staging.push(newNode);
                 this.pointersOnTop = false;
                 await withRenderTimeline(context, this.render, (tl) => {
-                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    const movingNodes = collectNodes(nextNode, this.tailPtr);
                     shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
                     // fade in new node
@@ -286,7 +286,7 @@ export class CircularLinkedList extends LinkedList {
             this.staging = this.staging.filter(n => n !== firstNode);
 
             await withRenderTimeline(context, this.render, (tl) => {
-                const movingNodes = collectToTail(this.headPtr, this.tailPtr);
+                const movingNodes = collectNodes(this.headPtr, this.tailPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
 
@@ -397,7 +397,7 @@ export class CircularLinkedList extends LinkedList {
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
                 await withRenderTimeline(context, this.render, (tl) => {
-                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    const movingNodes = collectNodes(nextNode, this.tailPtr);
                     shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
@@ -472,7 +472,7 @@ export class CircularLinkedList extends LinkedList {
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
                 await withRenderTimeline(context, this.render, (tl) => {
-                    const movingNodes = collectToTail(nextNode, this.tailPtr);
+                    const movingNodes = collectNodes(nextNode, this.tailPtr);
                     shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
@@ -497,43 +497,5 @@ export class CircularLinkedList extends LinkedList {
         }
 
         return true;    // Deletion was successful
-    }
-
-    // Clear the CLL and set head and tail to null
-    async clearAll(context: CanvasRenderingContext2D, fadeOutTime = 1) {
-        if (!this.headPtr) return;
-
-        const nodes = collectToTail(this.headPtr, this.tailPtr);
-        if (nodes.length === 0) return;
-
-        for (const n of nodes) gsap.killTweensOf(n);
-        this.headPtr = null;
-        this.tailPtr = null;
-        this.numElements = 0;
-
-        // Stage nodes so they can still render while fading
-        const stagedSet = new Set(this.staging);
-        for (const n of nodes) {
-            if (!stagedSet.has(n)) {
-                this.staging.push(n);
-                stagedSet.add(n);
-            }
-        }
-
-        const fades = nodes.map(
-            (n) =>
-            new Promise<void>((resolve) => {
-                gsap.to(n, {nodeOpacity: 0, pointerOpacityNext: 0, duration: fadeOutTime, onComplete: resolve});
-            })
-        );
-
-        await withRenderLoop(context, this.render, fades);
-
-        for (const n of nodes) n.next = null;
-
-        const nodeSet = new Set(nodes);
-        this.staging = this.staging.filter((n) => !nodeSet.has(n));
-
-        this.render(context);
     }
 }

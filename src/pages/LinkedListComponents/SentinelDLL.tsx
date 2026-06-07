@@ -1,6 +1,7 @@
-import gsap, { context, set, timeline } from "gsap";
+import gsap from "gsap";
 import { DLLNode } from "./DLLNode";
 import { DoublyLinkedList } from "./DLL";
+import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Doubly linked list, but both the head and tail use sentinel nodes, inherits from regular Doubly Linked List
 export class SentinelDLL extends DoublyLinkedList {
@@ -20,34 +21,6 @@ export class SentinelDLL extends DoublyLinkedList {
         this.tailPtr.isSentinel = true;
     }
 
-    /*HELPERS*/
-    private collectReals(): DLLNode[] {
-        const nodes: DLLNode[] = [];
-        let curr = this.headPtr.next;
-        const cap = this.numElements + 10;
-
-        while (curr && curr !== this.tailPtr && nodes.length < cap) {
-            nodes.push(curr);
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
-    private collectFromForShift(start: DLLNode): DLLNode[] {
-        const nodes: DLLNode[] = [];
-        let curr: DLLNode | null = start;
-        const cap = this.numElements + 2;
-
-        while (curr && nodes.length < cap) {
-            nodes.push(curr);
-            if (curr === this.tailPtr) {
-                break; 
-            } 
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
     // Preload the DLL without gsap animating
     loadDLL(context: CanvasRenderingContext2D, nodeData: any[]) {
         let currNode = this.headPtr
@@ -63,7 +36,7 @@ export class SentinelDLL extends DoublyLinkedList {
             this.tailPtr.x = newNode.x + this.nodeWidth * 2 // Update the position of the tail node
 
             currNode = currNode.next;
-            this.numElements++; // Increment number of elements
+            this.numElements++;
         }
         this.render(context);
     }
@@ -76,7 +49,6 @@ export class SentinelDLL extends DoublyLinkedList {
             return false;
         }
         else {
-            // currNode starts at the node after head
             let currNode = this.headPtr.next!;
 
             // Traversal is more / as efficient from the head than tail
@@ -84,42 +56,40 @@ export class SentinelDLL extends DoublyLinkedList {
                 
                 // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
-                    await this.highlightNode(context, currNode!);
+                    await highlightNode(context, currNode, this.render);
                     currNode = currNode.next!;
                 }
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
             }
             // Traversal is more efficient from the tail than head
             else {
-                // Set currNode to the node before tail
                 currNode = this.tailPtr.prev!;
 
                 // Highlight nodes to show traversal, before the index of insertion
                 for (let i = this.numElements - 1; i > index; i--){
-                    await this.highlightNode(context, currNode);
+                    await highlightNode(context, currNode, this.render);
                     currNode = currNode.prev!;
                 }
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
             }
 
-            return currNode!.data;
+            return currNode.data;
         }
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
     async find(context: CanvasRenderingContext2D, data: any) {
-        // currNode starts at the node after head
         let currNode = this.headPtr.next!;
         let index = 0;
 
         // Iterate until currNode is the sentinel tail node
         while (currNode != this.tailPtr) {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             
             // Data was found
             if (currNode.data === data) {
-                await this.highlightNode(context, currNode, 1000, "black", "lightgreen");
+                await highlightNode(context, currNode, this.render, 1000, "black", "lightgreen");
                 return index;
             }
 
@@ -127,20 +97,18 @@ export class SentinelDLL extends DoublyLinkedList {
             index++;
         }
 
-        // Data was not found
         return -1;
     }
 
     // Traverse forward through the DLL and print the nodes index and data
     async traverseForward(context: CanvasRenderingContext2D) {
-        // currNode starts at the node after head
         let currNode = this.headPtr.next!;
         let index = 0;
 
         // Iterate until currNode is the sentinel tail node
         while (currNode != this.tailPtr) {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             console.log(`[${index}]: ${currNode.data}`);
             currNode = currNode.next!;
             index++;
@@ -149,14 +117,13 @@ export class SentinelDLL extends DoublyLinkedList {
 
     // Traverse backwards from tail to head and print nodes index and data
     async traverseBackward(context: CanvasRenderingContext2D) {
-        // currNode starts at the node before tail
         let currNode = this.tailPtr.prev!;
         let index = this.numElements - 1;
 
         // Iterate until currNode is the sentinel head node
         while (currNode != this.headPtr) {
             // Highlight nodes to show traversal
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
             console.log(`[${index}]: ${currNode.data}`);
             currNode = currNode.prev!;
             index--;
@@ -171,7 +138,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
         this.staging.push(newNode);
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 // Move the tailPtr to make space for the new node
                 tl.to(this.tailPtr, { x: this.tailPtr.x + this.nodeWidth * 2, duration: fadeIntime});
 
@@ -201,7 +168,7 @@ export class SentinelDLL extends DoublyLinkedList {
             });
             this.staging = this.staging.filter(n => n !== newNode);
 
-        this.numElements++; // Increment number of elements
+        this.numElements++;
     }
 
     // Insert right after sentinel head node
@@ -215,9 +182,9 @@ export class SentinelDLL extends DoublyLinkedList {
         
         this.staging.push(newNode);
 
-        await this.withRenderTimeline(context, (tl) => {
-            const movingNodes = this.collectFromForShift(nextNode);
-            this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+        await withRenderTimeline(context, this.render, (tl) => {
+            const movingNodes = collectNodes(nextNode);
+            shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
             // Fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
@@ -245,7 +212,7 @@ export class SentinelDLL extends DoublyLinkedList {
         });
         this.staging = this.staging.filter(n => n !== newNode);
 
-        this.numElements++; // Increment the number or elements
+        this.numElements++;
     }
 
     // Insert at the given index
@@ -275,10 +242,10 @@ export class SentinelDLL extends DoublyLinkedList {
 
             // Highlight nodes to show traversal if stop right before the index of insertion
             for (let i = 0; i < index - 1; i++){
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
         }
         // Traversal is more efficient from tail than head
         else {
@@ -287,10 +254,10 @@ export class SentinelDLL extends DoublyLinkedList {
 
             // Highlight nodes to show traversal, before the index of insertion
             for (let i = this.numElements - 1; i > index - 1; i--){
-                await this.highlightNode(context, currNode);
+                await highlightNode(context, currNode, this.render);
                 currNode = currNode.prev!;
             }
-            await this.highlightNode(context, currNode);
+            await highlightNode(context, currNode, this.render);
         }
 
         // Insertions in the middle of the DLL
@@ -300,9 +267,9 @@ export class SentinelDLL extends DoublyLinkedList {
 
         this.staging.push(newNode);
 
-        await this.withRenderTimeline(context, (tl) => {
-            const movingNodes = this.collectFromForShift(nextNode);
-            this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
+        await withRenderTimeline(context, this.render, (tl) => {
+            const movingNodes = collectNodes(nextNode);
+            shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
             // Fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
@@ -330,7 +297,7 @@ export class SentinelDLL extends DoublyLinkedList {
         });
         this.staging = this.staging.filter(n => n !== newNode);
         
-        this.numElements++; // Increment number of elements
+        this.numElements++;
         return true;    // Insertion was successful
     }
 
@@ -346,7 +313,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
         this.staging.push(firstRealNode);
 
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             // Update headPtr next pointer
             tl.to(this.headPtr, { pointerOpacityNext: 0, duration: fadeOutTime});
             tl.call(() => {this.headPtr.next = nextNode});
@@ -367,12 +334,12 @@ export class SentinelDLL extends DoublyLinkedList {
         });
         this.staging = this.staging.filter(n => n !== firstRealNode);
 
-        await this.withRenderTimeline(context, (tl) => {
-            const movingNodes = this.collectFromForShift(nextNode);
-            this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+        await withRenderTimeline(context, this.render, (tl) => {
+            const movingNodes = collectNodes(nextNode);
+            shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
         });
                 
-        this.numElements--; // Decrement number of elements
+        this.numElements--;
 
         // Return the removed nodes data
         return firstRealNode.data;
@@ -389,7 +356,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const prevNode = lastRealNode.prev!;    // Save the node before lastRealNode with this pointer
 
         this.staging.push(lastRealNode);
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             // Update prevNode next pointer
             tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime});
             tl.call(() => {prevNode.next = this.tailPtr});
@@ -412,7 +379,7 @@ export class SentinelDLL extends DoublyLinkedList {
             tl.to(this.tailPtr, { x: prevNode.x + this.nodeWidth * 2, duration: fadeOutTime});
         });        
         this.staging = this.staging.filter(n => n !== lastRealNode);
-        this.numElements--; // Decrement the number of elements
+        this.numElements--;
 
         // Return the removed nodes data
         return lastRealNode.data;
@@ -435,10 +402,10 @@ export class SentinelDLL extends DoublyLinkedList {
 
                 // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
-                    await this.highlightNode(context, deleteNode);
+                    await highlightNode(context, deleteNode, this.render);
                     deleteNode = deleteNode.next!;
                 }
-                await this.highlightNode(context, deleteNode);
+                await highlightNode(context, deleteNode, this.render);
             }
             // Traversal is more efficient from tail than head
             else {
@@ -447,10 +414,10 @@ export class SentinelDLL extends DoublyLinkedList {
 
                 // Highlight nodes to show traversal
                 for (let i = this.numElements - 1; i > index; i--) {
-                    await this.highlightNode(context, deleteNode);
+                    await highlightNode(context, deleteNode, this.render);
                     deleteNode = deleteNode.prev!;
                 }
-                await this.highlightNode(context, deleteNode);
+                await highlightNode(context, deleteNode, this.render);
             }
 
             // Save the nodes before and after deleteNode
@@ -458,7 +425,7 @@ export class SentinelDLL extends DoublyLinkedList {
             const nextNode = deleteNode.next!;
 
             this.staging.push(deleteNode);
-            await this.withRenderTimeline(context, (tl) => {
+            await withRenderTimeline(context, this.render, (tl) => {
                 // Update prevNode next pointer
                 tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                 tl.call(() => {prevNode.next = nextNode});
@@ -479,12 +446,12 @@ export class SentinelDLL extends DoublyLinkedList {
             });        
             this.staging = this.staging.filter(n => n !== deleteNode);
 
-            await this.withRenderTimeline(context, (tl) => {
-                const movingNodes = this.collectFromForShift(nextNode);
-                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            await withRenderTimeline(context, this.render, (tl) => {
+                const movingNodes = collectNodes(nextNode);
+                shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
             
-            this.numElements--; // Decrement the number of elements
+            this.numElements--;
             return true;    // Deletion was successful
         }
     }
@@ -496,11 +463,11 @@ export class SentinelDLL extends DoublyLinkedList {
 
         while (deleteNode != this.tailPtr) {
             if (deleteNode.data === data) {
-                await this.highlightNode(context, deleteNode);
-                await this.highlightNode(context, deleteNode, 500, "black", "lightgreen");
+                await highlightNode(context, deleteNode, this.render);
+                await highlightNode(context, deleteNode, this.render, 500, "black", "lightgreen");
                 break;
             }
-            await this.highlightNode(context, deleteNode);
+            await highlightNode(context, deleteNode, this.render);
             deleteNode = deleteNode.next!;
         }
 
@@ -514,7 +481,7 @@ export class SentinelDLL extends DoublyLinkedList {
         const nextNode = deleteNode.next!;
 
         this.staging.push(deleteNode);
-        await this.withRenderTimeline(context, (tl) => {
+        await withRenderTimeline(context, this.render, (tl) => {
             // Update prevNode next pointer
             tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime});
             tl.call(() => {prevNode.next = nextNode});
@@ -535,9 +502,9 @@ export class SentinelDLL extends DoublyLinkedList {
         });        
         this.staging = this.staging.filter(n => n !== deleteNode);
 
-        await this.withRenderTimeline(context, (tl) => {
-            const movingNodes = this.collectFromForShift(nextNode);
-            this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+        await withRenderTimeline(context, this.render, (tl) => {
+            const movingNodes = collectNodes(nextNode);
+            shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
         });
         
         this.numElements--; // Decrement the number of elements
@@ -546,7 +513,7 @@ export class SentinelDLL extends DoublyLinkedList {
 
     // Clear all but the sentinel head and tail nodes, and also set each non sentinel nodes pointers to null
     async clearAll(context: CanvasRenderingContext2D, t: number = 1) {
-        const nodes = this.collectReals();
+        const nodes = collectNodes(this.headPtr.next, this.tailPtr.prev);
         if (nodes.length === 0) return;
 
          for (const n of nodes) this.staging.push(n);
@@ -575,7 +542,7 @@ export class SentinelDLL extends DoublyLinkedList {
             });
         });
 
-        await this.withRenderLoop(context, [...fades, tailMove]);
+        await withRenderLoop(context, this.render, [...fades, tailMove]);
         for (const n of nodes) { n.next = null; n.prev = null; }
         this.staging = this.staging.filter(n => !nodes.includes(n));
         this.render(context);

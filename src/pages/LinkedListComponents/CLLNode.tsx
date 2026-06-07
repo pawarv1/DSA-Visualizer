@@ -3,32 +3,12 @@ import { SLLNode } from "./SLLNode";
 
 // Animates individual CLL nodes
 export class CircularLLNode extends SLLNode {
-    x: number;
-    y: number;
-    nodeWidth: number;
-    nodeHeight: number;
-    data: any;
-    nodeOpacity: number;
-    pointerOpacityNext: number;
     next: CircularLLNode | null;
-    outlineColor: string;
-    fillColor: string;
-    isSentinel: boolean;
 
     // By default a node next pointer points to itself
     constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
         super(x, y, nodeWidth, nodeHeight, data, nodeOpacity, pointerOpacityNext, isSentinel, outlineColor, fillColor)
-        this.x = x;
-        this.y = y;
-        this.nodeWidth = nodeWidth;
-        this.nodeHeight = nodeHeight;
-        this.data = data;
-        this.nodeOpacity = nodeOpacity;
-        this.pointerOpacityNext = pointerOpacityNext;
-        this.isSentinel = isSentinel;
         this.next = this;
-        this.outlineColor = outlineColor;
-        this.fillColor = fillColor;
     }
 
     // May need adjusting

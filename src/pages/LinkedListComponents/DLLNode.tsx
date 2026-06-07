@@ -34,13 +34,13 @@ export class DLLNode {
 
     // Adjust font size to fit within the node
     adjustFontSize(context: CanvasRenderingContext2D) {
-        let fontSize = 16; // Initial font size
+        let fontSize = 16;
         context.font = `${fontSize}px Arial`;
         const text = String(this.data);
         let textWidth = context.measureText(text).width;
 
         // Reduce the font size until the text fits within the node width
-        while (textWidth > (this.nodeWidth * 1/2) - 10 && fontSize > 1) { // Leave some padding
+        while (textWidth > (this.nodeWidth * 1/2) - 10 && fontSize > 1) {
             fontSize--;
             context.font = `${fontSize}px Arial`;
             textWidth = context.measureText(text).width;
