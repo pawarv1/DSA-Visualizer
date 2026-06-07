@@ -1,7 +1,6 @@
 import { DoublyLinkedList } from "./DLL";
 import { CircularDLLNode } from "./CircularDLLNode";
-import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
-import gsap from "gsap";
+import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL } from "./LLHelpers";
 
 // Circular Doubly Linked List class extends DoublyLinkedList
 export class CircularDLL extends DoublyLinkedList {

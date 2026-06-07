@@ -1,7 +1,6 @@
 import { LinkedList } from "./SLL";
 import { CircularLLNode } from "./CLLNode";
-import gsap from "gsap";
-import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
+import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL } from "./LLHelpers";
 
 // Circular linked list class, extends LinkedList
 export class CircularLinkedList extends LinkedList {
