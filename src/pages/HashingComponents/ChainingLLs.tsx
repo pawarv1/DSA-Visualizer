@@ -22,20 +22,7 @@ export abstract class BaseChainingSLL<TNode extends ChainNode<TNode>> {
         return this.headPtr === null;
     }
 
-    protected collectNodes(): TNode[] {
-        const nodes: TNode[] = [];
-        const seen = new Set<TNode>();
-        let curr = this.headPtr;
-
-        while (curr && !seen.has(curr)) {
-            seen.add(curr);
-            nodes.push(curr);
-            curr = curr.next;
-        }
-        return nodes;
-    }
-
-    protected collectFrom(start: TNode | null): TNode[] {
+    protected collectNodes(start: TNode | null, end?: TNode | null): TNode[] {
         const nodes: TNode[] = [];
         const seen = new Set<TNode>();
         let curr = start;
@@ -43,6 +30,11 @@ export abstract class BaseChainingSLL<TNode extends ChainNode<TNode>> {
         while (curr && !seen.has(curr)) {
             seen.add(curr);
             nodes.push(curr);
+
+            if (curr === end) {
+                break;
+            }
+
             curr = curr.next;
         }
         return nodes;
@@ -57,18 +49,16 @@ export abstract class BaseChainingSLL<TNode extends ChainNode<TNode>> {
     moveLLTo(x: number, y: number) {
         const dx = x - this.x;
         const dy = y - this.y;
-
         this.x = x;
         this.y = y;
 
-        const nodes = this.collectNodes();
+        const nodes = this.collectNodes(this.headPtr);
         for (const n of nodes) {
             n.x += dx;
             n.y += dy;
         }
     }
 
-    // Runs promises while gsap.ticker repeatedly calls render()
     protected async withRenderLoop(renderAll: () => void, promises: Promise<void>[] ) {
         let active = true;
         const loop = () => { if (active) renderAll(); };
@@ -97,13 +87,10 @@ export abstract class BaseChainingSLL<TNode extends ChainNode<TNode>> {
     protected async highlightNode(renderAll: () => void, node: TNode, duration: number = 500, outlineColor = "red", fillColor = "yellow") {
         const oldOutline = node.outlineColor;
         const oldFill = node.fillColor;
-
         node.outlineColor = outlineColor;
         node.fillColor = fillColor;
         renderAll();
-        
         await new Promise<void>(resolve => setTimeout(resolve, duration));
-
         node.outlineColor = oldOutline;
         node.fillColor = oldFill;
         renderAll();
@@ -122,7 +109,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
     }
    
     draw(context: CanvasRenderingContext2D, opacity: number = this.opacity) {
-        const nodes = this.collectNodes();
+        const nodes = this.collectNodes(this.headPtr);
 
         // Draw nodes
         for (const n of nodes) {
@@ -181,17 +168,13 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
             });
             return;
         }
-
         const newNode = this.makeNode(newKey, 0, 0);
         this.staging.push(newNode);
+
         await this.withRenderTimeline(renderAll, (tl) => {
-            const movingNodes = this.collectNodes();
+            const movingNodes = this.collectNodes(this.headPtr);
             this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
-
-            // fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-
-            // Update newNode next pointer
             tl.call(() => {newNode.next = this.headPtr})
             tl.to(newNode, {pointerOpacityNext: 1, duration: fadeIntime });
         });
@@ -207,20 +190,20 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
         if (this.headPtr.key === key) {
             const firstNode = this.headPtr;
             this.headPtr = firstNode.next;
-
             this.staging.push(firstNode);
-                await this.withRenderTimeline(renderAll, (tl) => {
-                    tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
-                    tl.call(() => {firstNode.next = null})
-                    tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
-                });
-                this.staging = this.staging.filter(n => n !== firstNode);
 
-                // Animate the movement of the following nodes
-                await this.withRenderTimeline(renderAll, (tl) => {
-                    const movingNodes = this.collectNodes();
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
-                });
+            await this.withRenderTimeline(renderAll, (tl) => {
+                tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                tl.call(() => {firstNode.next = null})
+                tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
+            });
+            this.staging = this.staging.filter(n => n !== firstNode);
+
+            // Animate the movement of the following nodes
+            await this.withRenderTimeline(renderAll, (tl) => {
+                const movingNodes = this.collectNodes(this.headPtr);
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            });
         }
         else {
             let currNode = this.headPtr;
@@ -251,18 +234,16 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
                 const nextNode = deleteNode.next;
 
                 await this.withRenderTimeline(renderAll, (tl) => {
-                    // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
                     tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
-
                     tl.call(() => {deleteNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
                 await this.withRenderTimeline(renderAll, (tl) => {
-                    const movingNodes = this.collectFrom(nextNode);
+                    const movingNodes = this.collectNodes(nextNode);
                     this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }
@@ -292,7 +273,7 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
     }
 
     draw(context: CanvasRenderingContext2D, opacity: number = this.opacity) {
-        const nodes = this.collectNodes();
+        const nodes = this.collectNodes(this.headPtr);
 
         // Draw nodes
         for (const n of nodes) {
@@ -351,17 +332,13 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
             });
             return;
         }
-
         const newNode = this.makeNode(newKey, newValue, 0, 0);
         this.staging.push(newNode);
+
         await this.withRenderTimeline(renderAll, (tl) => {
-            const movingNodes = this.collectNodes();
+            const movingNodes = this.collectNodes(this.headPtr);
             this.shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
-
-            // fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-
-            // Update newNode next pointer
             tl.call(() => {newNode.next = this.headPtr})
             tl.to(newNode, {pointerOpacityNext: 1, duration: fadeIntime });
         });
@@ -377,20 +354,20 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
         if (this.headPtr.key === key) {
             const firstNode = this.headPtr;
             this.headPtr = firstNode.next;
-
             this.staging.push(firstNode);
-                await this.withRenderTimeline(renderAll, (tl) => {
-                    tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
-                    tl.call(() => {firstNode.next = null})
-                    tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
-                });
-                this.staging = this.staging.filter(n => n !== firstNode);
 
-                // Animate the movement of the following nodes
-                await this.withRenderTimeline(renderAll, (tl) => {
-                    const movingNodes = this.collectNodes();
-                    this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
-                });
+            await this.withRenderTimeline(renderAll, (tl) => {
+                tl.to(firstNode, { pointerOpacityNext: 0, duration: fadeOutTime });
+                tl.call(() => {firstNode.next = null})
+                tl.to(firstNode, { nodeOpacity: 0, duration: fadeOutTime });
+            });
+            this.staging = this.staging.filter(n => n !== firstNode);
+
+            // Animate the movement of the following nodes
+            await this.withRenderTimeline(renderAll, (tl) => {
+                const movingNodes = this.collectNodes(this.headPtr);
+                this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
+            });
         }
         else {
             let currNode = this.headPtr;
@@ -412,7 +389,6 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
                 await this.highlightNode(renderAll, currNode);
                 return false;
             }
-
             const deleteNode = currNode.next;
             this.staging.push(deleteNode);
 
@@ -421,18 +397,16 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
                 const nextNode = deleteNode.next;
 
                 await this.withRenderTimeline(renderAll, (tl) => {
-                    // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
                     tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
-
                     tl.call(() => {deleteNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
                 this.staging = this.staging.filter(n => n !== deleteNode);
 
                 await this.withRenderTimeline(renderAll, (tl) => {
-                    const movingNodes = this.collectFrom(nextNode);
+                    const movingNodes = this.collectNodes(nextNode);
                     this.shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
                 });
             }

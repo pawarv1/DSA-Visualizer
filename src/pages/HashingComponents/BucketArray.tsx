@@ -47,9 +47,7 @@ export class BucketArray<TChain extends ChainDrawable> {
         for (let i = 0; i < this.arraySize; i++) {
             const chainX = this.x + (this.cellWidth * 7) / 4;
             const chainY = this.y + this.cellHeight * (i + 1 / 8);
-
             const chain = this.makeChain(chainX, chainY, (this.cellWidth * 3) / 4, (this.cellHeight * 3) / 4, this.opacity);
-
             this.cells.push(
                 new BucketArrayCell<TChain>(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, chain, this.opacity)
             );
@@ -71,11 +69,9 @@ export class BucketArray<TChain extends ChainDrawable> {
         const cell = this.cells[index];
         const oldOutline = cell.outlineColor;
         const oldFill = cell.fillColor;
-
         cell.outlineColor = outlineColor;
         cell.fillColor = fillColor;
         renderAll();
-
         await new Promise<void>((resolve) => setTimeout(resolve, duration));
         cell.outlineColor = oldOutline;
         cell.fillColor = oldFill;
@@ -84,7 +80,6 @@ export class BucketArray<TChain extends ChainDrawable> {
 
     draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         context.save();
-
         let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
         if (drawIndex) {
             context.globalAlpha = this.opacity;
@@ -97,12 +92,9 @@ export class BucketArray<TChain extends ChainDrawable> {
         for (let i = 0; i < this.arraySize; i++) {
             const cell = this.cells[i];
             cell.opacity = this.opacity;
-
-            // Set clearExtra to false so cells are not cleared
             cell.drawCell(context);
 
             if (drawIndex) {
-                // Print index to the left of the array
                 context.fillText(i.toString(), this.x - 10, this.y + (this.cellHeight * i) + this.cellHeight * 2/3);
             }
 
