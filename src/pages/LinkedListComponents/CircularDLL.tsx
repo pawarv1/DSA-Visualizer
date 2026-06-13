@@ -6,7 +6,6 @@ import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL } from ".
 export class CircularDLL extends DoublyLinkedList {
     protected headPtr: CircularDLLNode | null = null;
     protected tailPtr: CircularDLLNode | null = null;
-    protected numElements: number = 0;
     protected pointersOnTop: boolean = false;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
@@ -28,17 +27,14 @@ export class CircularDLL extends DoublyLinkedList {
                 currNode = this.headPtr;
             }
             else {
-                
                 const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
-                // Set newNode next pointer to the head node and its prev pointer to currNode
                 newNode.next = this.headPtr;
                 newNode.prev = currNode;
                 this.headPtr!.prev = newNode;   // Set head node prev pointer to newNode
                 currNode.next = newNode;    // Set currNode next pointer to newNode
                 currNode = currNode.next;
             }
-
-            this.tailPtr = currNode;    // Update tailPtr
+            this.tailPtr = currNode;
             this.numElements++;
         }
 
@@ -49,9 +45,7 @@ export class CircularDLL extends DoublyLinkedList {
     draw(context: CanvasRenderingContext2D) {
         const nodes: CircularDLLNode[] = collectNodes(this.headPtr, this.tailPtr);
         const staging: CircularDLLNode[] = this.staging ?? [];
-
         const all = [...nodes, ...staging];
-
         if (all.length === 0) return;
 
         if (!this.pointersOnTop) {
@@ -69,7 +63,6 @@ export class CircularDLL extends DoublyLinkedList {
         if (!this.headPtr) {
             return -1;
         }
-
         let currNode = this.headPtr;
         let index = 0;
 
@@ -96,7 +89,6 @@ export class CircularDLL extends DoublyLinkedList {
         if (!this.headPtr) {
             return;
         }
-
         let currNode = this.headPtr;
         let index = 0;
 
@@ -116,7 +108,6 @@ export class CircularDLL extends DoublyLinkedList {
         if (!this.tailPtr) {
             return;
         }
-
         let currNode = this.tailPtr;
         let index = 0;
 
@@ -132,15 +123,11 @@ export class CircularDLL extends DoublyLinkedList {
 
     // Insert at the end of the CDLL
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-
-        // Empty CDLL case
         if (this.headPtr === null) {
-            // newNode next and prev pointers point to itself by default as defined in CircularDLLNode constructor
             let newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
             await withRenderTimeline(context, this.render, (tl) => {
-                // Fade in new node
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
             });
         }
@@ -182,13 +169,10 @@ export class CircularDLL extends DoublyLinkedList {
 
     // Insert to the head of the CDLL
     async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-
         const newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
-        // If the CDLL was previously empty, tailPtr will also point to the newNode
         if (!this.headPtr) {
-            this.tailPtr = newNode;
-            
+            this.tailPtr = newNode;            
             this.staging.push(newNode);
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
@@ -200,6 +184,7 @@ export class CircularDLL extends DoublyLinkedList {
             newNode.prev = null;
             this.staging.push(newNode);
             await withRenderTimeline(context, this.render, (tl) => {
+                // Shift nodes forward
                 const movingNodes = collectNodes(this.headPtr, this.tailPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
@@ -227,7 +212,6 @@ export class CircularDLL extends DoublyLinkedList {
             });
             this.staging = this.staging.filter(n => n !== newNode);
         }
-
         this.headPtr = newNode; // Update the headPtr to the new node
         this.numElements++;
     }
@@ -249,7 +233,6 @@ export class CircularDLL extends DoublyLinkedList {
             await this.append(context, newData, fadeIntime);
             return true;    // Insertion was successful
         }
-
         let currNode = this.headPtr!;
 
         // Traversal is more / as efficient from head than tail
@@ -276,13 +259,13 @@ export class CircularDLL extends DoublyLinkedList {
         // Insertions in the middle of the CDLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-
         const newNode = new CircularDLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         newNode.next = null;
         newNode.prev = null;
-
         this.staging.push(newNode);
+
         await withRenderTimeline(context, this.render, (tl) => {
+            // Shift nodes after insertion index forward
             const movingNodes = collectNodes(nextNode, this.tailPtr);
             shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
@@ -309,7 +292,6 @@ export class CircularDLL extends DoublyLinkedList {
             tl.to(newNode, { y: this.y, duration: fadeIntime });
         });
         this.staging = this.staging.filter(n => n !== newNode);
-
         this.numElements++;  
         return true;    // Insertion was successful
     }
@@ -332,24 +314,19 @@ export class CircularDLL extends DoublyLinkedList {
             else {
                 this.headPtr = firstNode.next;  // Update the head to the node after firstNode next
             }
-
             this.staging.push(firstNode);
 
             if (this.headPtr) {
                 await withRenderTimeline(context, this.render, (tl) => {
-                    // Update headPtr prev pointer
                     tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeOutTime });
                     tl.call(() => { this.headPtr!.prev = this.tailPtr; });
                     tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeOutTime });
-                    
-                    // Update tailPtr next pointer
                     tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; });
                     tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
                 });
             }
 
-            // Set firstNode pointers to null, fade it out
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(firstNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
                 tl.call(() => { firstNode.prev = null});
@@ -359,16 +336,12 @@ export class CircularDLL extends DoublyLinkedList {
             });
             this.staging = this.staging.filter(n => n !== firstNode);
 
-            // Move nodes back
             await withRenderTimeline(context, this.render, (tl) => {
                 const movingNodes = collectNodes(this.headPtr, this.tailPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
-
             this.numElements--;
-            
-            // Return the removed nodes data
-            return firstNode.data;
+            return firstNode.data;  // Return the removed nodes data
         }
     }
 
@@ -390,24 +363,19 @@ export class CircularDLL extends DoublyLinkedList {
             else {
                 this.tailPtr = this.tailPtr!.prev;
             }
-
             this.staging.push(lastNode);
 
             if (this.headPtr) {
                 await withRenderTimeline(context, this.render, (tl) => {
-                    // Update headPtr prev pointer
                     tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: fadeOutTime });
                     tl.call(() => { this.headPtr!.prev = this.tailPtr; });
                     tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeOutTime });
-                    
-                    // Update tailPtr next pointer
                     tl.to(this.tailPtr!, { pointerOpacityNext: 0, duration: fadeOutTime });
                     tl.call(() => { this.tailPtr!.next = this.headPtr; });
                     tl.to(this.tailPtr!, { pointerOpacityNext: 1, duration: fadeOutTime });
                 });
             }
 
-            // Set firstNode pointers to null, fade it out
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(lastNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
                 tl.call(() => { lastNode.prev = null});
@@ -416,11 +384,8 @@ export class CircularDLL extends DoublyLinkedList {
                 tl.to(lastNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
             this.staging = this.staging.filter(n => n !== lastNode);
-
             this.numElements--;
-
-            // Return the removed nodes data
-            return lastNode?.data;
+            return lastNode?.data;  // Return the removed nodes data
         }
     }
 
@@ -448,7 +413,6 @@ export class CircularDLL extends DoublyLinkedList {
 
             // Traversal is more / as efficient from head than tail
             if (index <= Math.floor((this.numElements - 1) / 2)) {
-
                 // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
                     await highlightNode(context, deleteNode, this.render);
@@ -467,8 +431,6 @@ export class CircularDLL extends DoublyLinkedList {
                 }
                 await highlightNode(context, deleteNode, this.render);
             }
-
-            // Save the nodes before and after deleteNode if they exist (or null if they don't)
             const prevNode = deleteNode.prev!;
             const nextNode = deleteNode.next!;
 
@@ -482,23 +444,20 @@ export class CircularDLL extends DoublyLinkedList {
                 await this.pop(context, fadeOutTime);
                 return true;    // Deletion was successful
             }
-
             this.pointersOnTop = true;
             this.staging.push(deleteNode);
+
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
                 tl.call(() => { prevNode.next = nextNode; });
                 tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
-
                 tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
                 tl.call(() => { nextNode.prev = prevNode; });
                 tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
-
                 tl.call(() => {
                     deleteNode.prev = null;
                     deleteNode.next = null;
                 });
-
                 tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
             this.staging = this.staging.filter(n => n !== deleteNode);
@@ -528,7 +487,6 @@ export class CircularDLL extends DoublyLinkedList {
                     await highlightNode(context, deleteNode, this.render, 500, "black", "lightgreen");
                     break;
                 }
-
                 await highlightNode(context, deleteNode, this.render);
                 deleteNode = deleteNode.next!;
 
@@ -549,26 +507,22 @@ export class CircularDLL extends DoublyLinkedList {
                 await this.pop(context, fadeOutTime);
                 return true;    // Deletion was successful
             }
-
             const prevNode = deleteNode.prev!;
             const nextNode = deleteNode.next!;
-            
             this.pointersOnTop = true;
             this.staging.push(deleteNode);
+
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
                 tl.call(() => { prevNode.next = nextNode; });
                 tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
-
                 tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
                 tl.call(() => { nextNode.prev = prevNode; });
                 tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
-
                 tl.call(() => {
                     deleteNode.prev = null;
                     deleteNode.next = null;
                 });
-
                 tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
             this.staging = this.staging.filter(n => n !== deleteNode);
@@ -578,7 +532,6 @@ export class CircularDLL extends DoublyLinkedList {
                 const movingNodes = collectNodes(nextNode, this.tailPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
-
             this.numElements--;
         }
 

@@ -39,11 +39,11 @@ export class LinkedList {
             }
             else {
                 const newNode = new SLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity);
-                currNode.next = newNode;    // Set currNode next to newNode then redraw
+                currNode.next = newNode;
                 currNode = currNode.next;
             }
 
-            this.tailPtr = currNode;    // Update the tail pointer to the last node
+            this.tailPtr = currNode;
             this.numElements++;
         }
 
@@ -73,13 +73,11 @@ export class LinkedList {
         else {
             let currNode = this.headPtr;
 
-            // Highlight nodes to show traversal
             for (let i = 0; i < index; i++) {
                 await highlightNode(context, currNode!, this.render);
                 currNode = currNode!.next;
             }
 
-            // Highlight node at index
             await highlightNode(context, currNode!, this.render);
             return currNode!.data;
         }
@@ -91,7 +89,6 @@ export class LinkedList {
         let index = 0;
 
         while (currNode) {
-            // Highlight nodes to show traversal
             await highlightNode(context, currNode, this.render);
             
             // Data was found
@@ -125,26 +122,20 @@ export class LinkedList {
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
         let newNode: SLLNode;
 
-        // Empty SLL case
         if (this.headPtr === null) {
             newNode = new SLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
             
-
             await withRenderTimeline(context, this.render, (tl) => {
-                // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
             });
         }
         else {
             newNode = new SLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-            
             this.staging.push(newNode);
+
             await withRenderTimeline(context, this.render, (tl) => {
-                // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-                
-                // Update tailPtr next
                 tl.to(this.tailPtr, { pointerOpacityNext: 0, duration: 0});
                 tl.call(() => {this.tailPtr!.next = newNode;});
                 tl.to(this.tailPtr, { pointerOpacityNext: 1, duration: fadeIntime});
@@ -159,7 +150,6 @@ export class LinkedList {
     async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
         if (this.headPtr === null) {
             const newNode = new SLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
-
             this.headPtr = newNode;
             this.tailPtr = newNode;
             this.numElements = 1;
@@ -172,14 +162,11 @@ export class LinkedList {
 
         const newNode = new SLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
         this.staging.push(newNode);
+
         await withRenderTimeline(context, this.render, (tl) => {
             const movingNodes = collectNodes(this.headPtr);
             shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
-
-            // fade in new node
             tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-
-            // Update newNode next pointer
             tl.call(() => {newNode.next = this.headPtr})
             tl.to(newNode, {pointerOpacityNext: 1, duration: fadeIntime });
         });
@@ -207,7 +194,6 @@ export class LinkedList {
                 await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            
             await highlightNode(context, currNode, this.render);
 
             // Insertions in the middle of the SLL
@@ -218,6 +204,7 @@ export class LinkedList {
 
                 this.staging.push(newNode);
                 await withRenderTimeline(context, this.render, (tl) => {
+                    // Shift nodes after insertion index forward
                     const movingNodes = collectNodes(nextNode)
                     shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
@@ -255,9 +242,9 @@ export class LinkedList {
         }
         else {
             const firstNode = this.headPtr;
-            this.headPtr = firstNode.next;  // Update the head to the node after firstNode next (or null if there isn't one)
+            this.headPtr = firstNode.next;
 
-            // Set tail to null if the linked list becomes emptty
+            // Set tail to null if the linked list becomes empty
             if (this.headPtr === null) {
                 this.tailPtr = null;
             }
@@ -290,7 +277,7 @@ export class LinkedList {
         else {
             let lastNode = this.tailPtr;
 
-            // Set tail to null if the linked list becomes emptty
+            // Set tail to null if the linked list becomes empty
             if (this.headPtr.next === null) {
                 let lastNode = this.headPtr;
                 this.headPtr = null;
@@ -347,22 +334,18 @@ export class LinkedList {
                 await highlightNode(context, currNode, this.render);
                 currNode = currNode.next!;
             }
-            
             await highlightNode(context, currNode, this.render);
-            
             const deleteNode = currNode.next!;
 
             // Deletions in the middle of the SLL
             if (deleteNode.next) {
                 const nextNode = deleteNode.next;
-
                 this.staging.push(deleteNode);
+
                 await withRenderTimeline(context, this.render, (tl) => {
-                    // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
                     tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
-
                     tl.call(() => {deleteNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
@@ -420,7 +403,6 @@ export class LinkedList {
                 await highlightNode(context, currNode, this.render);
                 return false;
             }
-
             const deleteNode = currNode.next;
 
             // Deletions in the middle of the SLL
@@ -429,11 +411,9 @@ export class LinkedList {
 
                 this.staging.push(deleteNode);
                 await withRenderTimeline(context, this.render, (tl) => {
-                    // Update currNode next pointer to tempPtr (the node after deleteNode)
                     tl.to(currNode, { pointerOpacityNext: 0, duration: fadeOutTime});
                     tl.call(() => { currNode.next = nextNode; });
                     tl.to(currNode, { pointerOpacityNext: 1, duration: fadeOutTime});
-
                     tl.call(() => {deleteNode.next = null;});
                     tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime});                    
                 });
@@ -472,7 +452,6 @@ export class LinkedList {
         }
 
         for (const n of nodes) gsap.killTweensOf(n);
-
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -495,7 +474,6 @@ export class LinkedList {
         );
 
         await withRenderLoop(context, this.render, fades);
-
         for (const n of nodes) {
             n.next = null;
         }

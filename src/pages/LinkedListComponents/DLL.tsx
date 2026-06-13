@@ -41,8 +41,7 @@ export class DoublyLinkedList {
                 newNode.prev = currNode;
                 currNode = currNode.next;
             }
-
-            this.tailPtr = currNode;    // Update tailPtr
+            this.tailPtr = currNode;
             this.numElements++;
         }
 
@@ -53,10 +52,8 @@ export class DoublyLinkedList {
     draw(context: CanvasRenderingContext2D) {
         const nodes = collectNodes(this.headPtr);
         const staged = this.staging.filter(s => !nodes.includes(s));
-
         for (const n of nodes) n.drawNode(context, false);
         for (const s of staged) s.drawNode(context, false);
-
         for (const n of nodes) n.drawPointers(context);
         for (const s of staged) s.drawPointers(context);
 
@@ -74,8 +71,6 @@ export class DoublyLinkedList {
 
             // Traversal is more / as efficient from the head than tail
             if (index <= Math.floor((this.numElements - 1) / 2)) {
-
-                // Highlight nodes to show traversal
                 for (let i = 0; i < index; i++) {
                     await highlightNode(context, currNode, this.render);
                     currNode = currNode.next!;
@@ -85,8 +80,6 @@ export class DoublyLinkedList {
             // Traversal is more efficient from the tail than head
             else {
                 currNode = this.tailPtr!;
-
-                // Highlight nodes to show traversal
                 for (let i = this.numElements - 1; i > index; i--){
                     await highlightNode(context, currNode, this.render);
                     currNode = currNode.prev!;
@@ -104,7 +97,6 @@ export class DoublyLinkedList {
         let index = 0;
 
         while (currNode) {
-            // Highlight nodes to show traversal
             await highlightNode(context, currNode, this.render);
             
             // Data was found
@@ -152,13 +144,11 @@ export class DoublyLinkedList {
     async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
         let newNode: DLLNode;
 
-        // Empty DLL case
         if (this.headPtr === null) {
             newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
 
             await withRenderTimeline(context, this.render, (tl) => {
-                // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
             });
         }
@@ -167,15 +157,10 @@ export class DoublyLinkedList {
             
             this.staging.push(newNode);
             await withRenderTimeline(context, this.render, (tl) => {
-                // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-                
-                // Update tailPtr next pointer
                 tl.to(this.tailPtr, { pointerOpacityNext: 0, duration: 0});
                 tl.call(() => {this.tailPtr!.next = newNode});
                 tl.to(this.tailPtr, { pointerOpacityNext: 1, duration: fadeIntime});
-                
-                // Update newNode prev pointer
                 tl.call(() => {newNode.prev = this.tailPtr});
                 tl.to(newNode, { pointerOpacityPrev: 1, duration: fadeIntime});
             });
@@ -202,16 +187,10 @@ export class DoublyLinkedList {
             await withRenderTimeline(context, this.render, (tl) => {
                 const movingNodes = collectNodes(this.headPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
-
-                // fade in new node
                 tl.to(newNode, { nodeOpacity: 1, duration: fadeIntime });
-
-                // Update headPtr prev pointer
                 tl.to(this.headPtr, { pointerOpacityPrev: 0, duration: 0});
                 tl.call(() => {this.headPtr!.prev = newNode});
                 tl.to(this.headPtr, { pointerOpacityPrev: 1, duration: fadeIntime });
-
-                // Update newNode next pointer
                 tl.call(() => {newNode.next = this.headPtr})
                 tl.to(newNode, {pointerOpacityNext: 1, duration: fadeIntime });
             });
@@ -269,10 +248,10 @@ export class DoublyLinkedList {
         const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         newNode.next = nextNode;    // Set newNode.next to nextNode
         newNode.prev = currNode;    // Set newNode.prev to currNode
-
         this.staging.push(newNode);
 
         await withRenderTimeline(context, this.render, (tl) => {
+            // Shift nodes after insertion index forward
             const movingNodes = collectNodes(nextNode);
             shiftNodesTL(tl, movingNodes, this.nodeWidth * 2, 1, 0);
 
@@ -296,9 +275,8 @@ export class DoublyLinkedList {
             // Move the new node up to the same height
             tl.to(newNode, { y: this.y, duration: fadeIntime });
         });
-        this.staging = this.staging.filter(n => n !== newNode);
-        
 
+        this.staging = this.staging.filter(n => n !== newNode);
         this.numElements++;   
         return true;    // Insertion was successful
     }
@@ -312,10 +290,9 @@ export class DoublyLinkedList {
         }
         else {
             const firstNode = this.headPtr;
-            this.headPtr = firstNode.next;   // Update the head to the node after firstNode next (or null if there isn't one)
+            this.headPtr = firstNode.next;
 
-            // If head became null, this means that the linked list will be empty after the removal
-            // Tail must be set to null as well
+            // Set tail to null as well if list becomes empty
             if (this.headPtr === null) {
                 this.tailPtr = null;
             }
@@ -326,8 +303,6 @@ export class DoublyLinkedList {
                     tl.to(this.headPtr, {pointerOpacityPrev: 0, duration: fadeOutTime });
                     tl.call(() => {this.headPtr!.prev = null});
                 }
-
-                // Set firstNode next pointer to null, then fade it out
                 tl.to(firstNode, {pointerOpacityNext: 0, duration: fadeOutTime});
                 tl.call(() => {firstNode.next = null});
                 tl.to(firstNode, {nodeOpacity: 0, duration: fadeOutTime});
@@ -338,11 +313,8 @@ export class DoublyLinkedList {
                 const movingNodes = collectNodes(this.headPtr);
                 shiftNodesTL(tl, movingNodes, this.nodeWidth * -2, 1, 0);
             });
-            
             this.numElements--;
-
-            // Return the removed nodes data
-            return firstNode.data;
+            return firstNode.data;  // Return the removed nodes data
         }
     }
 
@@ -354,7 +326,6 @@ export class DoublyLinkedList {
             return null;
         }
         else {
-
             // Set head and tail to null if the list becomes empty
             if (this.headPtr.next === null) {
                 let lastNode = this.headPtr;
@@ -366,34 +337,24 @@ export class DoublyLinkedList {
                     tl.to(lastNode, {nodeOpacity: 0, duration: fadeOutTime});
                 });
                 this.staging = this.staging.filter(n => n !== lastNode);
-
                 this.numElements--;
-
-                // Return the removed nodes data
-                return lastNode!.data;
+                return lastNode!.data; // Return the removed nodes data
             }
-
             let lastNode = this.tailPtr;
             this.tailPtr = this.tailPtr!.prev;
-
             this.staging.push(lastNode!);
+
             await withRenderTimeline(context, this.render, (tl) => {
-                // Fade out the new tailPtr next node then set it to null
                 tl.to(this.tailPtr, {pointerOpacityNext: 0, duration: fadeOutTime});
                 tl.call(() => {this.tailPtr!.next = null})
-
-                // Set lastNode prev pointer to null, then fade it out
                 tl.to(lastNode, {pointerOpacityPrev: 0, duration: fadeOutTime});
                 tl.call(() => {lastNode!.prev = null});
                 tl.to(lastNode, {nodeOpacity: 0, duration: fadeOutTime});
                 
             });
             this.staging = this.staging.filter(n => n !== lastNode);
-
             this.numElements--;
-
-            // Return the removed nodes data
-            return lastNode!.data;
+            return lastNode!.data;  // Return the removded nodes data
         }
     }
 
@@ -416,7 +377,6 @@ export class DoublyLinkedList {
                 await this.pop(context, fadeOutTime);
                 return true;    // Deletion was successful
             }
-
             let deleteNode = this.headPtr!;
 
             // Traversal is more / as efficient from head than tail
@@ -440,25 +400,21 @@ export class DoublyLinkedList {
                 }
                 await highlightNode(context, deleteNode, this.render);
             }
-
             const prevNode = deleteNode.prev!;
             const nextNode = deleteNode.next!;
-
             this.staging.push(deleteNode);
+
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
                 tl.call(() => { prevNode.next = nextNode; });
                 tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
-
                 tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
                 tl.call(() => { nextNode.prev = prevNode; });
                 tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
-
                 tl.call(() => {
                     deleteNode.prev = null;
                     deleteNode.next = null;
                 });
-
                 tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
             });
             this.staging = this.staging.filter(n => n !== deleteNode);
@@ -474,7 +430,6 @@ export class DoublyLinkedList {
 
     // Deletes based on the element value, as opposed to index like removeAt
     async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
-        // Pointer for the node that will be deleted, initialized to the head
         let deleteNode = this.headPtr;
 
         while (deleteNode != null) {
@@ -505,23 +460,19 @@ export class DoublyLinkedList {
         }
         const prevNode = deleteNode.prev!;
         const nextNode = deleteNode.next!;
-
         this.staging.push(deleteNode);
 
         await withRenderTimeline(context, this.render, (tl) => {
             tl.to(prevNode, { pointerOpacityNext: 0, duration: fadeOutTime }, 0);
             tl.call(() => { prevNode.next = nextNode; });
             tl.to(prevNode, { pointerOpacityNext: 1, duration: fadeOutTime });
-
             tl.to(nextNode, { pointerOpacityPrev: 0, duration: fadeOutTime });
             tl.call(() => { nextNode.prev = prevNode; });
             tl.to(nextNode, { pointerOpacityPrev: 1, duration: fadeOutTime });
-
             tl.call(() => {
                 deleteNode.prev = null;
                 deleteNode.next = null;
             });
-
             tl.to(deleteNode, { nodeOpacity: 0, duration: fadeOutTime });
         });
         this.staging = this.staging.filter(n => n !== deleteNode);
@@ -543,7 +494,6 @@ export class DoublyLinkedList {
         if (nodes.length === 0) {
             return;
         }
-
         for (const n of nodes) this.staging.push(n);
 
         const fades: Promise<void>[] = nodes.map(n =>
@@ -559,7 +509,6 @@ export class DoublyLinkedList {
         );
 
         await withRenderLoop(context, this.render, fades);
-
         for (const n of nodes) {
             n.next = null;
             n.prev = null;
@@ -568,7 +517,6 @@ export class DoublyLinkedList {
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
-
         this.staging = this.staging.filter(n => !nodes.includes(n));
         this.render(context);
     }
