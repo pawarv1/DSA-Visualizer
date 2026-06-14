@@ -3,7 +3,7 @@ import Home from './pages/Home';
 import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
 import ArrayView from './pages/ArrayComponents/ArrayView';
 import LinkedListView from './pages/LinkedListComponents/LinkedListView';
-// import HashingView from './pages/HashingView';
+import HashingView from './pages/HashingComponents/HashingView';
 // import StacksAndQueuesView from './pages/StacksAndQueuesView';
 // import GraphsView from './pages/GraphsView';
 import GeneralView from './pages/GeneralAnimating/GeneralView';
@@ -22,6 +22,7 @@ function NavBar() {
             <li><Link to="/TimeSpace">Time/Space</Link></li>
             <li><Link to="/Arrays">Arrays</Link></li>
             <li><Link to="/LinkedList">Linked Lists</Link></li>
+            <li><Link to="/Hashing">Hashing</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -32,6 +33,7 @@ function NavBar() {
           <Route path="/TimeSpace" element={<AsymptoticAnalysisView></AsymptoticAnalysisView>}></Route>
           <Route path="/Arrays" element={<ArrayView></ArrayView>}></Route>
           <Route path = "/LinkedList" element={<LinkedListView></LinkedListView>}></Route>
+          <Route path = "/Hashing" element={<HashingView></HashingView>}></Route>
         </Routes>
       </main>
     </Router>
