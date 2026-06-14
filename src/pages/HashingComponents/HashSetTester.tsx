@@ -7,7 +7,7 @@ import { HashSet } from './HashSet';
 
 function HashSetTestCases() {
     let canvasWidth = 1000;
-    let canvasHeight = 1000;
+    let canvasHeight = 1600;
 
     // HashSet step callback
     const runHashSetSteps = (mainContext: CanvasRenderingContext2D, staticContext: CanvasRenderingContext2D, step: number, setIsAnimating: (value: boolean) => void) => {
@@ -16,7 +16,7 @@ function HashSetTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Empty HashSet");
             testCaseHeader.draw(staticContext);
-            const hs = new HashSet(100, 100, 50, 30);
+            const hs = new HashSet(100, 100, 100, 60);
             hs.draw(mainContext);
             setIsAnimating(false);
         }
@@ -25,7 +25,7 @@ function HashSetTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Adding");
             testCaseHeader.draw(staticContext);
-            const hs = new HashSet(100, 20, 50, 30);
+            const hs = new HashSet(100, 20, 100, 60);
             hs.draw(mainContext);
             await hs.add(mainContext, 10);
             await hs.add(mainContext, 34);
@@ -38,7 +38,7 @@ function HashSetTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Rehash");
             testCaseHeader.draw(staticContext);
-            const hs = new HashSet(100, 20, 50, 30);
+            const hs = new HashSet(100, 20, 100, 60);
             hs.draw(mainContext);
             for (let i = 0; i < 5; i++) {
                 await hs.add(mainContext, i);
@@ -50,9 +50,9 @@ function HashSetTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Contains");
             testCaseHeader.draw(staticContext);
-            const text1 = new Text(100, 300, "");
-            const text2 = new Text(100, 400, "");
-            const hs = new HashSet(100, 20, 50, 30);
+            const text1 = new Text(100, 600, "");
+            const text2 = new Text(100, 700, "");
+            const hs = new HashSet(100, 20, 100, 60);
             hs.draw(mainContext);
             for (let i = 0; i < 3; i++) {
                 await hs.add(mainContext, i);
@@ -70,9 +70,9 @@ function HashSetTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Remove");
             testCaseHeader.draw(staticContext);
-            const text1 = new Text(100, 300, "");
-            const text2 = new Text(100, 400, "");
-            const hs = new HashSet(100, 20, 50, 30);
+            const text1 = new Text(100, 600, "");
+            const text2 = new Text(100, 700, "");
+            const hs = new HashSet(100, 20, 100, 60);
             hs.draw(mainContext);
             for (let i = 0; i < 3; i++) {
                 await hs.add(mainContext, i);

@@ -126,6 +126,24 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
         for (const s of this.staging) s.drawPointers(context);
     }
 
+    async getNodeWithKey(renderAll: () => void, key: number) {
+        let currNode = this.headPtr;
+
+        while (currNode) {
+            await this.highlightNode(renderAll, currNode);
+            
+            // Key was found
+            if (currNode.key === key) {
+                await this.highlightNode(renderAll, currNode, 1000, "black", "lightgreen");
+                break;
+            }
+
+            currNode = currNode.next;
+        }
+
+        return currNode;
+    }
+
     async search(renderAll: () => void, key: number) {
         let currNode = this.headPtr;
 
@@ -145,6 +163,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
         return false;
     }
 
+    // Prepend without gsap animation, used for rehashing
     prependRaw(newKey: number) {
         const newNode = this.makeNode(newKey, 1, 1);
 
@@ -189,6 +208,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
 
         if (this.headPtr.key === key) {
             const firstNode = this.headPtr;
+            await this.highlightNode(renderAll, firstNode, 1000, "black", "lightgreen");
             this.headPtr = firstNode.next;
             this.staging.push(firstNode);
 
@@ -212,7 +232,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
             while(currNode.next != null) {
                 if (currNode.next.key === key) {
                     await this.highlightNode(renderAll, currNode);
-                    await this.highlightNode(renderAll, currNode.next, 500, "black", "lightgreen");
+                    await this.highlightNode(renderAll, currNode.next, 1000, "black", "lightgreen");
                     break;
                 }
 
@@ -290,6 +310,24 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
         for (const s of this.staging) s.drawPointers(context);
     }
 
+    async getNodeWithKey(renderAll: () => void, key: number) {
+        let currNode = this.headPtr;
+
+        while (currNode) {
+            await this.highlightNode(renderAll, currNode);
+            
+            // Key was found
+            if (currNode.key === key) {
+                await this.highlightNode(renderAll, currNode, 1000, "black", "lightgreen");
+                break;
+            }
+
+            currNode = currNode.next;
+        }
+
+        return currNode;
+    }
+
     async search(renderAll: () => void, key: number) {
         let currNode = this.headPtr;
 
@@ -309,6 +347,14 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
         return false;
     }
 
+    updateKeyValuePair(updateNode: HMChainingLLNode | null, newValue: number) {
+        if (updateNode === null) {
+            return;
+        }
+        updateNode.value = newValue;
+    }
+
+    // Prepend without gsap animation, used for rehashing
     prependRawPair(newKey: number, newValue: number) {
         const newNode = this.makeNode(newKey, newValue, 1, 1);
 
@@ -353,6 +399,7 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
 
         if (this.headPtr.key === key) {
             const firstNode = this.headPtr;
+            await this.highlightNode(renderAll, firstNode, 1000, "black", "lightgreen");
             this.headPtr = firstNode.next;
             this.staging.push(firstNode);
 
@@ -376,7 +423,7 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
             while(currNode.next != null) {
                 if (currNode.next.key === key) {
                     await this.highlightNode(renderAll, currNode);
-                    await this.highlightNode(renderAll, currNode.next, 500, "black", "lightgreen");
+                    await this.highlightNode(renderAll, currNode.next, 1000, "black", "lightgreen");
                     break;
                 }
 

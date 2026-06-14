@@ -27,20 +27,41 @@ export class HSChainingLLNode {
         this.fillColor = fillColor;
     }
 
-    // Adjust font size to fit within the node data section
-    adjustFontSize(context: CanvasRenderingContext2D) {
-        let fontSize = 16; // Initial font size
-        context.font = `${fontSize}px Arial`;
-        const text = String(this.key);
-        let textWidth = context.measureText(text).width;
+    protected getTextLines(): string[] {
+        return [String(this.key)];
+    }
 
-        // Reduce the font size until the text fits within the node width
-        while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
-            fontSize--;
+    protected drawText(context: CanvasRenderingContext2D) {
+        const lines = this.getTextLines();
+        const maxWidth = this.nodeWidth * 2 / 3 - 10;
+        const maxHeight = this.nodeHeight - 8;
+        let fontSize = 16;
+
+        while (fontSize > 1) {
             context.font = `${fontSize}px Arial`;
-            textWidth = context.measureText(text).width;
+
+            const widestLine = Math.max(
+                ...lines.map(line => context.measureText(line).width)
+            );
+
+            const totalHeight = lines.length * fontSize * 1.2;
+            if (widestLine <= maxWidth && totalHeight <= maxHeight) break;
+
+            fontSize--;
         }
-        return context.font;
+
+        context.font = `${fontSize}px Arial`;
+        context.fillStyle = "black";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        const lineHeight = fontSize * 1.2;
+        const centerX = this.x + this.nodeWidth / 3;
+        const centerY = this.y + this.nodeHeight / 2;
+        const startY = centerY - ((lines.length - 1) * lineHeight) / 2;
+
+        lines.forEach((line, i) => {
+            context.fillText(line, centerX, startY + i * lineHeight);
+        });
     }
 
     // Function for drawing the next pointer
@@ -63,14 +84,9 @@ export class HSChainingLLNode {
         context.fillStyle = this.fillColor;
         context.fillRect(this.x, this.y, this.nodeWidth, this.nodeHeight);
         context.strokeStyle = this.outlineColor;
-        context.strokeRect(this.x, this.y, this.nodeWidth * 2/3, this.nodeHeight);
+        context.strokeRect(this.x, this.y, this.nodeWidth * 2 / 3, this.nodeHeight);
         context.strokeRect(this.x, this.y, this.nodeWidth, this.nodeHeight);
-        context.fillStyle = 'black';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        const font = this.adjustFontSize(context);
-        context.font = font;
-        context.fillText(this.key, this.x + this.nodeWidth / 3, this.y + this.nodeHeight / 2);
+        this.drawText(context);
         if (redrawPointer) {
             this.drawPointers(context);
         }
@@ -81,25 +97,14 @@ export class HSChainingLLNode {
 export class HMChainingLLNode extends HSChainingLLNode {
     value: number;
     declare next: HMChainingLLNode | null;
+    
     constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, key: any, value: number, nodeOpacity: number = 1, pointerOpacity: number = 1, outlineColor: string = "black", fillColor: string = "white") {
         super(x, y, nodeWidth, nodeHeight, key, nodeOpacity, pointerOpacity, outlineColor, fillColor);
         this.value = value;
         this.next = null;
     }
 
-    // Adjust font size to fit within the node data section
-    adjustFontSize(context: CanvasRenderingContext2D) {
-        let fontSize = 16; // Initial font size
-        context.font = `${fontSize}px Arial`;
-        const text = "K: " + String(this.key) + "\nV: " + String(this.value);
-        let textWidth = context.measureText(text).width;
-
-        // Reduce the font size until the text fits within the node width
-        while (textWidth > (this.nodeWidth * 2/3) - 10 && fontSize > 1) { // Leave some padding
-            fontSize--;
-            context.font = `${fontSize}px Arial`;
-            textWidth = context.measureText(text).width;
-        }
-        return context.font;
+    protected getTextLines(): string[] {
+        return [`K: ${String(this.key)}`, `V: ${String(this.value)}`];
     }
 }

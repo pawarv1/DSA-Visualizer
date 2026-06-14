@@ -7,7 +7,7 @@ import { HashMap } from './HashMap';
 
 function HashMapTestCases() {
     let canvasWidth = 1000;
-    let canvasHeight = 1000;
+    let canvasHeight = 1600;
 
     // HashSet step callback
     const runHashMapSteps = (mainContext: CanvasRenderingContext2D, staticContext: CanvasRenderingContext2D, step: number, setIsAnimating: (value: boolean) => void) => {
@@ -16,7 +16,7 @@ function HashMapTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (70, 40, "Empty HashMap");
             testCaseHeader.draw(staticContext);
-            const hm = new HashMap(100, 100, 50, 30);
+            const hm = new HashMap(100, 100, 100, 60);
             hm.draw(mainContext);
             setIsAnimating(false);
         }
@@ -25,7 +25,7 @@ function HashMapTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Adding");
             testCaseHeader.draw(staticContext);
-            const hm = new HashMap(100, 20, 50, 30);
+            const hm = new HashMap(100, 20, 100, 60);
             hm.draw(mainContext);
             await hm.add(mainContext, 10, 1);
             await hm.add(mainContext, 34, 0);
@@ -38,7 +38,7 @@ function HashMapTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Rehash");
             testCaseHeader.draw(staticContext);
-            const hm = new HashMap(100, 20, 50, 30);
+            const hm = new HashMap(100, 20, 100, 60);
             hm.draw(mainContext);
             for (let i = 0; i < 5; i++) {
                 await hm.add(mainContext, i, i * 2);
@@ -50,9 +50,9 @@ function HashMapTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Contains");
             testCaseHeader.draw(staticContext);
-            const text1 = new Text(100, 300, "");
-            const text2 = new Text(100, 400, "");
-            const hm = new HashMap(100, 20, 50, 30);
+            const text1 = new Text(100, 600, "");
+            const text2 = new Text(100, 700, "");
+            const hm = new HashMap(100, 20, 100, 60);
             hm.draw(mainContext);
             for (let i = 0; i < 3; i++) {
                 await hm.add(mainContext, i, i * 2);
@@ -70,9 +70,9 @@ function HashMapTestCases() {
             setIsAnimating(true);
             const testCaseHeader = new Text (20, 20, "Remove");
             testCaseHeader.draw(staticContext);
-            const text1 = new Text(100, 300, "");
-            const text2 = new Text(100, 400, "");
-            const hm = new HashMap(100, 20, 50, 30);
+            const text1 = new Text(100, 600, "");
+            const text2 = new Text(100, 700, "");
+            const hm = new HashMap(100, 20, 100, 60);
             hm.draw(mainContext);
             for (let i = 0; i < 3; i++) {
                 await hm.add(mainContext, i, i * 2);

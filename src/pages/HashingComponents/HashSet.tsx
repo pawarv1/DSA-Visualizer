@@ -34,10 +34,12 @@ export class HashSet {
         this.renderAll(context);
     }
 
+    // Helper for getting hashing index
     protected indexFor(key: number) {
         return ((key % this.capacity) + this.capacity) % this.capacity;
     }
 
+    // Resize the hash table when it becomes too full
     protected async rehash(context: CanvasRenderingContext2D, newCapacity: number, fadeTime: number = 1) {
         if (this.isRehashing) return;
         this.isRehashing = true;
@@ -46,6 +48,7 @@ export class HashSet {
             const oldBuckets = this.buckets;
             const oldBucketsLen = oldBuckets.getLength();
 
+            // Create the new hash table
             this.capacity = newCapacity;
             this.buckets = new BucketArray<HashSetSLL>(
                 this.x, this.y + (this.cellHeight * (oldBucketsLen + 1)), this.cellWidth, this.cellHeight, newCapacity, 0,
@@ -54,6 +57,7 @@ export class HashSet {
             
             this.size = 0;
 
+            // Fade in the new hash table
             await new Promise<void>((resolve) => {
                 gsap.to(this.buckets, {
                     opacity: 1,
@@ -68,21 +72,19 @@ export class HashSet {
 
             let renderAll = () => this.renderAll(context);
 
+            // Insert all the elements into the new hash table
             for (let i = 0; i < oldBucketsLen; i++) {
                 await oldBuckets.highlightCell(renderAll, i);
 
                 let curr = oldBuckets.getChainAt(i).getHead();
 
                 while (curr != null) {
-                    const index = this.indexFor(curr.key);
-                    const chain = this.buckets.getChainAt(index);
-                    chain.prependRaw(curr.key);
-                    this.size++;
-                    this.renderAll(context);
+                    await this.add(context, curr.key);
                     curr = curr.next;
                 }
             }
 
+            // Fade out the old hash table
             await new Promise<void>((resolve) => {
                 gsap.to(oldBuckets, {
                     opacity: 0,
@@ -98,6 +100,7 @@ export class HashSet {
                 });
             });
 
+            // Fade out the new hash table, move it up, then fade it back in
             await new Promise<void>((resolve) => {
                 gsap.to(this.buckets, {
                     opacity: 0,
@@ -135,22 +138,32 @@ export class HashSet {
         }
     }
     
-
     async add(context: CanvasRenderingContext2D, key: number, fadeTime: number = 1) {
+        // Need to rehash if the load factor is >= 0.5
         if (!this.isRehashing && this.size / this.capacity >= 0.5) {
             await this.rehash(context, this.capacity * 2, fadeTime);
         }
 
         const renderAll = () => this.renderAll(context);
         const chain = this.buckets.getChainAt(this.indexFor(key));
-         
-        if (await chain.search(renderAll, key)) {
-            return false;
-         }
+        
+        if (!this.isRehashing) {
 
-         await chain.prepend(renderAll, key, fadeTime);
-         this.size++;
-         return true;
+            // See if key is already in table, only need check for regular insertions
+            if (await chain.search(renderAll, key)) {
+                return false;
+            }
+
+            await chain.prepend(renderAll, key, fadeTime);
+        }
+        else {
+            // Resizing insertions
+            chain.prependRaw(key);
+            this.renderAll(context);
+        }
+
+        this.size++;
+        return true;
     }
 
     async contains(context: CanvasRenderingContext2D, key: number) {
@@ -168,6 +181,7 @@ export class HashSet {
             return true;
         }
         else {
+            // Key was not in the hash table
             return false;
         }
     }
