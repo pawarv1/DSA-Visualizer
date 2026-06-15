@@ -38,7 +38,7 @@ class BucketArrayCell<TChain extends ChainDrawable> extends ArrayCell {
     }
 }
 
-export class BucketArray<TChain extends ChainDrawable> {
+export class ChainBucketArray<TChain extends ChainDrawable> {
     protected cells: BucketArrayCell<TChain>[];
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, protected readonly arraySize: number, protected opacity: number = 1, private makeChain: (x: number, y: number, w: number, h: number, opacity: number) => TChain) {

@@ -1,10 +1,10 @@
-import { BucketArray } from "./BucketArray";
+import { ChainBucketArray } from "./ChainBucketArray";
 import { HMChainingLLNode } from "./ChainingLLNodes";
 import { HashMapSLL } from "./ChainingLLs";
 import gsap from "gsap";
 
 export class HashMap {
-    protected buckets: BucketArray<HashMapSLL>;
+    protected buckets: ChainBucketArray<HashMapSLL>;
     protected size: number = 0;
     protected isRehashing = false;
 
@@ -15,7 +15,7 @@ export class HashMap {
         this.cellHeight = cellHeight;
         this.capacity = capacity;
         this.opacity = opacity;
-        this.buckets = new BucketArray<HashMapSLL>(
+        this.buckets = new ChainBucketArray<HashMapSLL>(
             this.x, this.y, this.cellWidth, this.cellHeight, capacity, this.opacity,
             (cx, cy, w, h, o) => new HashMapSLL(cx, cy, w, h, o)
         );
@@ -51,7 +51,7 @@ export class HashMap {
 
             // Create the new hash table
             this.capacity = newCapacity;
-            this.buckets = new BucketArray<HashMapSLL>(
+            this.buckets = new ChainBucketArray<HashMapSLL>(
                 this.x, this.y + (this.cellHeight * (oldBucketsLen + 1)), this.cellWidth, this.cellHeight, newCapacity, 0,
                 (cx, cy, w, h, o) => new HashMapSLL(cx, cy, w, h, o)
             );
