@@ -1,4 +1,4 @@
-import gsap, { timeline } from 'gsap';
+import gsap from 'gsap';
 import { ArrayCell } from './ArrayCell';
 
 // 2D Array Class

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import { Array } from './Array';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import gsap, { context } from 'gsap';
+import gsap from 'gsap';
 
 function ArrayTestCases() {
   let canvasWidth = 800;

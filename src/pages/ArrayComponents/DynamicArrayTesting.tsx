@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import { DynamicArray } from './DynamicArray';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
-import gsap, { context, timeline } from 'gsap';
+import gsap from 'gsap';
 
 function DynamicArrayTestCases() {
 

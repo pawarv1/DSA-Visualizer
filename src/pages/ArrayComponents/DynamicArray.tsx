@@ -1,4 +1,4 @@
-import gsap, { timeline } from 'gsap';
+import gsap from 'gsap';
 import { DynamicArrayCell } from './ArrayCell';
 import { Array } from './Array';
 
