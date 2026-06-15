@@ -35,7 +35,7 @@ export class HashMap {
         this.renderAll(context);
     }
 
-    // Helper for getting hashing index
+    // Helper for getting hashing index, handles negative keys as well
     protected indexFor(key: number) {
         return ((key % this.capacity) + this.capacity) % this.capacity;
     }

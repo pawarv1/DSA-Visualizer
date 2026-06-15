@@ -34,7 +34,7 @@ export class HashSet {
         this.renderAll(context);
     }
 
-    // Helper for getting hashing index
+    // Helper for getting hashing index, handles negative keys as well
     protected indexFor(key: number) {
         return ((key % this.capacity) + this.capacity) % this.capacity;
     }
@@ -150,7 +150,7 @@ export class HashSet {
         if (!this.isRehashing) {
 
             // See if key is already in table, only need check for regular insertions
-            if (await chain.search(renderAll, key)) {
+            if (await chain.search(renderAll, key, "red")) {
                 return false;
             }
 

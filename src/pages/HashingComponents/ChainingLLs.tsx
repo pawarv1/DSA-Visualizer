@@ -144,7 +144,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
         return currNode;
     }
 
-    async search(renderAll: () => void, key: number) {
+    async search(renderAll: () => void, key: number, foundFillColor: string = "lightgreen") {
         let currNode = this.headPtr;
 
         while (currNode) {
@@ -152,7 +152,7 @@ export class HashSetSLL extends BaseChainingSLL<HSChainingLLNode>{
             
             // Key was found
             if (currNode.key === key) {
-                await this.highlightNode(renderAll, currNode, 1000, "black", "lightgreen");
+                await this.highlightNode(renderAll, currNode, 1000, "black", foundFillColor);
                 return true;
             }
 
@@ -328,7 +328,7 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
         return currNode;
     }
 
-    async search(renderAll: () => void, key: number) {
+    async search(renderAll: () => void, key: number, foundFillColor: string = "lightgreen") {
         let currNode = this.headPtr;
 
         while (currNode) {
@@ -336,7 +336,7 @@ export class HashMapSLL extends BaseChainingSLL<HMChainingLLNode> {
             
             // Key was found
             if (currNode.key === key) {
-                await this.highlightNode(renderAll, currNode, 1000, "black", "lightgreen");
+                await this.highlightNode(renderAll, currNode, 1000, "black", foundFillColor);
                 return true;
             }
 
