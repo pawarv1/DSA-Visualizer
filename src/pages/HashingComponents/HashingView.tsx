@@ -2,6 +2,7 @@ import React from "react";
 import HashSetTestCases from "./HashSetTester";
 import HashMapTestCases from "./HashMapTester";
 import LinearProbingTestCases from "./LinearProbingTester";
+import QuadraticProbingTestCases from "./QuadraticProbingTester";
 
 /*
 This pages shows the hasing animations
@@ -19,7 +20,9 @@ function HashingView() {
         <h3>Hash Map Test Cases</h3>
         <HashMapTestCases></HashMapTestCases><br></br><br></br>
         <h3>Linear Probing Test Cases</h3>
-        <LinearProbingTestCases></LinearProbingTestCases>
+        <LinearProbingTestCases></LinearProbingTestCases><br></br><br></br>
+        <h3>Quadratic Probing Test Cases</h3>
+        <QuadraticProbingTestCases></QuadraticProbingTestCases><br></br><br></br>
       </div>
     </>
   );
