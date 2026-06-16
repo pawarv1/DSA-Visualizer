@@ -4,8 +4,7 @@ import DynamicArrayTestCases from "./DynamicArrayTesting";
 import Array2DTestCases from "./Array2DTesting";
 
 /*
-The array view component seres aws the page for the arrays section
-It will display the animations from the ArrayAnimations file, and other components deemed necessary
+Page for arrays
 */
 
 function ArrayView() {

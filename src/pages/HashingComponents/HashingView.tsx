@@ -6,7 +6,7 @@ import QuadraticProbingTestCases from "./QuadraticProbingTester";
 import DoubleHashingTestCases from "./DoubleHashingTester";
 
 /*
-This pages shows the hasing animations
+This pages shows the hashing animations
 */
 
 function HashingView() {
