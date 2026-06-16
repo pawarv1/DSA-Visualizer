@@ -3,6 +3,7 @@ import HashSetTestCases from "./HashSetTester";
 import HashMapTestCases from "./HashMapTester";
 import LinearProbingTestCases from "./LinearProbingTester";
 import QuadraticProbingTestCases from "./QuadraticProbingTester";
+import DoubleHashingTestCases from "./DoubleHashingTester";
 
 /*
 This pages shows the hasing animations
@@ -23,6 +24,8 @@ function HashingView() {
         <LinearProbingTestCases></LinearProbingTestCases><br></br><br></br>
         <h3>Quadratic Probing Test Cases</h3>
         <QuadraticProbingTestCases></QuadraticProbingTestCases><br></br><br></br>
+        <h3>Double Hashing Test Cases</h3>
+        <DoubleHashingTestCases></DoubleHashingTestCases>
       </div>
     </>
   );
