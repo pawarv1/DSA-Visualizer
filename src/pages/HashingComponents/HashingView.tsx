@@ -1,6 +1,7 @@
 import React from "react";
 import HashSetTestCases from "./HashSetTester";
 import HashMapTestCases from "./HashMapTester";
+import LinearProbingTestCases from "./LinearProbingTester";
 
 /*
 This pages shows the hasing animations
@@ -16,7 +17,9 @@ function HashingView() {
         <h3>Hash Set Test Cases</h3>
         <HashSetTestCases></HashSetTestCases><br></br><br></br>
         <h3>Hash Map Test Cases</h3>
-        <HashMapTestCases></HashMapTestCases>
+        <HashMapTestCases></HashMapTestCases><br></br><br></br>
+        <h3>Linear Probing Test Cases</h3>
+        <LinearProbingTestCases></LinearProbingTestCases>
       </div>
     </>
   );
