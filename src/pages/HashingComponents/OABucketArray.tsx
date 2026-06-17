@@ -66,7 +66,7 @@ class OABucketArrayCell extends ArrayCell {
 }
 
 export class OABucketArray {
-    protected arraySize: number;
+    protected arrayLength: number;
     protected cells: OABucketArrayCell[];
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, size: number, protected opacity: number = 1) {
@@ -74,10 +74,10 @@ export class OABucketArray {
         this.y = y;
         this.cellWidth = cellWidth;
         this.cellHeight = cellHeight;
-        this.arraySize = size;
+        this.arrayLength = size;
         this.opacity = opacity;
         this.cells = [];
-        for (let i = 0; i < this.arraySize; i++) {
+        for (let i = 0; i < this.arrayLength; i++) {
             this.cells.push(new OABucketArrayCell(this.x, this.y + i * this.cellHeight, this.cellWidth, this.cellHeight, "", this.opacity));
         }
     }
@@ -93,7 +93,7 @@ export class OABucketArray {
             context.textBaseline = 'top';
         }
 
-        for (let i = 0; i < this.arraySize; i++) {
+        for (let i = 0; i < this.arrayLength; i++) {
             const cell = this.cells[i];
             cell.x = this.x;
             cell.y = this.y + i * this.cellHeight;
@@ -109,8 +109,8 @@ export class OABucketArray {
 
     // Throws RangeError if index is out of bounds
     checkIndexValidity(index: number) {
-        if (index < 0 || index >= this.arraySize) {
-            console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.arraySize - 1})`);
+        if (index < 0 || index >= this.arrayLength) {
+            console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.arrayLength - 1})`);
             return false;
         }
         return true;
@@ -147,9 +147,9 @@ export class OABucketArray {
     }
 
     // Can change opacity of an individual cell or all the cells
-    setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
+    setOpacity(context: CanvasRenderingContext2D, index: "all" | number, opacity: number, redraw: boolean = true) {
         // All cells
-        if (typeof index === 'string' && index === "all") {
+        if (index === "all") {
             this.opacity = opacity;
             if (redraw) {
                 this.draw(context);
@@ -192,8 +192,8 @@ export class OABucketArray {
         }
     }
 
-    getArraySize() {
-        return this.arraySize;
+    getArrayLength() {
+        return this.arrayLength;
     }
 
     // Return the element at the given index
@@ -217,22 +217,7 @@ export class OABucketArray {
         const oldOutline = cell.outlineColor;
         const oldFill = cell.fillColor;
 
-        /*
-        this.setOutlineColor(context, index, outlineColor, false);
-        this.setFillColor(context, index, fillColor, false);
-        cell.drawCell(context, false);
-        */
-
         await new Promise<void>((resolve) => {
-            /*
-            gsap.delayedCall(duration, () => {
-                this.setOutlineColor(context, index, oldOutline, false);
-                this.setFillColor(context, index, oldFill, false);
-                cell.drawCell(context, false);
-                resolve();
-            });
-            */
-
             gsap.to(this, {
                 duration: duration,
                 onUpdate: () => {
@@ -257,10 +242,10 @@ export class OABucketArray {
             // Resolve after the timeline animation completes
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
         
-            for (let i = 0; i < this.getArraySize(); i++) {
+            for (let i = 0; i < this.getArrayLength(); i++) {
                 timeline.to(this, {
                     duration: iterationSpeed,
-                    onUpdate: () => {
+                    onStart: () => {
                         this.setOutlineColor(context, i, "red", true);
                         this.setFillColor(context, i, "yellow", true);
                         console.log(this.getElementAt(i));
@@ -278,6 +263,6 @@ export class OABucketArray {
     // Clear the array
     clear(context: CanvasRenderingContext2D) {
         // Need to clear more space to account for index numbers
-        context.clearRect(this.x - 15, this.y - 1, this.cellWidth + 16, (this.cellHeight * this.arraySize) + 2);
+        context.clearRect(this.x - 15, this.y - 1, this.cellWidth + 16, (this.cellHeight * this.arrayLength) + 2);
     }
 }

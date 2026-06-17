@@ -4,12 +4,11 @@ import { StaticArray } from './StaticArray';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap from 'gsap';
 
-function ArrayTestCases() {
+function StaticArrayTestCases() {
   let canvasWidth = 800;
   let canvasHeight = 600;
 
-  // Array step callback
-  const runArraySteps = (mainContext: CanvasRenderingContext2D, staticContext: CanvasRenderingContext2D, step: number, setIsAnimating: (value: boolean) => void) => {
+  const runStaticArraySteps = (mainContext: CanvasRenderingContext2D, staticContext: CanvasRenderingContext2D, step: number, setIsAnimating: (value: boolean) => void) => {
       
     // General array initialization test case
     const step1 = () => {
@@ -262,7 +261,7 @@ function ArrayTestCases() {
     }
   }
 
-  return <StepPlayer totalSteps={14} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={14} runStep={runStaticArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
-export default ArrayTestCases;
+export default StaticArrayTestCases;

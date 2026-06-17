@@ -1,5 +1,5 @@
 import React from "react";
-import ArrayTestCases from "./ArrayTesting";
+import StaticArrayTestCases from "./StaticArrayTesting";
 import DynamicArrayTestCases from "./DynamicArrayTesting";
 import Array2DTestCases from "./Array2DTesting";
 
@@ -17,9 +17,9 @@ function ArrayView() {
         <DynamicArrayTestCases></DynamicArrayTestCases>
       </div>
       <div>
-        <h1>Array Testing</h1>
+        <h1>Static Array Testing</h1>
         <h2>Update when finished</h2>
-        <ArrayTestCases></ArrayTestCases>
+        <StaticArrayTestCases></StaticArrayTestCases>
       </div><br></br>
       <div>
         <h1>2D Array Testing</h1>

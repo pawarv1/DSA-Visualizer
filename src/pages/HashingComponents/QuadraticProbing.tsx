@@ -77,7 +77,7 @@ export class QPHashTable {
 
         try {
             const oldBuckets = this.buckets;
-            const oldBucketsLen = oldBuckets.getArraySize();
+            const oldBucketsLen = oldBuckets.getArrayLength();
 
             // Create the new hash table
             this.capacity = newCapacity;
