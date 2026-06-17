@@ -113,6 +113,32 @@ export class StaticArray {
         }
     }
 
+    // Change the fill and outline color of a cell for a duration of time, before it reverts back to the original colors
+    async highlightCellFor(context: CanvasRenderingContext2D, index: number, duration: number = 1, outlineColor = "red", fillColor = "yellow"): Promise<void> {
+        if (!this.checkIndexValidity(index)) return;
+
+        const cell = this.cells[index];
+        const oldOutline = cell.outlineColor;
+        const oldFill = cell.fillColor;
+
+        await new Promise<void>((resolve) => {
+            gsap.to(this, {
+                duration: duration,
+                onUpdate: () => {
+                    this.setOutlineColor(context, index, outlineColor, true);
+                    this.setFillColor(context, index, fillColor, true);
+                },
+                onComplete: () => {
+                    // Set the outline and fill color back to normal when finished
+                    this.setOutlineColor(context, index, oldOutline, true);
+                    this.setFillColor(context, index, oldFill, true);
+                    cell.drawCell(context, false);
+                    resolve();
+                }
+            });
+        });
+    }
+
     // Traverse through the array and print each element
     // Hightlight and change outline color of the current element
     async print(context: CanvasRenderingContext2D, iterationSpeed: number = 1) {
