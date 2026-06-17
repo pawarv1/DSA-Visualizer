@@ -59,6 +59,10 @@ export class DoublyLinkedList {
 
     }
 
+    getNumElements() {
+        return this.numElements;
+    }
+
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number) {
         // Error if the index is not valid

@@ -63,6 +63,10 @@ export class LinkedList {
         for (const s of this.staging) s.drawPointers(context);
     }
 
+    getNumElements() {
+        return this.numElements;
+    }
+
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number) {
         // Error if the index is not valid
