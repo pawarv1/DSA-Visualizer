@@ -8,7 +8,7 @@ export class DynamicArray extends StaticArray {
     protected arrayLength: number;
     protected cells: DynamicArrayCell[];
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, initialCapacity: number = contents.length) {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], initialCapacity: number = contents.length, opacity: number = 1,) {
         super(x, y, cellWidth, cellHeight, contents, initialCapacity, opacity);
         this.arrayLength = Math.max(initialCapacity, contents.length);
         this.cells = [];
@@ -337,7 +337,7 @@ export class DynamicArray extends StaticArray {
     // Remove and return the element at the end of the array
     async pop(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         if (this.numElements <= 0) {
-            console.error("Cannot pop from empty array");
+            console.warn("Cannot pop from empty array");
             return false;
         }
         else {
