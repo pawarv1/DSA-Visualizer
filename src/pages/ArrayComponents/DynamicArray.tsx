@@ -110,7 +110,7 @@ export class DynamicArray extends StaticArray {
             return;
         }
 
-        let newArr = new DynamicArray(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], 0, newCapacity);
+        let newArr = new DynamicArray(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], newCapacity, 0);
 
         this.draw(context, drawIndex);
 
