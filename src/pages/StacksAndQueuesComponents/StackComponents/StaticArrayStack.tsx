@@ -12,25 +12,25 @@ export class StaticArrayStack {
         this.stack.draw(context, drawIndex);
     }
 
-    async push(context: CanvasRenderingContext2D, newElement: any, highlightDuration: number = 1) {
+    async push(context: CanvasRenderingContext2D, newElement: any, highlightDuration: number = 1, drawIndex: boolean = true) {
         if (this.numElements >= this.capacity) {
             console.warn("Stack Overflow");
             return;
         }
 
-        this.draw(context);
+        this.draw(context, drawIndex);
         await this.stack.highlightCellFor(context, this.numElements, highlightDuration);
         this.stack.setElementAt(context, this.numElements, newElement);
         this.numElements++;
     }
 
-    async pop(context: CanvasRenderingContext2D, highlightDuration: number = 1) {
+    async pop(context: CanvasRenderingContext2D, highlightDuration: number = 1, drawIndex: boolean = true) {
         if (this.isEmpty()) {
             console.warn("Stack Underflow");
             return;
         }
 
-        this.draw(context);
+        this.draw(context, drawIndex);
         this.numElements--;
         await this.stack.highlightCellFor(context, this.numElements, highlightDuration);
         const poppedElement = this.stack.getElementAt(this.numElements);
@@ -38,13 +38,13 @@ export class StaticArrayStack {
         return poppedElement;
     }
 
-    async peek(context: CanvasRenderingContext2D, highlightDuration: number = 1) {
+    async peek(context: CanvasRenderingContext2D, highlightDuration: number = 1, drawIndex: boolean = true) {
         if (this.isEmpty()) {
             console.log("Stack is empty");
             return;
         }
 
-        this.draw(context);
+        this.draw(context, drawIndex);
         await this.stack.highlightCellFor(context, this.numElements - 1, highlightDuration);
         return this.stack.getElementAt(this.numElements - 1);
     }

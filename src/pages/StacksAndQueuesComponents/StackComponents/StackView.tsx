@@ -1,5 +1,6 @@
 import React from "react";
 import StaticArrayStackTestCases from "./StaticArrayStackTester";
+import DynamicArrayStackTestCases from "./DynamicArrayStackTester";
 
 /*
 Page for stacks
@@ -12,6 +13,8 @@ function StackView() {
         <h2>Update when finished</h2>
         <h3>Fixed Array Stack Test Cases</h3>
         <StaticArrayStackTestCases></StaticArrayStackTestCases><br></br><br></br>
+        <h3>Dynamic Array Stack Test Cases</h3>
+        <DynamicArrayStackTestCases></DynamicArrayStackTestCases><br></br><br></br>
       </>
     );
   }
