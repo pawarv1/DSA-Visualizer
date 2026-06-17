@@ -109,8 +109,8 @@ function DynamicArrayTestCases() {
 
       await array.insertAt(mainContext, 0, "B");  // Insert into empty dynamic array
       await array.insertAt(mainContext, 0, "A"); // Insert at front, should resize
-      await array.insertAt(mainContext, array.getArraySize(), "D"); // Insert at end, should resize
-      await array.insertAt(mainContext, array.getArraySize(), "E");
+      await array.insertAt(mainContext, array.getNumElements(), "D"); // Insert at end, should resize
+      await array.insertAt(mainContext, array.getNumElements(), "E");
       await array.insertAt(mainContext, 2, "C");  // Insert in the middle, should resize
       setIsAnimating(false);
     }
@@ -125,8 +125,8 @@ function DynamicArrayTestCases() {
 
       await array.removeAt(mainContext, 2); // Remove middle (C)
       await array.removeAt(mainContext, 0); // Remove front (A)
-      await array.removeAt(mainContext, array.getArraySize() - 1); // Remove last (E)
-      await array.removeAt(mainContext, array.getArraySize() - 1); // Remove last (D), should trigger resize
+      await array.removeAt(mainContext, array.getNumElements() - 1); // Remove last (E)
+      await array.removeAt(mainContext, array.getNumElements() - 1); // Remove last (D), should trigger resize
       setIsAnimating(false);
     }
 

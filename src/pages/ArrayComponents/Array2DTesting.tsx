@@ -151,7 +151,7 @@ function Array2DTestCases() {
             const testCaseHeader = new Text (70, 40, "Checking array (rows) size");
             const array = new Array2D (100, 100, 80, 50, 3, 2, ['A', 'B', 'C', 'D', 'E', 'F']);
             const text1 = new Text (100, 300, "Array Length =");
-            const text2 = new Text (215,300, array.getArraySize().toString());
+            const text2 = new Text (215,300, array.getArrayLength().toString());
 
             testCaseHeader.draw(mainContext);
             array.draw(mainContext);
@@ -166,7 +166,7 @@ function Array2DTestCases() {
             const testCaseHeader = new Text (70, 40, "Checking array (columns) size");
             const array = new Array2D (100, 100, 80, 50, 3, 2, ['A', 'B', 'C', 'D', 'E', 'F']);
             const text1 = new Text (100, 300, "Array Length =");
-            const text2 = new Text (215,300, array.getArraySizeAtRow(1).toString());
+            const text2 = new Text (215,300, array.getArrayLengthAtRow(1).toString());
 
             testCaseHeader.draw(mainContext);
             array.draw(mainContext);
@@ -197,10 +197,10 @@ function Array2DTestCases() {
             setIsAnimating(false);
         }
 
-        // Creating an empty array test case
+        // Creating a 0 length array test case
         const step13 = () => {
             setIsAnimating(true);
-            const testCaseHeader = new Text (70, 40, "Creating an empty array");
+            const testCaseHeader = new Text (70, 40, "Creating a 0 length array");
             const array = new Array2D(100, 100, 80, 50, 0,0, []);
             testCaseHeader.draw(mainContext);
             array.draw(mainContext);
@@ -218,6 +218,16 @@ function Array2DTestCases() {
                 array.clear(mainContext);
                 setIsAnimating(false);
             }, 2000);
+        }
+
+        // Creating an empty array test case
+        const step15 = () => {
+            setIsAnimating(true);
+            const testCaseHeader = new Text (70, 40, "Creating an empty array");
+            const array = new Array2D(100, 100, 80, 50, 2, 2, []);
+            testCaseHeader.draw(mainContext);
+            array.draw(mainContext);
+            setIsAnimating(false);
         }
 
         // Switch statement which runs the associated step method for the given step
@@ -264,12 +274,15 @@ function Array2DTestCases() {
             case 14:
                 step14();
                 break;
+            case 15:
+                step15();
+                break;
             default:
                 break
         }
     }
 
-    return <StepPlayer totalSteps={14} runStep={run2DArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+    return <StepPlayer totalSteps={15} runStep={run2DArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default Array2DTestCases;

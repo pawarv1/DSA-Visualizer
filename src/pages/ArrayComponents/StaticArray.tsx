@@ -2,20 +2,16 @@ import gsap from 'gsap';
 import { ArrayCell } from './ArrayCell';
 
 // Array Class
-export class Array {
-    protected readonly arraySize: number;
+export class StaticArray {
+    protected readonly arrayLength: number;
     protected cells: ArrayCell[];
 
-    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], protected opacity: number = 1) {
-        this.x = x;
-        this.y = y;
-        this.cellWidth = cellWidth;
-        this.cellHeight = cellHeight;
-        this.arraySize = contents.length;
-        this.opacity = opacity;
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], initialSize: number = contents.length, protected opacity: number = 1) {
+        this.arrayLength = Math.max(initialSize, contents.length);
         this.cells = [];
-        for (let i = 0; i < this.arraySize; i++) {
-            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i], this.opacity));
+
+        for (let i = 0; i < this.arrayLength; i++) {
+            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i] ?? "", this.opacity));
         }
     }
 
@@ -30,22 +26,22 @@ export class Array {
             context.textBaseline = 'top';
         }
 
-        for (let i = 0; i < this.arraySize; i++) {
+        for (let i = 0; i < this.arrayLength; i++) {
             this.cells[i].opacity = this.opacity;
             this.cells[i].drawCell(context);
             if (drawIndex) {
                 // Print index numbers below array cells
                 context.fillText(i.toString(), this.x + (this.cellWidth * i) + this.cellWidth / 2, this.y + this.cellHeight + 3);
             }
-        };
+        }
         context.restore();
     }
 
     // Throws RangeError if index is out of bounds
     // TODO May make access of this method protected after testing
     checkIndexValidity(index: number) {
-        if (index < 0 || index >= this.arraySize) {
-            console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.arraySize - 1})`);
+        if (index < 0 || index >= this.arrayLength) {
+            console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.arrayLength - 1})`);
             return false;
         }
         return true;
@@ -61,9 +57,9 @@ export class Array {
     }
 
     // Can change opacity of an individual cell or all the cells
-    setOpacity(context: CanvasRenderingContext2D, index: string | number, opacity: number, redraw: boolean = true) {
+    setOpacity(context: CanvasRenderingContext2D, index: "all" | number, opacity: number, redraw: boolean = true) {
         // All cells
-        if (typeof index === 'string' && index === "all") {
+        if (index === "all") {
             this.opacity = opacity;
             if (redraw) {
                 this.draw(context);
@@ -106,8 +102,8 @@ export class Array {
         }
     }
 
-    getArraySize() {
-        return this.arraySize;
+    getArrayLength() {
+        return this.arrayLength;
     }
 
     // Return the element at the given index
@@ -124,10 +120,10 @@ export class Array {
             // Resolve after the timeline animation completes
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
         
-            for (let i = 0; i < this.getArraySize(); i++) {
+            for (let i = 0; i < this.getArrayLength(); i++) {
                 timeline.to(this, {
                     duration: iterationSpeed,
-                    onUpdate: () => {
+                    onStart: () => {
                         this.setOutlineColor(context, i, "red", true);
                         this.setFillColor(context, i, "yellow", true);
                         console.log(this.getElementAt(i));
@@ -174,7 +170,7 @@ export class Array {
             // Fade the swapped cells back in
             const fadeIn = () => new Promise<void>((resolve) => {
                 gsap.to([cell1, cell2], {
-                    opacity: 1,
+                    opacity: this.opacity,
                     duration: 1,
                     onUpdate: () => {
                         // Set clearExtra to false so index numbers are not cleared if they are used
@@ -188,15 +184,17 @@ export class Array {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color without redrawing
+
             cell1.fillColor = "white";
             cell2.fillColor = "white";
+            cell1.drawCell(context, false);
+            cell2.drawCell(context, false);
         }
     }
 
     // Clear the array
     clear(context: CanvasRenderingContext2D) {
         const extraHeight = 18; // Covers index number (3 offset + 12 font + buffer)
-        context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.arraySize) + 2, this.cellHeight + extraHeight);
+        context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.arrayLength) + 2, this.cellHeight + extraHeight);
     }
 }

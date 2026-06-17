@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
-import { Array } from './Array';
+import { StaticArray } from './StaticArray';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import gsap from 'gsap';
 
@@ -16,7 +16,7 @@ function ArrayTestCases() {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "General array");
       testCaseHeader.draw(mainContext);
-      const array = new Array(100, 100, 80, 50, [0, 1, 2, 3]);
+      const array = new StaticArray(100, 100, 80, 50, [0, 1, 2, 3]);
       array.draw(mainContext);
       setIsAnimating(false);
     }
@@ -25,7 +25,7 @@ function ArrayTestCases() {
     const step2 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Checking index validity method");
-      const array = new Array (100, 100, 80, 50, ['A']);
+      const array = new StaticArray (100, 100, 80, 50, ['A']);
       const text1 = new Text (100, 200, "Index -1 valid? =", 1, "16px Arial");
       const text2 = new Text (100, 300, "Index 0 valid? =", 1, "16px Arial");
       const text3 = new Text (100, 400, "Index 1 valid? =", 1, "16px Arial");
@@ -65,7 +65,7 @@ function ArrayTestCases() {
     const step3 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Array index access");
-      const array = new Array (100, 100, 80, 50, ['A']);
+      const array = new StaticArray (100, 100, 80, 50, ['A']);
       const text1 = new Text (100, 200, "Array[0] =");
       const text2 =  new Text (200,200, array.getElementAt(0), 0);
 
@@ -88,7 +88,7 @@ function ArrayTestCases() {
     const step4 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing elements test case");
-      const array = new Array (100, 100, 80, 50, ["CSC 325", "CSC 435", "CSC 415", "CSC 435", "CSC 399"]);
+      const array = new StaticArray (100, 100, 80, 50, ["CSC 325", "CSC 435", "CSC 415", "CSC 435", "CSC 399"]);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       const text1 = new Text (100, 200, "Array[4] = \"CSC 498\"");
@@ -103,7 +103,7 @@ function ArrayTestCases() {
     const step5 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing opacity for a single cell");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50]);
+      const array1 = new StaticArray(100, 100, 80, 50, [10, 20, 30, 40, 50]);
       testCaseHeader.draw(mainContext);
       array1.draw(mainContext);
       array1.setOpacity(mainContext, 0, 0.5);
@@ -114,7 +114,7 @@ function ArrayTestCases() {
     const step6 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing opacity for whole array");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50], 1);
+      const array1 = new StaticArray(100, 100, 80, 50, [10, 20, 30, 40, 50], 1);
       testCaseHeader.draw(mainContext);
       array1.draw(mainContext);
       array1.setOpacity(mainContext, "all", 0.5);
@@ -125,7 +125,7 @@ function ArrayTestCases() {
     const step7 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing outline color for a single cell");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50]);
+      const array1 = new StaticArray(100, 100, 80, 50, [10, 20, 30, 40, 50]);
       testCaseHeader.draw(mainContext);
       array1.draw(mainContext);
       array1.setOutlineColor(mainContext, 0, "red");
@@ -136,7 +136,7 @@ function ArrayTestCases() {
     const step8 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Changing fill color for a single cell");
-      const array1 = new Array(100, 100, 80, 50, [10, 20, 30, 40, 50]);
+      const array1 = new StaticArray(100, 100, 80, 50, [10, 20, 30, 40, 50]);
       testCaseHeader.draw(mainContext);
       array1.draw(mainContext);
       array1.setFillColor(mainContext, 0, "yellow");
@@ -147,9 +147,9 @@ function ArrayTestCases() {
     const step9 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Checking array length");
-      const array = new Array (100, 100, 80, 50, ['A', 'B', 'C', 'D', 'E', 'F']);
+      const array = new StaticArray (100, 100, 80, 50, ['A', 'B', 'C', 'D', 'E', 'F']);
       const text1 = new Text (100, 200, "Array Length =");
-      const text2 =  new Text (215,200, array.getArraySize().toString());
+      const text2 =  new Text (215,200, array.getArrayLength().toString());
 
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
@@ -162,7 +162,7 @@ function ArrayTestCases() {
     const step10 = async () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Swapping two elements of the array");
-      const array = new Array (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
+      const array = new StaticArray (50, 100, 80, 50, ['a', 'b', 'c', 'd', 'e']);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       await array.swapElements(mainContext, 0, 4);
@@ -173,7 +173,7 @@ function ArrayTestCases() {
     const step11 = () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Clearing an array");
-      const array = new Array (100, 100, 80, 50, [2,4,6,8]);
+      const array = new StaticArray (100, 100, 80, 50, [2,4,6,8]);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       setTimeout(() => {
@@ -186,18 +186,28 @@ function ArrayTestCases() {
     const step12 = async () => {
       setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Traversing through an array and printing");
-      const array = new Array (50, 100, 30, 30, ["A", "B", "C", "D", "E", "F", "G", "H"]);
+      const array = new StaticArray (50, 100, 30, 30, ["A", "B", "C", "D", "E", "F", "G", "H"]);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       await array.print(mainContext);
       setIsAnimating(false);
     }
 
-    // Creating an empty array test case
+    // Creating a 0 length array test case
     const step13 = () => {
       setIsAnimating(true);
+      const testCaseHeader = new Text (70, 40, "Creating an 0 length array");
+      const array = new StaticArray (100, 100, 80, 50, []);
+      testCaseHeader.draw(mainContext);
+      array.draw(mainContext);
+      setIsAnimating(false);
+    }    
+
+    // Creating an empty array test case
+    const step14 = () => {
+      setIsAnimating(true);
       const testCaseHeader = new Text (70, 40, "Creating an empty array");
-      const array = new Array (100, 100, 80, 50, []);
+      const array = new StaticArray (100, 100, 80, 50, [], 4);
       testCaseHeader.draw(mainContext);
       array.draw(mainContext);
       setIsAnimating(false);
@@ -244,12 +254,15 @@ function ArrayTestCases() {
       case 13:
         step13();
         break;
+      case 14:
+        step14();
+        break;
       default:
         break
     }
   }
 
-  return <StepPlayer totalSteps={13} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
+  return <StepPlayer totalSteps={14} runStep={runArraySteps} canvasWidth={canvasWidth} canvasHeight={canvasHeight}></StepPlayer>
 }
 
 export default ArrayTestCases;

@@ -7,19 +7,16 @@ export class Array2D {
 
     constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
         // Cannot make a 2D array if its shape is invalid
-        if (rows * columns != contents.length) {
-            console.error("INVALID SHAPE");
+        const capacity = rows * columns;
+
+        if (contents.length > capacity) {
+            console.error(
+                `Too many elements (${contents.length}) for a ${rows}x${columns} array (${capacity} cells)`
+            );
             this.cells = [];
             return;
         }
 
-        this.x = x;
-        this.y = y;
-        this.cellWidth = cellWidth;
-        this.cellHeight = cellHeight;
-        this.rows = rows;
-        this.columns = columns;
-        this.opacity = opacity;
         // Allocate an array of the row length
         this.cells = new Array(rows);
 
@@ -29,10 +26,10 @@ export class Array2D {
         }
 
         // Calculate each row and column from the 1D input array
-        for (let i = 0; i < contents.length; i++) {
+        for (let i = 0; i < rows * columns; i++) {
             const currRow = Math.floor(i / columns);
             const currCol = i % columns;
-            this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, this.cellWidth, this.cellHeight, contents[i], this.opacity);
+            this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, this.cellWidth, this.cellHeight, contents[i] ?? "", this.opacity);
         }
     }
 
@@ -85,9 +82,9 @@ export class Array2D {
     }
 
     // Can change opacity of an individual cell or all the cells
-    setOpacity(context: CanvasRenderingContext2D, index: string | [number, number], opacity: number, redraw: boolean = true) {
+    setOpacity(context: CanvasRenderingContext2D, index: "all" | [number, number], opacity: number, redraw: boolean = true) {
         // All the cells
-        if (typeof index === 'string') {
+        if (index === "all") {
             this.opacity = opacity;
             if (redraw) {
                 this.draw(context);
@@ -128,12 +125,12 @@ export class Array2D {
     }
 
     // Get the row size of the array
-    getArraySize() {
+    getArrayLength() {
         return this.cells.length;
     }
 
     // Get the column size of the array
-    getArraySizeAtRow(rowIndex: number) {
+    getArrayLengthAtRow(rowIndex: number) {
         if (rowIndex < 0 || rowIndex >= this.rows) {
             console.error(`${rowIndex} is out of bounds`);
             return false;
@@ -159,7 +156,7 @@ export class Array2D {
                 for (let j = 0; j < this.columns; j++) {
                     timeline.to(this, {
                         duration: iterationSpeed,
-                        onUpdate: () => {
+                        onStart: () => {
                             this.setOutlineColor(context, i, j, "red");
                             this.setFillColor(context, i, j, "yellow");
                             console.log(this.getElementAt(i, j));
@@ -206,7 +203,7 @@ export class Array2D {
             // Fade the swapped cells back in
             const fadeIn = () => new Promise<void>((resolve) => {
                 gsap.to([cell1, cell2], {
-                    opacity: 1,
+                    opacity: this.opacity,
                     duration: 1,
                     onUpdate: () => {
                         cell1.drawCell(context, false);
@@ -219,15 +216,17 @@ export class Array2D {
             await fadeOut();
             swapContent();
             await fadeIn();
-            // Reset the fill color without redrawing
+
             cell1.fillColor = "white";
             cell2.fillColor = "white";
+            cell1.drawCell(context, false);
+            cell2.drawCell(context, false);
         }
     }
 
     // Clear the array
     clear(context: CanvasRenderingContext2D) {
         // Need to clear more space to account for index numbers
-        context.clearRect(this.x - 15, this.y - 15, (this.cellWidth * this.rows) + 16, (this.cellHeight * this.columns) + 16);
+        context.clearRect(this.x - 15, this.y - 15, (this.cellWidth * this.columns) + 16, (this.cellHeight * this.rows) + 16);
     }
 }

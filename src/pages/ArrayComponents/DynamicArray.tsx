@@ -1,23 +1,24 @@
 import gsap from 'gsap';
 import { DynamicArrayCell } from './ArrayCell';
-import { Array } from './Array';
+import { StaticArray } from './StaticArray';
 
 // Dynamic Array Class, inherits from array class
-export class DynamicArray extends Array {
-    protected arraySize: number;
-    protected capacity: number;
+export class DynamicArray extends StaticArray {
+    protected lastUsedIndex: number;
+    protected arrayLength: number;
     protected cells: DynamicArrayCell[];
 
     constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], opacity: number = 1, initialCapacity: number = contents.length) {
-        super(x, y, cellWidth, cellHeight, contents, opacity);
-        this.capacity = Math.max(initialCapacity, contents.length);
+        super(x, y, cellWidth, cellHeight, contents, initialCapacity, opacity);
+        this.arrayLength = Math.max(initialCapacity, contents.length);
         this.cells = [];
-        this.arraySize = contents.length;
+        this.lastUsedIndex = contents.length;
+        
         for (let i = 0; i < contents.length; i++) {
             this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, contents[i], this.opacity));
         }
 
-        for (let i = contents.length; i < initialCapacity; i++) {
+        for (let i = contents.length; i < this.arrayLength; i++) {
             this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", this.opacity, false));
         }
     }
@@ -33,35 +34,43 @@ export class DynamicArray extends Array {
     clear(context: CanvasRenderingContext2D) {
         // Add extra height to clear the index numbers below the array cells
         const extraHeight = 18;
-        context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.capacity) + 2, this.cellHeight + extraHeight);
+        context.clearRect(this.x - 1, this.y - 1, (this.cellWidth * this.arrayLength) + 2, this.cellHeight + extraHeight);
     }
 
     // Ensure that it can insert at the given index, allowing for insertions at the end of the array
     // TODO May make access of this method protected after testing
     checkInsertIndex(index: number) {
-        if (index < 0 || index > this.arraySize) {
-            console.error(`Insert index ${index} is out of bounds (valid range: 0 to ${this.arraySize})`);
+        if (index < 0 || index > this.lastUsedIndex) {
+            console.error(`Insert index ${index} is out of bounds (valid range: 0 to ${this.lastUsedIndex})`);
             return false;
         }
         return true;
     }
 
-
-    // Return the capacity of the dynamic array, as opposed to the size
-    getCapacity() {
-        return this.capacity;
+    // Ensure that there is an element at the given index
+    checkIndexValidity(index: number) {
+        if (index < 0 || index >= this.lastUsedIndex) {
+            console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.lastUsedIndex - 1})`);
+            return false;
+        }
+        return true;
+    }
+    
+    // Return number of elements in the array, as opposed to its length
+    getNumElements() {
+        return this.lastUsedIndex;
     }
 
     // Returns true if there are no elements in the array
     isEmpty() {
-        return this.arraySize === 0;
+        return this.lastUsedIndex === 0;
     }
 
     // Search for an element in the dynamic array and return the index of where it was found, or -1 if it was not found
     async search (context: CanvasRenderingContext2D, element: any, iterationSpeed: number = 1) {
         let index = -1;
     
-        for (let i = 0; i < this.getArraySize(); i++) {
+        for (let i = 0; i < this.lastUsedIndex; i++) {
             await new Promise<void>((resolve) => {
                 gsap.to(this, {
                     duration: iterationSpeed,
@@ -86,7 +95,7 @@ export class DynamicArray extends Array {
             });
 
             // Break out of the loop if the element was found
-            if (index != -1) {
+            if (index !== -1) {
                 break;
             }
         }
@@ -97,7 +106,7 @@ export class DynamicArray extends Array {
     // Resize animations when the dynamic array must expand or shrink
     private async resize(context: CanvasRenderingContext2D, newCapacity: number, drawIndex: boolean = true) {
         // Do nothing
-        if (newCapacity === this.capacity) {
+        if (newCapacity === this.arrayLength) {
             return;
         }
 
@@ -185,7 +194,7 @@ export class DynamicArray extends Array {
         });
 
         // Copy all the elemnts
-        for (let i = 0; i < this.arraySize; i++) {
+        for (let i = 0; i < this.lastUsedIndex; i++) {
             await copyElement(i);
         }
 
@@ -216,15 +225,15 @@ export class DynamicArray extends Array {
 
         // Make the old array the same as the new array
         this.cells = newArr.cells;
-        this.capacity = newCapacity;
+        this.arrayLength = newCapacity;
         this.opacity = newArr.opacity;
     }
 
     // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
-        if (this.capacity === 0) {
+        if (this.arrayLength === 0) {
             this.cells.push(new DynamicArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity));
-            this.capacity = 1;
+            this.arrayLength = 1;
         }
     }
 
@@ -232,9 +241,9 @@ export class DynamicArray extends Array {
     async append(context: CanvasRenderingContext2D, element: any, drawIndex: boolean = true) {
         this.ensureInitialCapacity();
 
-        // Check if an expansion is necessary, if so double the array capacity
-        if (this.arraySize >= this.capacity) {
-            await this.resize(context, this.capacity * 2, drawIndex);
+        // Check if an expansion is necessary, if so double the array arrayLength
+        if (this.lastUsedIndex >= this.arrayLength) {
+            await this.resize(context, this.arrayLength * 2, drawIndex);
         }
         else {
             // Add delay into the animation, may add in a variable for time
@@ -243,10 +252,10 @@ export class DynamicArray extends Array {
             });
         }
         
-        this.cells[this.arraySize].content = element;
-        this.cells[this.arraySize].inUse = true;
-        this.cells[this.arraySize].drawCell(context, drawIndex);
-        this.arraySize++;
+        this.cells[this.lastUsedIndex].content = element;
+        this.cells[this.lastUsedIndex].inUse = true;
+        this.cells[this.lastUsedIndex].drawCell(context, drawIndex);
+        this.lastUsedIndex++;
     }
 
     // Insert an element at the given index
@@ -255,12 +264,12 @@ export class DynamicArray extends Array {
             this.ensureInitialCapacity();
             let shiftHappened = false;
 
-            // Check if an expansion is necessary, if so double the array capacity
-            if (this.arraySize >= this.capacity) {
-                await this.resize(context, this.capacity * 2, drawIndex);
+            // Check if an expansion is necessary, if so double the array arrayLength
+            if (this.lastUsedIndex >= this.arrayLength) {
+                await this.resize(context, this.arrayLength * 2, drawIndex);
             }
 
-            for (let i = this.arraySize; i > index; i--) {
+            for (let i = this.lastUsedIndex; i > index; i--) {
                 // Shift following elements forward one index
                 this.cells[i].content = this.cells[i - 1].content;
                 this.cells[i].inUse = this.cells[i - 1].inUse;
@@ -273,7 +282,7 @@ export class DynamicArray extends Array {
                 await new Promise<void>((resolve) => setTimeout(resolve, 1000));
             }
 
-            this.arraySize++;
+            this.lastUsedIndex++;
 
             // Only add delay if there was not a shift, as that also has delay
             // This keeps timings slightly more consistent
@@ -301,7 +310,7 @@ export class DynamicArray extends Array {
             this.cells[index].inUse = false;
             this.cells[index].drawCell(context, drawIndex);
 
-            for (let i = index; i < this.arraySize - 1; i++) {
+            for (let i = index; i < this.lastUsedIndex - 1; i++) {
                 // Add delay into the animation, may add in a variable for time
                 await new Promise<void>((resolve) => {
                     setTimeout(() => {resolve()}, 1000);
@@ -316,18 +325,18 @@ export class DynamicArray extends Array {
                 this.cells[i + 1].drawCell(context, drawIndex);
             }
 
-            this.arraySize--;
+            this.lastUsedIndex--;
 
-            // Check if a shrink is necessary, if so halve the array capacity
-            if (this.arraySize > 0 && this.arraySize <= this.capacity / 4) {
-                await this.resize(context, Math.floor(this.capacity / 2), drawIndex);
+            // Check if a shrink is necessary, if so halve the array arrayLength
+            if (this.lastUsedIndex > 0 && this.lastUsedIndex <= this.arrayLength / 4) {
+                await this.resize(context, Math.floor(this.arrayLength / 2), drawIndex);
             }
         }
     }
 
     // Remove and return the element at the end of the array
     async pop(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        if (this.arraySize <= 0) {
+        if (this.lastUsedIndex <= 0) {
             console.error("Cannot pop from empty array");
             return false;
         }
@@ -336,33 +345,33 @@ export class DynamicArray extends Array {
                 setTimeout(() => {resolve()}, 1000);
             });
 
-            this.arraySize--;
-            const lastElement = this.cells[this.arraySize].content;
-            this.cells[this.arraySize].content = "";
-            this.cells[this.arraySize].inUse = false;
-            this.cells[this.arraySize].drawCell(context, drawIndex);
+            this.lastUsedIndex--;
+            const lastElement = this.cells[this.lastUsedIndex].content;
+            this.cells[this.lastUsedIndex].content = "";
+            this.cells[this.lastUsedIndex].inUse = false;
+            this.cells[this.lastUsedIndex].drawCell(context, drawIndex);
 
-            // Check if a shrink is necessary if so halve the array capacity
-            if (this.arraySize > 0 && this.arraySize <= this.capacity / 4) {
-                await this.resize(context, Math.floor(this.capacity / 2), drawIndex);
+            // Check if a shrink is necessary if so halve the array arrayLength
+            if (this.lastUsedIndex > 0 && this.lastUsedIndex <= this.arrayLength / 4) {
+                await this.resize(context, Math.floor(this.arrayLength / 2), drawIndex);
             }
             
             return lastElement;
         }
     }
 
-    // Shrink capacity to array size
+    // Shrink arrayLength to array size
     async shrinkToFit(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        await this.resize(context, this.arraySize, drawIndex);
+        await this.resize(context, this.lastUsedIndex, drawIndex);
     }
 
-    // Remove the elements in the array, set arraySize to 0, capacity stays the same
+    // Remove the elements in the array, set size to 0, arrayLength stays the same
     clearAll(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        for (let i = 0; i < this.capacity; i++) {
+        for (let i = 0; i < this.arrayLength; i++) {
             this.cells[i].inUse = false;
             this.cells[i].content = "";
         }
-        this.arraySize = 0;
+        this.lastUsedIndex = 0;
         this.draw(context, drawIndex);
     }
 }
