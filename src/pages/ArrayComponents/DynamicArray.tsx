@@ -8,8 +8,8 @@ export class DynamicArray<T> extends StaticArray<T> {
     protected arrayLength: number;
     protected cells: DynamicArrayCell<T | null>[];
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: T[] = [], initialCapacity: number = contents.length, opacity: number = 1,) {
-        super(x, y, cellWidth, cellHeight, contents, initialCapacity, opacity);
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: T[] = [], initialCapacity: number = contents.length, protected opacity: number = 1, protected drawIndex: boolean = true) {
+        super(x, y, cellWidth, cellHeight, contents, initialCapacity, opacity, drawIndex);
         this.arrayLength = Math.max(initialCapacity, contents.length);
         this.cells = [];
         this.numElements = contents.length;
@@ -19,14 +19,14 @@ export class DynamicArray<T> extends StaticArray<T> {
         }
 
         for (let i = contents.length; i < this.arrayLength; i++) {
-            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, null, this.opacity, false));
+            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, null, this.opacity));
         }
     }
 
-    draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+    draw(context: CanvasRenderingContext2D) {
         this.cells.forEach(cell => {
             cell.opacity = this.opacity;
-            cell.drawCell(context, drawIndex);
+            cell.drawCell(context, this.drawIndex);
         });
     }
 
@@ -71,10 +71,13 @@ export class DynamicArray<T> extends StaticArray<T> {
         let index = -1;
     
         for (let i = 0; i < this.numElements; i++) {
+            const oldOutline = this.cells[i].outlineColor;
+            const oldFill = this.cells[i].fillColor;
+
             await new Promise<void>((resolve) => {
                 gsap.to(this, {
                     duration: iterationSpeed,
-                    onUpdate: () => {
+                    onStart: () => {
                         this.setOutlineColor(context, i, "red");
                         this.setFillColor(context, i, "yellow");
                         
@@ -87,8 +90,8 @@ export class DynamicArray<T> extends StaticArray<T> {
                     },
                     onComplete: () => {
                         // Reset outline and fill color when finished
-                        this.setOutlineColor(context, i, "black");
-                        this.setFillColor(context, i, "white");
+                        this.setOutlineColor(context, i, oldOutline);
+                        this.setFillColor(context, i, oldFill);
                         resolve();
                     }
                 });
@@ -104,15 +107,15 @@ export class DynamicArray<T> extends StaticArray<T> {
     }
 
     // Resize animations when the dynamic array must expand or shrink
-    private async resize(context: CanvasRenderingContext2D, newCapacity: number, drawIndex: boolean = true) {
+    private async resize(context: CanvasRenderingContext2D, newCapacity: number) {
         // Do nothing
         if (newCapacity === this.arrayLength) {
             return;
         }
 
-        let newArr = new DynamicArray<T>(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], newCapacity, 0);
+        let newArr = new DynamicArray<T>(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], newCapacity, 0, this.drawIndex);
 
-        this.draw(context, drawIndex);
+        this.draw(context);
 
         // Fade in the new array
         await new Promise<void>((resolve) => {
@@ -120,7 +123,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 opacity: this.opacity,
                 duration: 1,
                 onUpdate: () => {
-                    newArr.draw(context, drawIndex);
+                    newArr.draw(context);
                 },
                 onComplete: () => {
                     resolve();
@@ -132,13 +135,6 @@ export class DynamicArray<T> extends StaticArray<T> {
             const source = this.cells[index];
             const destination = newArr.cells[index];
             const timeline = gsap.timeline();
-
-            // Set destination cell inUse, so that it can hightlight properly
-            timeline.to(destination, {
-                onStart: () => {
-                    destination.inUse = true;
-                }
-            });
             
             // Highlight source cell
             timeline.to(source, {
@@ -146,7 +142,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 fillColor: "yellow",
                 duration: 1,
                 onUpdate: () => {
-                    source.drawCell(context, drawIndex);
+                    source.drawCell(context, this.drawIndex);
                 }
             });
 
@@ -156,7 +152,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 fillColor: "yellow",
                 duration: 1,
                 onUpdate: () => {
-                    destination.drawCell(context, drawIndex);
+                    destination.drawCell(context, this.drawIndex);
                 }
             });
 
@@ -176,25 +172,25 @@ export class DynamicArray<T> extends StaticArray<T> {
                 },
                 onUpdate: () => {
                     context.clearRect(source.x - 1, source.y + source.cellHeight + 2,  destination.cellWidth + 2, destination.y - (source.y + source.cellHeight + 1));
-                    source.drawCell(context, drawIndex);
-                    destination.drawCell(context, drawIndex);
+                    source.drawCell(context, this.drawIndex);
+                    destination.drawCell(context, this.drawIndex);
                     context.fillText(displayContent, source.x + source.cellWidth / 2, heightTracker.currHeight);
                 },
                 onComplete: () => {
                     context.restore();
                     source.outlineColor = "black";
                     source.fillColor = "white";
-                    source.drawCell(context, drawIndex)
+                    source.drawCell(context, this.drawIndex)
                     destination.outlineColor = "black";
                     destination.fillColor = "white";
                     destination.content = source.content;
-                    destination.drawCell(context, drawIndex);
+                    destination.drawCell(context, this.drawIndex);
                     resolve()
                 }
             });
         });
 
-        // Copy all the elemnts
+        // Copy all the elements
         for (let i = 0; i < this.numElements; i++) {
             await copyElement(i);
         }
@@ -205,7 +201,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 opacity: 0,
                 duration: 1,
                 onUpdate: () => {
-                    this.draw(context, drawIndex);
+                    this.draw(context);
                 },
                 onComplete: resolve
             });
@@ -218,7 +214,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 duration: 1,
                 onUpdate: () => {
                     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-                    newArr.draw(context, drawIndex);
+                    newArr.draw(context);
                 },
                 onComplete: resolve
             });
@@ -239,12 +235,12 @@ export class DynamicArray<T> extends StaticArray<T> {
     }
 
     // Add element to the end of the array
-    async append(context: CanvasRenderingContext2D, element: T, drawIndex: boolean = true) {
+    async append(context: CanvasRenderingContext2D, element: T) {
         this.ensureInitialCapacity();
 
         // Check if an expansion is necessary, if so double the array arrayLength
         if (this.numElements >= this.arrayLength) {
-            await this.resize(context, this.arrayLength * 2, drawIndex);
+            await this.resize(context, this.arrayLength * 2);
         }
         else {
             // Add delay into the animation, may add in a variable for time
@@ -254,30 +250,27 @@ export class DynamicArray<T> extends StaticArray<T> {
         }
         
         this.cells[this.numElements].content = element;
-        this.cells[this.numElements].inUse = true;
-        this.cells[this.numElements].drawCell(context, drawIndex);
+        this.cells[this.numElements].drawCell(context, this.drawIndex);
         this.numElements++;
     }
 
     // Insert an element at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, element: T, drawIndex: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, element: T) {
         if (this.checkInsertIndex(index)) {
             this.ensureInitialCapacity();
             let shiftHappened = false;
 
             // Check if an expansion is necessary, if so double the array arrayLength
             if (this.numElements >= this.arrayLength) {
-                await this.resize(context, this.arrayLength * 2, drawIndex);
+                await this.resize(context, this.arrayLength * 2);
             }
 
             for (let i = this.numElements; i > index; i--) {
                 // Shift following elements forward one index
                 this.cells[i].content = this.cells[i - 1].content;
-                this.cells[i].inUse = this.cells[i - 1].inUse;
-                this.cells[i - 1].inUse = false;
                 this.cells[i - 1].content = null;
-                this.cells[i - 1].drawCell(context, drawIndex);
-                this.cells[i].drawCell(context, drawIndex);
+                this.cells[i - 1].drawCell(context, this.drawIndex);
+                this.cells[i].drawCell(context, this.drawIndex);
                 shiftHappened = true;
                 // Add delay into the animation, may add in a variable for time
                 await new Promise<void>((resolve) => setTimeout(resolve, 1000));
@@ -291,8 +284,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                 const delay = (shiftHappened)? 0: 1000;
                 setTimeout(() => {
                     this.cells[index].content = element;
-                    this.cells[index].inUse = true;
-                    this.cells[index].drawCell(context, drawIndex);
+                    this.cells[index].drawCell(context, this.drawIndex);
                     resolve();
                 }, delay);
             });
@@ -300,7 +292,7 @@ export class DynamicArray<T> extends StaticArray<T> {
     }
 
     // Remove element at the given index
-    async removeAt(context: CanvasRenderingContext2D, index: number, drawIndex: boolean = true) {
+    async removeAt(context: CanvasRenderingContext2D, index: number) {
         if (this.checkIndexValidity(index)) {
 
             await new Promise<void>((resolve) => {
@@ -308,8 +300,7 @@ export class DynamicArray<T> extends StaticArray<T> {
             });
 
             this.cells[index].content = null;
-            this.cells[index].inUse = false;
-            this.cells[index].drawCell(context, drawIndex);
+            this.cells[index].drawCell(context, this.drawIndex);
 
             for (let i = index; i < this.numElements - 1; i++) {
                 // Add delay into the animation, may add in a variable for time
@@ -318,25 +309,22 @@ export class DynamicArray<T> extends StaticArray<T> {
                 });
                 // Shift following elements one index back
                 this.cells[i].content = this.cells[i + 1].content;
-                this.cells[i].inUse = this.cells[i + 1].inUse;
-                this.cells[i].index = i;
                 this.cells[i + 1].content = null;
-                this.cells[i + 1].inUse = false;
-                this.cells[i].drawCell(context, drawIndex)
-                this.cells[i + 1].drawCell(context, drawIndex);
+                this.cells[i].drawCell(context, this.drawIndex)
+                this.cells[i + 1].drawCell(context, this.drawIndex);
             }
 
             this.numElements--;
 
             // Check if a shrink is necessary, if so halve the array arrayLength
             if (this.numElements > 0 && this.numElements <= this.arrayLength / 4) {
-                await this.resize(context, Math.floor(this.arrayLength / 2), drawIndex);
+                await this.resize(context, Math.floor(this.arrayLength / 2));
             }
         }
     }
 
     // Remove and return the element at the end of the array
-    async pop(context: CanvasRenderingContext2D, drawIndex: boolean = true): Promise<T | null | undefined> {
+    async pop(context: CanvasRenderingContext2D): Promise<T | null | undefined> {
         if (this.numElements <= 0) {
             console.warn("Cannot pop from empty array");
             return undefined;
@@ -349,12 +337,11 @@ export class DynamicArray<T> extends StaticArray<T> {
             this.numElements--;
             const lastElement = this.cells[this.numElements].content;
             this.cells[this.numElements].content = null;
-            this.cells[this.numElements].inUse = false;
-            this.cells[this.numElements].drawCell(context, drawIndex);
+            this.cells[this.numElements].drawCell(context, this.drawIndex);
 
             // Check if a shrink is necessary if so halve the array arrayLength
             if (this.numElements > 0 && this.numElements <= this.arrayLength / 4) {
-                await this.resize(context, Math.floor(this.arrayLength / 2), drawIndex);
+                await this.resize(context, Math.floor(this.arrayLength / 2));
             }
             
             return lastElement;
@@ -362,17 +349,16 @@ export class DynamicArray<T> extends StaticArray<T> {
     }
 
     // Shrink arrayLength to array size
-    async shrinkToFit(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        await this.resize(context, this.numElements, drawIndex);
+    async shrinkToFit(context: CanvasRenderingContext2D) {
+        await this.resize(context, Math.max(1, this.numElements));
     }
 
     // Remove the elements in the array, set size to 0, arrayLength stays the same
-    clearAll(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+    clearAll(context: CanvasRenderingContext2D) {
         for (let i = 0; i < this.arrayLength; i++) {
-            this.cells[i].inUse = false;
             this.cells[i].content = null;
         }
         this.numElements = 0;
-        this.draw(context, drawIndex);
+        this.draw(context);
     }
 }

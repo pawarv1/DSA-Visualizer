@@ -6,7 +6,7 @@ export class StaticArray<T> {
     protected arrayLength: number;
     protected cells: ArrayCell<T | null>[];
 
-    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: T[], initialSize: number = contents.length, protected opacity: number = 1) {
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: T[], initialSize: number = contents.length, protected opacity: number = 1, protected drawIndex: boolean = true) {
         this.arrayLength = Math.max(initialSize, contents.length);
         this.cells = [];
 
@@ -15,9 +15,9 @@ export class StaticArray<T> {
         }
     }
 
-    draw(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+    draw(context: CanvasRenderingContext2D) {
         context.save();
-        if (drawIndex) {
+        if (this.drawIndex) {
             let fontSize = Math.min(12, Math.floor(this.cellWidth / 4));
             context.globalAlpha = this.opacity;
             context.fillStyle = 'black';
@@ -29,7 +29,7 @@ export class StaticArray<T> {
         for (let i = 0; i < this.arrayLength; i++) {
             this.cells[i].opacity = this.opacity;
             this.cells[i].drawCell(context);
-            if (drawIndex) {
+            if (this.drawIndex) {
                 // Print index numbers below array cells
                 context.fillText(i.toString(), this.x + (this.cellWidth * i) + this.cellWidth / 2, this.y + this.cellHeight + 3);
             }

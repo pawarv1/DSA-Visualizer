@@ -8,8 +8,9 @@ export class ArrayCell<T> {
     opacity: number;
     outlineColor: string;
     fillColor: string;
+    font: string;
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: T, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: T | null, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
         this.x = x; 
         this.y = y;
         this.cellWidth = cellWidth;
@@ -18,10 +19,12 @@ export class ArrayCell<T> {
         this.opacity = opacity;
         this.outlineColor = outlineColor;     
         this.fillColor = fillColor;
+        this.font = '16px Arial';
     }
 
     // Adjust font size to fit within the cell
     protected adjustFontSize(context: CanvasRenderingContext2D) {
+        const displayContent = this.content === null ? "" : String(this.content);
         let fontSize = 16;
 
         context.save();
@@ -31,7 +34,7 @@ export class ArrayCell<T> {
         while (fontSize > 1) {
             const font = `${fontSize}px Arial`;
             context.font = font;
-            const textWidth = context.measureText(String(this.content)).width;
+            const textWidth = context.measureText(displayContent).width;
             if (textWidth <= this.cellWidth - 10) {
                 context.restore();
                 return font;
@@ -56,7 +59,8 @@ export class ArrayCell<T> {
         context.fillStyle = 'black';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
-        context.font = this.adjustFontSize(context);
+        this.font = this.adjustFontSize(context)
+        context.font = this.font
         context.fillText(displayContent, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
     }
@@ -79,14 +83,10 @@ export class ArrayCell<T> {
 // ArrayCell for dynamic arrays
 export class DynamicArrayCell<T> extends ArrayCell<T> {
     index: number;
-    inUse: boolean;
-    font: string;
 
-    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: T, opacity: number = 1, inUse: boolean = true, outlineColor: string = 'black', fillColor: string = 'white') {
+    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: T | null, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
         super(x, y, cellWidth, cellHeight, content, opacity, outlineColor, fillColor);
         this.index = index;
-        this.inUse = inUse;
-        this.font = '16px Arial';   // Track font for element movement during resizing
     }
 
     // Displays the index number of the cell
@@ -104,21 +104,7 @@ export class DynamicArrayCell<T> extends ArrayCell<T> {
 
     // Draw the cell
     drawCell(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
-        const displayContent = (this.content === null)? "": String(this.content);
-        this.clear(context, drawIndex);
-        context.save();
-        context.globalAlpha = this.opacity;
-        context.fillStyle = this.inUse ? this.fillColor : "#f0f0f0"; // Dim the cell if it is not in use, for dynamic arrays
-        context.fillRect(this.x, this.y, this.cellWidth, this.cellHeight);
-        context.strokeStyle = this.outlineColor;
-        context.strokeRect(this.x, this.y, this.cellWidth, this.cellHeight);
-        context.fillStyle = 'black';
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        this.font = this.adjustFontSize(context);
-        context.font = this.font;
-        context.fillText(displayContent, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
-        context.restore();
+        super.drawCell(context, drawIndex);
 
         if (drawIndex) {
             this.drawIndex(context);

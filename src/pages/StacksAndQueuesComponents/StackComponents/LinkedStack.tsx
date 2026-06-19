@@ -4,7 +4,7 @@ export class LinkedStack<T> {
     protected stack: LinkedList<T>;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
-        this.stack = new LinkedList(this.x, this.y, this.nodeWidth, this.nodeHeight, this.opacity);
+        this.stack = new LinkedList(x, y, nodeWidth, nodeHeight, opacity);
     }
 
     draw(context: CanvasRenderingContext2D) {
