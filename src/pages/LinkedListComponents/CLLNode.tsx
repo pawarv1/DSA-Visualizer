@@ -2,11 +2,11 @@ import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 import { SLLNode } from "./SLLNode";
 
 // Animates individual CLL nodes
-export class CircularLLNode extends SLLNode {
-    next: CircularLLNode | null;
+export class CircularLLNode<T> extends SLLNode<T> {
+    next: CircularLLNode<T> | null;
 
     // By default a node next pointer points to itself
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: T, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
         super(x, y, nodeWidth, nodeHeight, data, nodeOpacity, pointerOpacityNext, isSentinel, outlineColor, fillColor)
         this.next = this;
     }

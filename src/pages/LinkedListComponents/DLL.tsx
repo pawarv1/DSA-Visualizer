@@ -3,19 +3,13 @@ import { DLLNode } from "./DLLNode";
 import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Doubly linked list class
-export class DoublyLinkedList {
-    protected headPtr: DLLNode | null = null;
-    protected tailPtr: DLLNode | null = null;
+export class DoublyLinkedList<T> {
+    protected headPtr: DLLNode<T> | null = null;
+    protected tailPtr: DLLNode<T> | null = null;
     protected numElements: number = 0;
-    protected staging: DLLNode[] = [];
+    protected staging: DLLNode<T>[] = [];
 
-    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
-        this.x = x;
-        this.y = y;
-        this.nodeWidth = nodeWidth;
-        this.nodeHeight = nodeHeight;
-        this.opacity = opacity;
-    }
+    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {}
 
     protected render = (context: CanvasRenderingContext2D) => {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
@@ -23,12 +17,12 @@ export class DoublyLinkedList {
     }
 
     // Preload the DLL without gsap animating
-    loadDLL(context: CanvasRenderingContext2D, nodeData: any[]) {
+    loadDLL(context: CanvasRenderingContext2D, nodeData: T[]) {
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
         this.staging = [];
-        let currNode = null;
+        let currNode: DLLNode<T> | null = null;
 
         for (let i = 0; i < nodeData.length; i++) {
             if (currNode === null) {
@@ -56,7 +50,6 @@ export class DoublyLinkedList {
         for (const s of staged) s.drawNode(context, false);
         for (const n of nodes) n.drawPointers(context);
         for (const s of staged) s.drawPointers(context);
-
     }
 
     getNumElements() {
@@ -96,7 +89,7 @@ export class DoublyLinkedList {
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: T) {
         let currNode = this.headPtr;
         let index = 0;
 
@@ -145,8 +138,8 @@ export class DoublyLinkedList {
     }
     
     // Insert at the end of the DLL
-    async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-        let newNode: DLLNode;
+    async append(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
+        let newNode: DLLNode<T>;
 
         if (this.headPtr === null) {
             newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
@@ -175,7 +168,7 @@ export class DoublyLinkedList {
     }
 
     // Insert to the head of the DLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         const newNode = new DLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
         if (this.headPtr === null) {
@@ -205,7 +198,7 @@ export class DoublyLinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: T, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -433,7 +426,7 @@ export class DoublyLinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
+    async delete(context: CanvasRenderingContext2D, data: T, fadeOutTime: number = 1) {
         let deleteNode = this.headPtr;
 
         while (deleteNode != null) {

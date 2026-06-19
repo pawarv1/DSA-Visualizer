@@ -2,13 +2,13 @@ import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 import { DLLNode } from "./DLLNode";
 
 // Animates individual CDLL nodes
-export class CircularDLLNode extends DLLNode{
-    next: CircularDLLNode | null;
-    prev: CircularDLLNode | null;
+export class CircularDLLNode<T> extends DLLNode<T>{
+    next: CircularDLLNode<T> | null;
+    prev: CircularDLLNode<T> | null;
 
     // By default a node next and prev pointers points to itself
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
-        super(x, y, nodeWidth, nodeHeight, data, nodeOpacity, pointerOpacityNext, pointerOpacityNext, isSentinel, outlineColor, fillColor);
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: T, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
+        super(x, y, nodeWidth, nodeHeight, data, nodeOpacity, pointerOpacityNext, pointerOpacityPrev, isSentinel, outlineColor, fillColor);
         this.next = this;
         this.prev = this;
     }

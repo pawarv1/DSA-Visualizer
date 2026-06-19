@@ -3,9 +3,9 @@ import { CircularDLLNode } from "./CircularDLLNode";
 import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL } from "./LLHelpers";
 
 // Circular Doubly Linked List class extends DoublyLinkedList
-export class CircularDLL extends DoublyLinkedList {
-    protected headPtr: CircularDLLNode | null = null;
-    protected tailPtr: CircularDLLNode | null = null;
+export class CircularDLL<T> extends DoublyLinkedList<T> {
+    protected headPtr: CircularDLLNode<T> | null = null;
+    protected tailPtr: CircularDLLNode<T> | null = null;
     protected pointersOnTop: boolean = false;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
@@ -13,7 +13,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Preload the CDLL without gsap animating
-    loadDLL(context: CanvasRenderingContext2D, nodeData: any[]) {
+    loadDLL(context: CanvasRenderingContext2D, nodeData: T[]) {
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -43,8 +43,8 @@ export class CircularDLL extends DoublyLinkedList {
 
     // Draw the CDLL
     draw(context: CanvasRenderingContext2D) {
-        const nodes: CircularDLLNode[] = collectNodes(this.headPtr, this.tailPtr);
-        const staging: CircularDLLNode[] = this.staging ?? [];
+        const nodes: CircularDLLNode<T>[] = collectNodes(this.headPtr, this.tailPtr);
+        const staging: CircularDLLNode<T>[] = this.staging ?? [];
         const all = [...nodes, ...staging];
         if (all.length === 0) return;
 
@@ -58,7 +58,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Search through the CDLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: T) {
         // Return early if the list is empty
         if (!this.headPtr) {
             return -1;
@@ -122,9 +122,9 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Insert at the end of the CDLL
-    async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async append(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         if (this.headPtr === null) {
-            let newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            const newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             this.headPtr = newNode;
             this.tailPtr = newNode;
             await withRenderTimeline(context, this.render, (tl) => {
@@ -132,7 +132,7 @@ export class CircularDLL extends DoublyLinkedList {
             });
         }
         else {
-            let newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+            const newNode = new CircularDLLNode(this.tailPtr!.x + this.nodeWidth * 2, this.tailPtr!.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
             newNode.next = null;
             newNode.prev = null;
             this.staging.push(newNode);
@@ -168,7 +168,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Insert to the head of the CDLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         const newNode = new CircularDLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
 
         if (!this.headPtr) {
@@ -177,7 +177,6 @@ export class CircularDLL extends DoublyLinkedList {
             await withRenderTimeline(context, this.render, (tl) => {
                 tl.to(newNode, { nodeOpacity: 1, pointerOpacityNext: 1, pointerOpacityPrev: 1, duration: fadeIntime });
             });
-            this.staging = this.staging.filter(n => n !== newNode);
         }
         else {
             newNode.next = null;
@@ -210,14 +209,14 @@ export class CircularDLL extends DoublyLinkedList {
                 tl.to(newNode, { pointerOpacityNext: 1, duration: fadeIntime });
                 tl.to(newNode, { pointerOpacityPrev: 1, duration: fadeIntime });
             });
-            this.staging = this.staging.filter(n => n !== newNode);
         }
+        this.staging = this.staging.filter(n => n !== newNode);
         this.headPtr = newNode; // Update the headPtr to the new node
         this.numElements++;
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: T, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -474,7 +473,7 @@ export class CircularDLL extends DoublyLinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
+    async delete(context: CanvasRenderingContext2D, data: T, fadeOutTime: number = 1) {
         if (this.headPtr === null) {
             return false;
         }

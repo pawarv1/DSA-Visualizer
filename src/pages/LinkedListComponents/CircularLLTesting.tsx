@@ -38,8 +38,8 @@ function CircularLLTestCases() {
             const text2 = new Text (100, 300, "");
             const cll = new CircularLinkedList(100, 100, 50, 30);
             cll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd']);
-            text1.setContent(await cll.getAt(mainContext, 0));
-            text2.setContent(await cll.getAt(mainContext, 3));
+            text1.setContent(await String(cll.getAt(mainContext, 0)));
+            text2.setContent(await String(cll.getAt(mainContext, 3)));
             text1.draw(mainContext);
             text2.draw(mainContext);
             setIsAnimating(false);

@@ -159,7 +159,7 @@ function LinkedListTestCases() {
             const text1 = new Text(100, 200, "");
             const ll = new LinkedList(80, 100, 50, 30);
             ll.loadLinkedList(mainContext, ['a', 'b', 'c', 'd', 'e', 'f']);
-            text1.setContent(await ll.getAt(mainContext, 5));
+            text1.setContent(await String(ll.getAt(mainContext, 5)));
             text1.draw(staticContext)
             setIsAnimating(false);
         }

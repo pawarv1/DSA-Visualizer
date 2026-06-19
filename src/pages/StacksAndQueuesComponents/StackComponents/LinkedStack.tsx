@@ -1,7 +1,7 @@
 import { LinkedList } from "../../LinkedListComponents/SLL";
 
-export class LinkedStack {
-    protected stack: LinkedList;
+export class LinkedStack<T> {
+    protected stack: LinkedList<T>;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         this.stack = new LinkedList(this.x, this.y, this.nodeWidth, this.nodeHeight, this.opacity);
@@ -11,7 +11,7 @@ export class LinkedStack {
         this.stack.draw(context);
     }
 
-    async push(context: CanvasRenderingContext2D, newElement: any) {
+    async push(context: CanvasRenderingContext2D, newElement: T) {
         await this.stack.prepend(context, newElement);
     }
 

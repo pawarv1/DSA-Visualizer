@@ -1,22 +1,22 @@
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual DLL nodes
-export class DLLNode {
+export class DLLNode<T> {
     x: number;
     y: number;
     nodeWidth: number;
     nodeHeight: number;
-    data: any;
+    data: T;
     nodeOpacity: number;
     pointerOpacityNext: number;
     pointerOpacityPrev: number;
-    next: DLLNode | null;
-    prev: DLLNode | null;
+    next: DLLNode<T> | null;
+    prev: DLLNode<T> | null;
     isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
 
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false,  outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: T, nodeOpacity: number = 1, pointerOpacityNext: number = 1, pointerOpacityPrev: number = 1, isSentinel: boolean = false,  outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -76,6 +76,7 @@ export class DLLNode {
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
+        const displayContent = (this.data === null)? "": String(this.data);
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -89,7 +90,7 @@ export class DLLNode {
         const font = this.adjustFontSize(context);
         context.font = font;
         if (!this.isSentinel) {
-            context.fillText(this.data, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
+            context.fillText(displayContent, this.x + this.nodeWidth / 2, this.y + this.nodeHeight / 2);
         }
         if (redrawPointer) {
             this.drawPointers(context);

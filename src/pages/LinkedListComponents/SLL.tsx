@@ -3,21 +3,13 @@ import { SLLNode } from "./SLLNode";
 import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Singly linked list class
-export class LinkedList {
-    protected headPtr: SLLNode | null;
-    protected tailPtr: SLLNode | null;
+export class LinkedList<T> {
+    protected headPtr: SLLNode<T> | null = null;
+    protected tailPtr: SLLNode<T> | null = null;
     protected numElements: number = 0;
-    protected staging: SLLNode[] = [];
+    protected staging: SLLNode<T>[] = [];
 
-    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
-        this.x = x;
-        this.y = y;
-        this.nodeWidth = nodeWidth;
-        this.nodeHeight = nodeHeight;
-        this.opacity = opacity;
-        this.headPtr = null;
-        this.tailPtr = null;
-    }
+    constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {}
 
     protected render = (context: CanvasRenderingContext2D) => {
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
@@ -25,7 +17,7 @@ export class LinkedList {
     };
 
     // Preload the SLL without gsap animating
-    loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
+    loadLinkedList(context: CanvasRenderingContext2D, nodeData: T[]) {
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -88,7 +80,7 @@ export class LinkedList {
     }
 
     // Search through the SLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: T) {
         let currNode = this.headPtr;
         let index = 0;
 
@@ -123,8 +115,8 @@ export class LinkedList {
     }
 
     // Insert at the end of the SLL
-    async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-        let newNode: SLLNode;
+    async append(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
+        let newNode: SLLNode<T>;
 
         if (this.headPtr === null) {
             newNode = new SLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
@@ -151,7 +143,7 @@ export class LinkedList {
     }
 
     // Insert to the head of the SLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         if (this.headPtr === null) {
             const newNode = new SLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
             this.headPtr = newNode;
@@ -180,7 +172,7 @@ export class LinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: T, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -379,7 +371,7 @@ export class LinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
+    async delete(context: CanvasRenderingContext2D, data: T, fadeOutTime: number = 1) {
         if (this.headPtr === null) {
             return false;
         }

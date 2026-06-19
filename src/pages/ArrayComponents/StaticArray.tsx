@@ -47,7 +47,7 @@ export class StaticArray<T> {
     }
 
     // Set the element at the given index
-    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: T) {
+    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: T | null) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
             // Set clearExtra to false so index numbers are not cleared if they are used

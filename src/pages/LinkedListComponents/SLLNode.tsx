@@ -1,21 +1,21 @@
 import { Arrow, Line } from "../GeneralAnimating/GeneralAnimationGraphics";
 
 // Animates individual SLL nodes
-export class SLLNode {
+export class SLLNode<T> {
     x: number;
     y: number;
     nodeWidth: number;
     nodeHeight: number;
-    data: any;
+    data: T;
     nodeOpacity: number;
     pointerOpacityNext: number;
-    next: SLLNode | null;
+    next: SLLNode<T> | null;
     isSentinel: boolean;
     outlineColor: string;
     fillColor: string;
 
     // Constructor sets next to null by default
-    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: any, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
+    constructor(x: number, y: number, nodeWidth: number, nodeHeight: number, data: T, nodeOpacity: number = 1, pointerOpacityNext: number = 1, isSentinel: boolean = false, outlineColor: string = "black", fillColor: string = "white") {
         this.x = x;
         this.y = y;
         this.nodeWidth = nodeWidth;
@@ -59,6 +59,7 @@ export class SLLNode {
     }
 
     drawNode(context: CanvasRenderingContext2D, redrawPointer: boolean = true) {
+        const displayContent = (this.data === null)? "": String(this.data);
         context.save();
         context.globalAlpha = this.nodeOpacity;
         context.fillStyle = this.fillColor;
@@ -72,7 +73,7 @@ export class SLLNode {
         const font = this.adjustFontSize(context);
         context.font = font;
         if (!this.isSentinel) {
-            context.fillText(this.data, this.x + this.nodeWidth / 3, this.y + this.nodeHeight / 2);
+            context.fillText(displayContent, this.x + this.nodeWidth / 3, this.y + this.nodeHeight / 2);
         }
         if (redrawPointer) {
             this.drawPointers(context);

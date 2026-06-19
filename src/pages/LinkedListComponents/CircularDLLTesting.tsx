@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Text } from '../GeneralAnimating/GeneralAnimationGraphics';
 import StepPlayer from '../GeneralAnimating/StepPlayer';
 import { CircularDLL } from './CircularDLL';
-import { context } from 'gsap';
 
 function CircularDLLTestCases() {
     let canvasWidth = 1000;
@@ -40,11 +39,11 @@ function CircularDLLTestCases() {
             const text3 = new Text(100, 500, "");
             const cdll = new CircularDLL(100, 100, 50, 30);
             cdll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
-            text1.setContent(await cdll.getAt(mainContext, 2));
+            text1.setContent(await String(cdll.getAt(mainContext, 2)));
             text1.draw(staticContext);
-            text2.setContent(await cdll.getAt(mainContext, 3));
+            text2.setContent(await String(cdll.getAt(mainContext, 3)));
             text2.draw(staticContext);
-            text3.setContent(await cdll.getAt(mainContext, 4));
+            text3.setContent(await String(cdll.getAt(mainContext, 4)));
             text3.draw(staticContext);
             setIsAnimating(false);
         }

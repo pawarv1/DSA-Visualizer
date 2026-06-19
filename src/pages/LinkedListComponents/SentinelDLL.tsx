@@ -4,15 +4,15 @@ import { DoublyLinkedList } from "./DLL";
 import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL, withRenderLoop } from "./LLHelpers";
 
 // Doubly linked list, but both the head and tail use sentinel nodes, inherits from regular Doubly Linked List
-export class SentinelDLL extends DoublyLinkedList {
-    protected headPtr: DLLNode;
-    protected tailPtr: DLLNode;
+export class SentinelDLL<T> extends DoublyLinkedList<T | null> {
+    protected headPtr: DLLNode<T | null>;
+    protected tailPtr: DLLNode<T | null>;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
         super(x, y, nodeWidth, nodeHeight, opacity);
         // Head and tail are set to sentinel nodes
-        this.headPtr = new DLLNode(x, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
-        this.tailPtr = new DLLNode(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
+        this.headPtr = new DLLNode<T | null>(x, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
+        this.tailPtr = new DLLNode<T | null>(x + nodeWidth * 2, y, nodeWidth, nodeHeight, null, opacity, opacity, opacity);
         this.headPtr.next = this.tailPtr;
         this.tailPtr.prev = this.headPtr;
         this.headPtr.isSentinel = true;
@@ -20,11 +20,18 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Preload the DLL without gsap animating
-    loadDLL(context: CanvasRenderingContext2D, nodeData: any[]) {
+    loadDLL(context: CanvasRenderingContext2D, nodeData: T[]) {
+        this.numElements = 0;
+        this.staging = [];
+
+        this.headPtr.next = this.tailPtr;
+        this.tailPtr.prev = this.headPtr;
+        this.tailPtr.x = this.headPtr.x + this.nodeWidth * 2;
+        
         let currNode = this.headPtr
         
         for (let i = 0; i < nodeData.length; i++) {
-            const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
+            const newNode = new DLLNode<T | null>(currNode.x + this.nodeWidth * 2, currNode.y, this.nodeWidth, this.nodeHeight, nodeData[i], this.opacity, this.opacity, this.opacity);
             newNode.next = this.tailPtr;    // Set newNode.next to the tail
             newNode.prev = currNode;    // Set newNode.prev to currNode
             currNode.next = newNode;    // Set currNode.next to newNode
@@ -71,7 +78,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Search through the DLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: T) {
         let currNode = this.headPtr.next!;
         let index = 0;
 
@@ -123,10 +130,10 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Insert right before sentinel tail node
-    async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async append(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         const prevNode = this.tailPtr.prev!;  // Store the node right before the tail
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        const newNode = new DLLNode(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        const newNode = new DLLNode<T | null>(prevNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         this.staging.push(newNode);
 
         await withRenderTimeline(context, this.render, (tl) => {
@@ -162,10 +169,10 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Insert right after sentinel head node
-    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {            
+    async prepend(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {            
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
         const nextNode = this.headPtr.next!;  // Save the next node after the head node using this pointer
-        const newNode = new DLLNode(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        const newNode = new DLLNode<T | null>(this.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         newNode.next = nextNode;    // Set newNode.next to nextNode
         newNode.prev = this.headPtr;    // Set newNode.prev to the sentinel head node
         this.staging.push(newNode);
@@ -204,7 +211,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: T, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if(index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -246,7 +253,7 @@ export class SentinelDLL extends DoublyLinkedList {
         // Insertions in the middle of the DLL
         const nextNode = currNode.next!;  // Save the next node after the current node using this pointer
         const initialY = this.y + this.nodeHeight * 2;  // New nodes will appear below the height of the rest of the linked list, before being moved up
-        const newNode = new DLLNode(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
+        const newNode = new DLLNode<T | null>(currNode.x + this.nodeWidth * 2, initialY, this.nodeWidth, this.nodeHeight, newData, 0, 0, 0);
         this.staging.push(newNode);
 
         await withRenderTimeline(context, this.render, (tl) => {
@@ -287,7 +294,7 @@ export class SentinelDLL extends DoublyLinkedList {
     async shift(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // No such node to remove so return early
         if (this.headPtr.next === this.tailPtr) {
-            return;
+            return null;
         }
 
         const firstRealNode = this.headPtr.next!;
@@ -327,7 +334,7 @@ export class SentinelDLL extends DoublyLinkedList {
     async pop(context: CanvasRenderingContext2D, fadeOutTime: number = 1) {
         // No such node to remove so return early
         if (this.headPtr.next === this.tailPtr) {
-            return;
+            return null;
         }
         const lastRealNode = this.tailPtr.prev!;
         const prevNode = lastRealNode.prev!;    // Save the node before lastRealNode with this pointer
@@ -427,7 +434,7 @@ export class SentinelDLL extends DoublyLinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
+    async delete(context: CanvasRenderingContext2D, data: T, fadeOutTime: number = 1) {
         let deleteNode = this.headPtr.next!;
 
         while (deleteNode != this.tailPtr) {

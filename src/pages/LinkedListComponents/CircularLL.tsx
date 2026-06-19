@@ -3,10 +3,10 @@ import { CircularLLNode } from "./CLLNode";
 import { collectNodes, highlightNode, withRenderTimeline, shiftNodesTL } from "./LLHelpers";
 
 // Circular linked list class, extends LinkedList
-export class CircularLinkedList extends LinkedList {
-    protected headPtr: CircularLLNode | null = null;
-    protected tailPtr: CircularLLNode | null = null;
-    protected staging: CircularLLNode[] = [];
+export class CircularLinkedList<T> extends LinkedList<T> {
+    protected headPtr: CircularLLNode<T> | null = null;
+    protected tailPtr: CircularLLNode<T> | null = null;
+    protected staging: CircularLLNode<T>[] = [];
     protected pointersOnTop: boolean = true;
 
     constructor(protected x: number, protected y: number, protected nodeWidth: number, protected nodeHeight: number, protected opacity: number = 1) {
@@ -14,7 +14,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Preload the CLL without gsap animating
-    loadLinkedList(context: CanvasRenderingContext2D, nodeData: any[]) {
+    loadLinkedList(context: CanvasRenderingContext2D, nodeData: T[]) {
         this.headPtr = null;
         this.tailPtr = null;
         this.numElements = 0;
@@ -44,8 +44,8 @@ export class CircularLinkedList extends LinkedList {
     draw(context: CanvasRenderingContext2D) {
         const nodes = collectNodes(this.headPtr, this.tailPtr);
         const staging = this.staging ?? [];
-        const seen = new Set<CircularLLNode>();
-        const all: CircularLLNode[] = [];
+        const seen = new Set<CircularLLNode<T>>();
+        const all: CircularLLNode<T>[] = [];
 
         for (const n of [...nodes, ...staging]) {
             if (!seen.has(n)) { seen.add(n); all.push(n); }
@@ -62,7 +62,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Search through the CLL for the given data argument, and return the index where it is found, or if not, -1
-    async find(context: CanvasRenderingContext2D, data: any) {
+    async find(context: CanvasRenderingContext2D, data: T) {
         // Return early if the list is empty
         if (this.headPtr === null) {
             return -1;
@@ -106,8 +106,8 @@ export class CircularLinkedList extends LinkedList {
     }
     
     // Insert at the end of the CLL
-    async append(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
-        let newNode: CircularLLNode;
+    async append(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
+        let newNode: CircularLLNode<T>;
 
         if (this.headPtr === null) {
             newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
@@ -136,7 +136,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Insert to the head of the CLL
-    async prepend(context: CanvasRenderingContext2D, newData: any, fadeIntime: number = 1) {
+    async prepend(context: CanvasRenderingContext2D, newData: T, fadeIntime: number = 1) {
         const newNode = new CircularLLNode(this.x, this.y, this.nodeWidth, this.nodeHeight, newData, 0, 0);
 
         // If the CLL was previously empty, tailPtr will also point to the newNode
@@ -167,7 +167,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Insert at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, newData: any, fadeIntime: number = 1) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, newData: T, fadeIntime: number = 1) {
         // Error if the insertion index is not valid
         if (index < 0 || index > this.numElements) {
             console.error(`Index ${index} is out of bounds`);
@@ -282,7 +282,7 @@ export class CircularLinkedList extends LinkedList {
             return null;
         }
         else {
-            let lastNode;
+            let lastNode: CircularLLNode<T>;
 
             // Set head and tail to null if the list will become empty
             if (this.headPtr.next === this.headPtr) {
@@ -294,10 +294,7 @@ export class CircularLinkedList extends LinkedList {
                 let currNode = this.headPtr;
 
                 // Highlight nodes to show traversal, stop before last node
-                const visited = new Set<CircularLLNode>();
                 while (currNode.next !== this.tailPtr) {
-                    if (visited.has(currNode)) break;
-                    visited.add(currNode);
                     await highlightNode(context, currNode, this.render);
                     currNode = currNode.next!;
                 }
@@ -390,7 +387,7 @@ export class CircularLinkedList extends LinkedList {
     }
 
     // Deletes based on the element value, as opposed to index like removeAt
-    async delete(context: CanvasRenderingContext2D, data: any, fadeOutTime: number = 1) {
+    async delete(context: CanvasRenderingContext2D, data: T, fadeOutTime: number = 1) {
         if (this.headPtr === null) {
             return false;
         }

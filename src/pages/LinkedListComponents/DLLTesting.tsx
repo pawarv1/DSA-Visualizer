@@ -28,11 +28,11 @@ function DoublyLLTestCases() {
             const text3 = new Text(100, 400, "");
             const dll = new DoublyLinkedList(100, 100, 50, 30);
             dll.loadDLL(mainContext, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
-            text1.setContent(await dll.getAt(mainContext, 2));
+            text1.setContent(await String(dll.getAt(mainContext, 2)));
             text1.draw(staticContext);
-            text2.setContent(await dll.getAt(mainContext, 3));
+            text2.setContent(await String(dll.getAt(mainContext, 3)));
             text2.draw(staticContext);
-            text3.setContent(await dll.getAt(mainContext, 4));
+            text3.setContent(await String(dll.getAt(mainContext, 4)));
             text3.draw(staticContext);
             setIsAnimating(false);
         }
