@@ -2,16 +2,16 @@ import gsap from 'gsap';
 import { ArrayCell } from './ArrayCell';
 
 // Array Class
-export class StaticArray {
-    protected readonly arrayLength: number;
-    protected cells: ArrayCell[];
+export class StaticArray<T> {
+    protected arrayLength: number;
+    protected cells: ArrayCell<T | null>[];
 
-    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: any[], initialSize: number = contents.length, protected opacity: number = 1) {
+    constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, contents: T[], initialSize: number = contents.length, protected opacity: number = 1) {
         this.arrayLength = Math.max(initialSize, contents.length);
         this.cells = [];
 
         for (let i = 0; i < this.arrayLength; i++) {
-            this.cells.push(new ArrayCell(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i] ?? "", this.opacity));
+            this.cells.push(new ArrayCell<T | null>(this.x + i * this.cellWidth, this.y, this.cellWidth, this.cellHeight, contents[i] ?? null, this.opacity));
         }
     }
 
@@ -37,8 +37,7 @@ export class StaticArray {
         context.restore();
     }
 
-    // Throws RangeError if index is out of bounds
-    // TODO May make access of this method protected after testing
+    // Returns false if index is out of bounds
     checkIndexValidity(index: number) {
         if (index < 0 || index >= this.arrayLength) {
             console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.arrayLength - 1})`);
@@ -48,7 +47,7 @@ export class StaticArray {
     }
 
     // Set the element at the given index
-    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: any) {
+    setElementAt(context: CanvasRenderingContext2D, index: number, newElement: T) {
         if (this.checkIndexValidity(index)) {
             this.cells[index].content = newElement;
             // Set clearExtra to false so index numbers are not cleared if they are used
@@ -102,12 +101,12 @@ export class StaticArray {
         }
     }
 
-    getArrayLength() {
+    getArrayLength(): number {
         return this.arrayLength;
     }
 
     // Return the element at the given index
-    getElementAt(index: number) {
+    getElementAt(index: number) : T | null | undefined {
         if (this.checkIndexValidity(index)) {
             return this.cells[index].content;
         }
@@ -121,22 +120,17 @@ export class StaticArray {
         const oldOutline = cell.outlineColor;
         const oldFill = cell.fillColor;
 
+        this.setOutlineColor(context, index, outlineColor, false);
+        this.setFillColor(context, index, fillColor, false);
+        cell.drawCell(context, false);
+
         await new Promise<void>((resolve) => {
-            gsap.to(this, {
-                duration: duration,
-                onUpdate: () => {
-                    this.setOutlineColor(context, index, outlineColor, true);
-                    this.setFillColor(context, index, fillColor, true);
-                },
-                onComplete: () => {
-                    // Set the outline and fill color back to normal when finished
-                    this.setOutlineColor(context, index, oldOutline, true);
-                    this.setFillColor(context, index, oldFill, true);
-                    cell.drawCell(context, false);
-                    resolve();
-                }
-            });
+            gsap.delayedCall(duration, resolve);
         });
+
+        this.setOutlineColor(context, index, oldOutline, false);
+        this.setFillColor(context, index, oldFill, false);
+        cell.drawCell(context, false);
     }
 
     // Traverse through the array and print each element
@@ -147,6 +141,9 @@ export class StaticArray {
             const timeline = gsap.timeline({onComplete: () => { resolve() }});
         
             for (let i = 0; i < this.getArrayLength(); i++) {
+                const oldOutline = this.cells[i].outlineColor;
+                const oldFill = this.cells[i].fillColor;
+                
                 timeline.to(this, {
                     duration: iterationSpeed,
                     onStart: () => {
@@ -156,8 +153,8 @@ export class StaticArray {
                     },
                     onComplete: () => {
                         // Set the outline and fill color back to normal when finished
-                        this.setOutlineColor(context, i, "black", true);
-                        this.setFillColor(context, i, "white", true);
+                        this.setOutlineColor(context, i, oldOutline, true);
+                        this.setFillColor(context, i, oldFill, true);
                     }
                 });
             }
@@ -169,6 +166,8 @@ export class StaticArray {
         if (this.checkIndexValidity(index1) && this.checkIndexValidity(index2)) {
             const cell1 = this.cells[index1];
             const cell2 = this.cells[index2];
+            const oldFill1 = cell1.fillColor;
+            const oldFill2 = cell2.fillColor;
             cell1.fillColor = "yellow";
             cell2.fillColor = "yellow";
             
@@ -211,8 +210,8 @@ export class StaticArray {
             swapContent();
             await fadeIn();
 
-            cell1.fillColor = "white";
-            cell2.fillColor = "white";
+            cell1.fillColor = oldFill1;
+            cell2.fillColor = oldFill2;
             cell1.drawCell(context, false);
             cell2.drawCell(context, false);
         }

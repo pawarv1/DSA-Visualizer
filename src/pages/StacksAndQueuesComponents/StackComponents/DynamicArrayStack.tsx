@@ -1,7 +1,7 @@
 import { DynamicArray } from "../../ArrayComponents/DynamicArray";
 
-export class DynamicArrayStack {
-    protected stack: DynamicArray;
+export class DynamicArrayStack<T> {
+    protected stack: DynamicArray<T | null>;
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, protected capacity: number, protected opacity: number = 1) {
         this.stack = new DynamicArray(this.x, this.y, this.cellWidth, this.cellHeight, [], this.capacity, this.opacity);
@@ -11,7 +11,7 @@ export class DynamicArrayStack {
         this.stack.draw(context, drawIndex);
     }
 
-    async push(context: CanvasRenderingContext2D, newElement: any, drawIndex: boolean = true) {
+    async push(context: CanvasRenderingContext2D, newElement: T, drawIndex: boolean = true) {
         this.draw(context, drawIndex);
         await this.stack.append(context, newElement, drawIndex);
     }

@@ -3,12 +3,12 @@ import { DynamicArrayCell } from './ArrayCell';
 import { StaticArray } from './StaticArray';
 
 // Dynamic Array Class, inherits from array class
-export class DynamicArray extends StaticArray {
+export class DynamicArray<T> extends StaticArray<T> {
     protected numElements: number;
     protected arrayLength: number;
-    protected cells: DynamicArrayCell[];
+    protected cells: DynamicArrayCell<T | null>[];
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: any[] = [], initialCapacity: number = contents.length, opacity: number = 1,) {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, contents: T[] = [], initialCapacity: number = contents.length, opacity: number = 1,) {
         super(x, y, cellWidth, cellHeight, contents, initialCapacity, opacity);
         this.arrayLength = Math.max(initialCapacity, contents.length);
         this.cells = [];
@@ -19,7 +19,7 @@ export class DynamicArray extends StaticArray {
         }
 
         for (let i = contents.length; i < this.arrayLength; i++) {
-            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, "", this.opacity, false));
+            this.cells.push(new DynamicArrayCell(this.x + i * this.cellWidth, this.y, i, this.cellWidth, this.cellHeight, null, this.opacity, false));
         }
     }
 
@@ -48,7 +48,7 @@ export class DynamicArray extends StaticArray {
     }
 
     // Ensure that there is an element at the given index
-    checkIndexValidity(index: number) {
+    checkIndexValidity(index: number): boolean {
         if (index < 0 || index >= this.numElements) {
             console.error(`Index ${index} is out of bounds (valid range: 0 to ${this.numElements - 1})`);
             return false;
@@ -57,17 +57,17 @@ export class DynamicArray extends StaticArray {
     }
     
     // Return number of elements in the array, as opposed to its length
-    getNumElements() {
+    getNumElements(): number {
         return this.numElements;
     }
 
     // Returns true if there are no elements in the array
-    isEmpty() {
+    isEmpty(): boolean {
         return this.numElements === 0;
     }
 
     // Search for an element in the dynamic array and return the index of where it was found, or -1 if it was not found
-    async search (context: CanvasRenderingContext2D, element: any, iterationSpeed: number = 1) {
+    async search (context: CanvasRenderingContext2D, element: T, iterationSpeed: number = 1): Promise<number> {
         let index = -1;
     
         for (let i = 0; i < this.numElements; i++) {
@@ -110,7 +110,7 @@ export class DynamicArray extends StaticArray {
             return;
         }
 
-        let newArr = new DynamicArray(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], newCapacity, 0);
+        let newArr = new DynamicArray<T>(this.x, this.y + 2 * this.cellHeight, this.cellWidth, this.cellHeight, [], newCapacity, 0);
 
         this.draw(context, drawIndex);
 
@@ -162,6 +162,7 @@ export class DynamicArray extends StaticArray {
 
             // Object to help with moving the element between array cells
             const heightTracker = {currHeight: source.y + source.cellHeight + 2};
+            const displayContent = (source.content === null)? "": String(source.content);
           
             // Slide the element from the source to the destination cell
             timeline.to(heightTracker, {
@@ -177,7 +178,7 @@ export class DynamicArray extends StaticArray {
                     context.clearRect(source.x - 1, source.y + source.cellHeight + 2,  destination.cellWidth + 2, destination.y - (source.y + source.cellHeight + 1));
                     source.drawCell(context, drawIndex);
                     destination.drawCell(context, drawIndex);
-                    context.fillText(source.content, source.x + source.cellWidth / 2, heightTracker.currHeight);
+                    context.fillText(displayContent, source.x + source.cellWidth / 2, heightTracker.currHeight);
                 },
                 onComplete: () => {
                     context.restore();
@@ -232,13 +233,13 @@ export class DynamicArray extends StaticArray {
     // Helper method to help with adding to an empty dynamic array
     private ensureInitialCapacity(): void {
         if (this.arrayLength === 0) {
-            this.cells.push(new DynamicArrayCell(this.x, this.y, 0, this.cellWidth, this.cellHeight, "", this.opacity));
+            this.cells.push(new DynamicArrayCell<T | null>(this.x, this.y, 0, this.cellWidth, this.cellHeight, null, this.opacity));
             this.arrayLength = 1;
         }
     }
 
     // Add element to the end of the array
-    async append(context: CanvasRenderingContext2D, element: any, drawIndex: boolean = true) {
+    async append(context: CanvasRenderingContext2D, element: T, drawIndex: boolean = true) {
         this.ensureInitialCapacity();
 
         // Check if an expansion is necessary, if so double the array arrayLength
@@ -259,7 +260,7 @@ export class DynamicArray extends StaticArray {
     }
 
     // Insert an element at the given index
-    async insertAt(context: CanvasRenderingContext2D, index: number, element: any, drawIndex: boolean = true) {
+    async insertAt(context: CanvasRenderingContext2D, index: number, element: T, drawIndex: boolean = true) {
         if (this.checkInsertIndex(index)) {
             this.ensureInitialCapacity();
             let shiftHappened = false;
@@ -274,7 +275,7 @@ export class DynamicArray extends StaticArray {
                 this.cells[i].content = this.cells[i - 1].content;
                 this.cells[i].inUse = this.cells[i - 1].inUse;
                 this.cells[i - 1].inUse = false;
-                this.cells[i - 1].content = "";
+                this.cells[i - 1].content = null;
                 this.cells[i - 1].drawCell(context, drawIndex);
                 this.cells[i].drawCell(context, drawIndex);
                 shiftHappened = true;
@@ -306,7 +307,7 @@ export class DynamicArray extends StaticArray {
                 setTimeout(() => {resolve()}, 1000);
             });
 
-            this.cells[index].content = "";
+            this.cells[index].content = null;
             this.cells[index].inUse = false;
             this.cells[index].drawCell(context, drawIndex);
 
@@ -319,7 +320,7 @@ export class DynamicArray extends StaticArray {
                 this.cells[i].content = this.cells[i + 1].content;
                 this.cells[i].inUse = this.cells[i + 1].inUse;
                 this.cells[i].index = i;
-                this.cells[i + 1].content = "";
+                this.cells[i + 1].content = null;
                 this.cells[i + 1].inUse = false;
                 this.cells[i].drawCell(context, drawIndex)
                 this.cells[i + 1].drawCell(context, drawIndex);
@@ -335,10 +336,10 @@ export class DynamicArray extends StaticArray {
     }
 
     // Remove and return the element at the end of the array
-    async pop(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+    async pop(context: CanvasRenderingContext2D, drawIndex: boolean = true): Promise<T | null | undefined> {
         if (this.numElements <= 0) {
             console.warn("Cannot pop from empty array");
-            return false;
+            return undefined;
         }
         else {
             await new Promise<void>((resolve) => {
@@ -347,7 +348,7 @@ export class DynamicArray extends StaticArray {
 
             this.numElements--;
             const lastElement = this.cells[this.numElements].content;
-            this.cells[this.numElements].content = "";
+            this.cells[this.numElements].content = null;
             this.cells[this.numElements].inUse = false;
             this.cells[this.numElements].drawCell(context, drawIndex);
 
@@ -369,7 +370,7 @@ export class DynamicArray extends StaticArray {
     clearAll(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
         for (let i = 0; i < this.arrayLength; i++) {
             this.cells[i].inUse = false;
-            this.cells[i].content = "";
+            this.cells[i].content = null;
         }
         this.numElements = 0;
         this.draw(context, drawIndex);

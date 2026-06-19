@@ -105,7 +105,10 @@ export class DHHashTable {
             for (let i = 0; i < oldBucketsLen; i++) {
                 await oldBuckets.highlightCellFor(context, i);
                 if (oldBuckets.getStateAt(i) == "F") {
-                    await this.add(context, oldBuckets.getElementAt(i));
+                    const currElement = oldBuckets.getElementAt(i);
+                    if (typeof(currElement) == "number") {
+                        await this.add(context, currElement);
+                    }
                 }
             }
 

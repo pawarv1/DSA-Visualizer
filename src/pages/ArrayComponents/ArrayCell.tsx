@@ -1,15 +1,15 @@
 // ArrayCell Class, animates individual array cells
-export class ArrayCell {
+export class ArrayCell<T> {
     x: number;
     y: number;
     cellWidth: number;
     cellHeight: number;
-    content: any;
+    content: T | null;
     opacity: number;
     outlineColor: string;
     fillColor: string;
 
-    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
+    constructor(x: number, y: number, cellWidth: number, cellHeight: number, content: T, opacity: number = 1, outlineColor: string = 'black', fillColor: string = 'white') {
         this.x = x; 
         this.y = y;
         this.cellWidth = cellWidth;
@@ -45,6 +45,7 @@ export class ArrayCell {
 
     // Draw the cell
     drawCell(context: CanvasRenderingContext2D, clearExtra: boolean = true) {
+        const displayContent = (this.content === null)? "": String(this.content);
         this.clear(context, clearExtra);
         context.save();
         context.globalAlpha = this.opacity;
@@ -56,7 +57,7 @@ export class ArrayCell {
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.font = this.adjustFontSize(context);
-        context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
+        context.fillText(displayContent, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
     }
 
@@ -76,12 +77,12 @@ export class ArrayCell {
 
 
 // ArrayCell for dynamic arrays
-export class DynamicArrayCell extends ArrayCell {
+export class DynamicArrayCell<T> extends ArrayCell<T> {
     index: number;
     inUse: boolean;
     font: string;
 
-    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: any, opacity: number = 1, inUse: boolean = true, outlineColor: string = 'black', fillColor: string = 'white') {
+    constructor(x: number, y: number, index: number, cellWidth: number, cellHeight: number, content: T, opacity: number = 1, inUse: boolean = true, outlineColor: string = 'black', fillColor: string = 'white') {
         super(x, y, cellWidth, cellHeight, content, opacity, outlineColor, fillColor);
         this.index = index;
         this.inUse = inUse;
@@ -103,6 +104,7 @@ export class DynamicArrayCell extends ArrayCell {
 
     // Draw the cell
     drawCell(context: CanvasRenderingContext2D, drawIndex: boolean = true) {
+        const displayContent = (this.content === null)? "": String(this.content);
         this.clear(context, drawIndex);
         context.save();
         context.globalAlpha = this.opacity;
@@ -115,7 +117,7 @@ export class DynamicArrayCell extends ArrayCell {
         context.textBaseline = 'middle';
         this.font = this.adjustFontSize(context);
         context.font = this.font;
-        context.fillText(this.content, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
+        context.fillText(displayContent, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
 
         if (drawIndex) {

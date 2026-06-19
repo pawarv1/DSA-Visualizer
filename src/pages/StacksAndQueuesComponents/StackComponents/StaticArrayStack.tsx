@@ -1,8 +1,8 @@
 import { StaticArray } from "../../ArrayComponents/StaticArray";
 
-export class StaticArrayStack {
+export class StaticArrayStack<T> {
     protected numElements: number = 0;
-    protected stack: StaticArray;
+    protected stack: StaticArray<T>;
 
     constructor(protected x: number, protected y: number, protected cellWidth: number, protected cellHeight: number, protected capacity: number, protected opacity: number = 1) {
         this.stack = new StaticArray(this.x, this.y, this.cellWidth, this.cellHeight, [], this.capacity, this.opacity);
@@ -12,7 +12,7 @@ export class StaticArrayStack {
         this.stack.draw(context, drawIndex);
     }
 
-    async push(context: CanvasRenderingContext2D, newElement: any, highlightDuration: number = 1, drawIndex: boolean = true) {
+    async push(context: CanvasRenderingContext2D, newElement: T, highlightDuration: number = 1, drawIndex: boolean = true) {
         if (this.numElements >= this.capacity) {
             console.warn("Stack Overflow");
             return;
@@ -34,7 +34,7 @@ export class StaticArrayStack {
         this.numElements--;
         await this.stack.highlightCellFor(context, this.numElements, highlightDuration);
         const poppedElement = this.stack.getElementAt(this.numElements);
-        this.stack.setElementAt(context, this.numElements, "");
+        this.stack.setElementAt(context, this.numElements, null);
         return poppedElement;
     }
 

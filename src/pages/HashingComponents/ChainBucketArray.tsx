@@ -7,7 +7,7 @@ export interface ChainDrawable {
   moveLLTo(x: number, y: number): void;
 }
 
-class BucketArrayCell<TChain extends ChainDrawable> extends ArrayCell {
+class BucketArrayCell<TChain extends ChainDrawable> extends ArrayCell<TChain> {
     private pointerArrow: Arrow;
     content: TChain;
 

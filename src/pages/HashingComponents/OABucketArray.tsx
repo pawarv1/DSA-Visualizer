@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { ArrayCell } from '../ArrayComponents/ArrayCell';
 
-class OABucketArrayCell extends ArrayCell {
+class OABucketArrayCell extends ArrayCell<number | string> {
     // State variable can be Empty ("E"), Full ("F"), or Tombstone ("T")
     state: string = "E";
 
@@ -47,7 +47,7 @@ class OABucketArrayCell extends ArrayCell {
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.font = this.adjustFontSize(context);
-        context.fillText(displayContent, this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
+        context.fillText(String(displayContent), this.x + this.cellWidth / 2, this.y + this.cellHeight / 2);
         context.restore();
     }
 

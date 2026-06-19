@@ -87,7 +87,7 @@ function DynamicArrayTestCases() {
     const step4 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: append()");
-      const array = new DynamicArray(100, 100, 60, 50, []);
+      const array = new DynamicArray(100, 100, 60, 50);
       header.draw(staticContext);
       array.draw(mainContext);
       
@@ -103,7 +103,7 @@ function DynamicArrayTestCases() {
     const step5 = async() => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: insertAt()");
-      const array = new DynamicArray(100, 100, 60, 50, []);
+      const array = new DynamicArray(100, 100, 60, 50);
       header.draw(staticContext);
       array.draw(mainContext);
 
@@ -146,16 +146,16 @@ function DynamicArrayTestCases() {
       header.draw(staticContext);
       array.draw(mainContext);
 
-      text5.setContent(await array.pop(mainContext))
+      text5.setContent(String(await array.pop(mainContext)))
       text1.draw(staticContext);
       text5.draw(staticContext);
-      text6.setContent(await array.pop(mainContext))
+      text6.setContent(String(await array.pop(mainContext)))
       text2.draw(staticContext);
       text6.draw(staticContext);
-      text7.setContent(await array.pop(mainContext))
+      text7.setContent(String(await array.pop(mainContext)))
       text3.draw(staticContext);
       text7.draw(staticContext);
-      text8.setContent(await array.pop(mainContext))  // Should trigger a resize
+      text8.setContent(String(await array.pop(mainContext)))  // Should trigger a resize
       text4.draw(staticContext);
       text8.draw(staticContext);
       setIsAnimating(false);
@@ -172,7 +172,7 @@ function DynamicArrayTestCases() {
       array.draw(mainContext);
 
       //Should give a console error
-      text2.setContent(await array.pop(mainContext));
+      text2.setContent(String(await array.pop(mainContext)));
       text1.draw(mainContext);
       text2.draw(mainContext)
       setIsAnimating(false);
@@ -209,7 +209,7 @@ function DynamicArrayTestCases() {
     const step11 = async () => {
       setIsAnimating(true);
       const header = new Text(70, 40, "DynamicArray: isEmpty()");
-      const array = new DynamicArray(100, 100, 60, 50, []);
+      const array = new DynamicArray(100, 100, 60, 50);
       header.draw(mainContext);
       array.draw(mainContext);
       const text1 = new Text (100, 300, "array.isEmpty() =", 1, "16px Arial");

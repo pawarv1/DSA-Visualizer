@@ -66,7 +66,7 @@ function StaticArrayTestCases() {
       const testCaseHeader = new Text (70, 40, "Array index access");
       const array = new StaticArray (100, 100, 80, 50, ['A']);
       const text1 = new Text (100, 200, "Array[0] =");
-      const text2 =  new Text (200,200, array.getElementAt(0), 0);
+      const text2 =  new Text (200,200, String(array.getElementAt(0)), 0);
 
       testCaseHeader.draw(staticContext);
       array.draw(staticContext);

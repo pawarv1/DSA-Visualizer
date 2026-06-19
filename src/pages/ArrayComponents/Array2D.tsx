@@ -2,10 +2,10 @@ import gsap from 'gsap';
 import { ArrayCell } from './ArrayCell';
 
 // 2D Array Class
-export class Array2D {
-    private cells: ArrayCell[][];
+export class Array2D<T> {
+    private cells: ArrayCell<T | null>[][];
 
-    constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: any[], private opacity: number = 1) {
+    constructor(private x: number, private y: number, private cellWidth: number, private cellHeight: number, private rows: number, private columns: number, contents: T[], private opacity: number = 1) {
         // Cannot make a 2D array if its shape is invalid
         const capacity = rows * columns;
 
@@ -29,7 +29,7 @@ export class Array2D {
         for (let i = 0; i < rows * columns; i++) {
             const currRow = Math.floor(i / columns);
             const currCol = i % columns;
-            this.cells[currRow][currCol] = new ArrayCell(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, this.cellWidth, this.cellHeight, contents[i] ?? "", this.opacity);
+            this.cells[currRow][currCol] = new ArrayCell<T | null>(this.x + currCol * this.cellWidth, this.y + currRow * this.cellHeight, this.cellWidth, this.cellHeight, contents[i] ?? null, this.opacity);
         }
     }
 
@@ -63,8 +63,7 @@ export class Array2D {
         }
     }
 
-    // Throws RangeError if either index is out of bounds
-    // TODO May make access of this method protected after testing
+    // Returns false if either index is out of bounds
     checkIndexValidity(rowIndex: number, columnIndex: number) {
         if ((rowIndex < 0 || rowIndex >= this.rows) || (columnIndex < 0 || columnIndex >= this.columns)) {
             console.error(`[${rowIndex}, ${columnIndex}] is out of bounds`);
@@ -74,7 +73,7 @@ export class Array2D {
     }
 
     // Set the element at the given indexes
-    setElementAt(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, newElement: any) {
+    setElementAt(context: CanvasRenderingContext2D, rowIndex: number, columnIndex: number, newElement: T) {
         if (this.checkIndexValidity(rowIndex, columnIndex)) {
             this.cells[rowIndex][columnIndex].content = newElement;
             this.cells[rowIndex][columnIndex].drawCell(context, false);
@@ -125,21 +124,21 @@ export class Array2D {
     }
 
     // Get the row size of the array
-    getArrayLength() {
+    getArrayLength(): number {
         return this.cells.length;
     }
 
     // Get the column size of the array
-    getArrayLengthAtRow(rowIndex: number) {
+    getArrayLengthAtRow(rowIndex: number): number | undefined {
         if (rowIndex < 0 || rowIndex >= this.rows) {
             console.error(`${rowIndex} is out of bounds`);
-            return false;
+            return undefined;
         }
         return this.cells[rowIndex].length;
     }
 
     // Return the element at the given indexes
-    getElementAt(rowIndex: number, columnIndex: number) {
+    getElementAt(rowIndex: number, columnIndex: number): T | null | undefined {
         if (this.checkIndexValidity(rowIndex, columnIndex)) {
             return this.cells[rowIndex][columnIndex].content;
         }
@@ -154,6 +153,9 @@ export class Array2D {
         
             for (let i = 0; i < this.rows; i++) {
                 for (let j = 0; j < this.columns; j++) {
+                    const oldOutline = this.cells[i][j].outlineColor;
+                    const oldFill = this.cells[i][j].fillColor;
+
                     timeline.to(this, {
                         duration: iterationSpeed,
                         onStart: () => {
@@ -163,8 +165,8 @@ export class Array2D {
                         },
                         onComplete: () => {
                             // Set the outline and fill color back to normal when finished
-                            this.setOutlineColor(context, i, j, "black");
-                            this.setFillColor(context, i, j, "white");
+                            this.setOutlineColor(context, i, j, oldOutline);
+                            this.setFillColor(context, i, j, oldFill);
                         }
                     });
                 }
@@ -177,6 +179,8 @@ export class Array2D {
         if (this.checkIndexValidity(rowIndex1, columnIndex1) && this.checkIndexValidity(rowIndex2, columnIndex2)) {
             const cell1 = this.cells[rowIndex1][columnIndex1];
             const cell2 = this.cells[rowIndex2][columnIndex2];
+            const oldFill1 = cell1.fillColor;
+            const oldFill2 = cell2.fillColor;
             cell1.fillColor = "yellow";
             cell2.fillColor = "yellow";
             
@@ -217,8 +221,8 @@ export class Array2D {
             swapContent();
             await fadeIn();
 
-            cell1.fillColor = "white";
-            cell2.fillColor = "white";
+            cell1.fillColor = oldFill1;
+            cell2.fillColor = oldFill2;
             cell1.drawCell(context, false);
             cell2.drawCell(context, false);
         }
