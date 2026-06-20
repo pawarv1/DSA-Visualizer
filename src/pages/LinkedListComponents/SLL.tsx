@@ -59,6 +59,20 @@ export class LinkedList<T> {
         return this.numElements;
     }
 
+    async getHead(context: CanvasRenderingContext2D, animate: boolean = true) {
+        if (this.headPtr && animate) {
+            await highlightNode(context, this.headPtr, this.render);
+        }
+        return this.headPtr;
+    }
+
+    async getTail(context: CanvasRenderingContext2D, animate: boolean = true) {
+        if (this.tailPtr && animate) {
+            await highlightNode(context, this.tailPtr, this.render);
+        }
+        return this.tailPtr;
+    }
+
     // Return the data at the given index
     async getAt(context: CanvasRenderingContext2D, index: number) {
         // Error if the index is not valid

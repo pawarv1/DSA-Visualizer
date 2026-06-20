@@ -30,18 +30,18 @@ export class LinkedStack<T> {
             return;
         }
 
-        return await this.stack.getAt(context, 0);
+        return await this.stack.getHead(context);
     }
 
     isEmpty() {
         return this.stack.getNumElements() === 0;
     }
 
-    getSize() {
+    getNumElements() {
         return this.stack.getNumElements();
     }
 
-    clear(context: CanvasRenderingContext2D) {
-        this.stack.clearAll(context);
+    async clear(context: CanvasRenderingContext2D) {
+        await this.stack.clearAll(context);
     }
 }
