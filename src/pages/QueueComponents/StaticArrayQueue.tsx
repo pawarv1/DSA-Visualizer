@@ -38,7 +38,7 @@ export class StaticArrayQueue<T> {
         const removed_element = this.queue.getElementAt(this.front);
         this.queue.setElementAt(context, this.front, null);
         this.front = (this.front + 1) % this.capacity;
-        this.numElements -= 1;
+        this.numElements--;
         return removed_element;
     }
 
@@ -73,14 +73,11 @@ export class StaticArrayQueue<T> {
         return this.numElements === 0;
     }
 
-    getSize() {
+    getNumElements() {
         return this.numElements;
     }
 
-    clearQueue(context: CanvasRenderingContext2D) {
+    clear(context: CanvasRenderingContext2D) {
         this.queue.clear(context);
-        this.front = 0;
-        this.rear = 0;
-        this.numElements = 0;
     }
 }

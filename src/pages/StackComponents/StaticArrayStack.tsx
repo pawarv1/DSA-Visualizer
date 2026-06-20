@@ -63,6 +63,5 @@ export class StaticArrayStack<T> {
 
     clearStack(context: CanvasRenderingContext2D) {
         this.stack.clear(context);
-        this.numElements = 0;
     }
 }

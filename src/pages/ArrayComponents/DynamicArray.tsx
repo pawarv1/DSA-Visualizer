@@ -180,7 +180,7 @@ export class DynamicArray<T> extends StaticArray<T> {
                     context.restore();
                     source.outlineColor = "black";
                     source.fillColor = "white";
-                    source.drawCell(context, this.drawIndex)
+                    source.drawCell(context, this.drawIndex);
                     destination.outlineColor = "black";
                     destination.fillColor = "white";
                     destination.content = source.content;
