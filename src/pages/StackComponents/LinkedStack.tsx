@@ -1,4 +1,4 @@
-import { LinkedList } from "../../LinkedListComponents/SLL";
+import { LinkedList } from "../LinkedListComponents/SLL";
 
 export class LinkedStack<T> {
     protected stack: LinkedList<T>;

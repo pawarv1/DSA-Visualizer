@@ -1,4 +1,4 @@
-import { DynamicArray } from "../../ArrayComponents/DynamicArray";
+import { DynamicArray } from "../ArrayComponents/DynamicArray";
 
 export class DynamicArrayStack<T> {
     protected stack: DynamicArray<T | null>;

@@ -1,4 +1,4 @@
-import { StaticArray } from "../../ArrayComponents/StaticArray";
+import { StaticArray } from "../ArrayComponents/StaticArray";
 
 export class StaticArrayStack<T> {
     protected numElements: number = 0;
@@ -13,7 +13,7 @@ export class StaticArrayStack<T> {
     }
 
     async push(context: CanvasRenderingContext2D, newElement: T, highlightDuration: number = 1) {
-        if (this.numElements >= this.capacity) {
+        if (this.isFull()) {
             console.warn("Stack Overflow");
             return;
         }
@@ -49,6 +49,10 @@ export class StaticArrayStack<T> {
         return this.stack.getElementAt(this.numElements - 1);
     }
 
+    isFull() {
+        return this.numElements === this.capacity;
+    }
+
     isEmpty() {
         return this.numElements === 0;
     }
@@ -57,7 +61,8 @@ export class StaticArrayStack<T> {
         return this.numElements;
     }
 
-    clear(context: CanvasRenderingContext2D) {
+    clearStack(context: CanvasRenderingContext2D) {
         this.stack.clear(context);
+        this.numElements = 0;
     }
 }

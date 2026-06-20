@@ -4,7 +4,8 @@ import AsymptoticAnalysisView from './pages/AsymptoticAnalysisView';
 import ArrayView from './pages/ArrayComponents/ArrayView';
 import LinkedListView from './pages/LinkedListComponents/LinkedListView';
 import HashingView from './pages/HashingComponents/HashingView';
-import StackView from './pages/StacksAndQueuesComponents/StackComponents/StackView';
+import StackView from './pages/StackComponents/StackView';
+import QueueView from './pages/QueueComponents/QueueView';
 // import GraphsView from './pages/GraphsView';
 import GeneralView from './pages/GeneralAnimating/GeneralView';
 import React from 'react';
@@ -24,6 +25,7 @@ function NavBar() {
             <li><Link to="/LinkedList">Linked Lists</Link></li>
             <li><Link to="/Hashing">Hashing</Link></li>
             <li><Link to="/Stacks">Stacks</Link></li>
+            <li><Link to="/Queues">Queues</Link></li>
           </ul>
         </nav><br></br><br></br>
       </header>
@@ -36,6 +38,7 @@ function NavBar() {
           <Route path = "/LinkedList" element={<LinkedListView></LinkedListView>}></Route>
           <Route path = "/Hashing" element={<HashingView></HashingView>}></Route>
           <Route path = "/Stacks" element={<StackView></StackView>}></Route>
+          <Route path = "/Queues" element={<QueueView></QueueView>}></Route>
         </Routes>
       </main>
     </Router>

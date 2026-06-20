@@ -1,6 +1,6 @@
 import React from "react";
-import { Text } from "../../GeneralAnimating/GeneralAnimationGraphics";
-import StepPlayer from "../../GeneralAnimating/StepPlayer";
+import { Text } from "../GeneralAnimating/GeneralAnimationGraphics";
+import StepPlayer from "../GeneralAnimating/StepPlayer";
 import { DynamicArrayStack } from "./DynamicArrayStack";
 
 function DynamicArrayStackTestCases() {

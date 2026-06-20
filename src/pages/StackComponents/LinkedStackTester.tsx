@@ -1,13 +1,13 @@
 import React from "react";
-import { Text } from "../../GeneralAnimating/GeneralAnimationGraphics";
-import StepPlayer from "../../GeneralAnimating/StepPlayer";
-import { StaticArrayStack } from "./StaticArrayStack";
+import { Text } from "../GeneralAnimating/GeneralAnimationGraphics";
+import StepPlayer from "../GeneralAnimating/StepPlayer";
+import { LinkedStack } from "./LinkedStack";
 
-function StaticArrayStackTestCases() {
+function LinkedStackTestCases() {
     const canvasWidth = 1000;
     const canvasHeight = 1400;
 
-    const runStaticArrayStackSteps = async (
+    const runLinkedStackSteps = async (
         mainContext: CanvasRenderingContext2D,
         staticContext: CanvasRenderingContext2D,
         step: number,
@@ -16,10 +16,10 @@ function StaticArrayStackTestCases() {
         const step1 = async () => {
             setIsAnimating(true);
 
-            const header = new Text(70, 40, "Empty Fixed Array Stack");
+            const header = new Text(70, 40, "Empty Linked Stack");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 5);
+            const stack = new LinkedStack(100, 100, 100, 60);
             stack.draw(mainContext);
 
             setIsAnimating(false);
@@ -31,7 +31,7 @@ function StaticArrayStackTestCases() {
             const header = new Text(70, 40, "Push 10, 20, 30");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 5);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
             await stack.push(mainContext, 10);
             await stack.push(mainContext, 20);
@@ -46,11 +46,11 @@ function StaticArrayStackTestCases() {
             const header = new Text(70, 40, "Peek Top Element");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 5);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
-            await stack.push(mainContext, 10, 0.4);
-            await stack.push(mainContext, 20, 0.4);
-            await stack.push(mainContext, 30, 0.4);
+            await stack.push(mainContext, 10);
+            await stack.push(mainContext, 20);
+            await stack.push(mainContext, 30);
 
             await stack.peek(mainContext);
 
@@ -63,11 +63,11 @@ function StaticArrayStackTestCases() {
             const header = new Text(70, 40, "Pop Top Element");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 5);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
-            await stack.push(mainContext, 10, 0.4);
-            await stack.push(mainContext, 20, 0.4);
-            await stack.push(mainContext, 30, 0.4);
+            await stack.push(mainContext, 10);
+            await stack.push(mainContext, 20);
+            await stack.push(mainContext, 30);
 
             await stack.pop(mainContext);
 
@@ -77,15 +77,17 @@ function StaticArrayStackTestCases() {
         const step5 = async () => {
             setIsAnimating(true);
 
-            const header = new Text(70, 40, "Stack Overflow Test");
+            const header = new Text(70, 40, "LIFO Behavior Test");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 3);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
-            await stack.push(mainContext, 10);
-            await stack.push(mainContext, 20);
-            await stack.push(mainContext, 30);
-            await stack.push(mainContext, 40); // Should warn: Stack Overflow
+            await stack.push(mainContext, "A");
+            await stack.push(mainContext, "B");
+            await stack.push(mainContext, "C");
+
+            await stack.pop(mainContext); // Removes C
+            await stack.pop(mainContext); // Removes B
 
             setIsAnimating(false);
         };
@@ -96,7 +98,7 @@ function StaticArrayStackTestCases() {
             const header = new Text(70, 40, "Stack Underflow Test");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 3);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
             await stack.push(mainContext, 10);
             await stack.pop(mainContext);
@@ -108,10 +110,10 @@ function StaticArrayStackTestCases() {
         const step7 = async () => {
             setIsAnimating(true);
 
-            const header = new Text(70, 40, "Mixed Stack Operations");
+            const header = new Text(70, 40, "Mixed Linked Stack Operations");
             header.draw(staticContext);
 
-            const stack = new StaticArrayStack(100, 100, 100, 60, 5);
+            const stack = new LinkedStack(100, 100, 100, 60);
 
             await stack.push(mainContext, "A");
             await stack.push(mainContext, "B");
@@ -124,11 +126,12 @@ function StaticArrayStackTestCases() {
 
             await stack.pop(mainContext);
             await stack.pop(mainContext);
+            await stack.pop(mainContext);
 
             setIsAnimating(false);
         };
 
-        switch(step) {
+        switch (step) {
             case 1:
                 step1();
                 break;
@@ -151,8 +154,8 @@ function StaticArrayStackTestCases() {
                 step7();
                 break;
             default:
-                break
-            }
+                break;
+        }
     };
 
     return (
@@ -160,9 +163,9 @@ function StaticArrayStackTestCases() {
             canvasWidth={canvasWidth}
             canvasHeight={canvasHeight}
             totalSteps={7}
-            runStep={runStaticArrayStackSteps}
+            runStep={runLinkedStackSteps}
         />
     );
 }
 
-export default StaticArrayStackTestCases;
+export default LinkedStackTestCases;
