@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Line, Text } from './GeneralAnimationGraphics';
 import AnimationController from './AnimationController';
-import gsap, { set, timeline } from 'gsap';
+import gsap from 'gsap';
 
 // This component is used to test the Line class to make sure line animations are displayed smoothly and accurately
 

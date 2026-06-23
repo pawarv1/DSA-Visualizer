@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Arrow, Text } from './GeneralAnimationGraphics';
 import AnimationController from './AnimationController';
-import gsap, { set, timeline } from 'gsap';
+import gsap from 'gsap';
 
 // This component is used to test the Arrow class to make sure arrow animations are displayed smoothly and accurately
 

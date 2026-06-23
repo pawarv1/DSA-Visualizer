@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Text } from './GeneralAnimationGraphics';
 import AnimationController from './AnimationController';
-import gsap, { set } from 'gsap';
+import gsap from 'gsap';
 
 // This component tests the Text class to make sure text animations are displayed smoothly and accurately
 
